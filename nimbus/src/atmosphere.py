@@ -32,6 +32,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, spec
     deep_mmr: np.array
         Mass mixing ratio of the cloud specie in the deep atmosphere.
     """
+
     # ==== Setting input parameters
     self.temp = temperature  # temperature profile [K]
     self.pres = pressure  # pressure profile [dyn/cm2]
@@ -99,22 +100,6 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, spec
     ndeep = self.deep_gas_mmr * self.rhoatmo / self.m1
     pdeep = ndeep * self.kb * self.temp
     self.mask_psupsat = self.pvap / pdeep < 1
-
-    # ==== working variables
-    self.fex = None
-    self.j = None
-    self.jac = None
-    self.x0 = None
-
-    # ==== Default solver settings (can be changed with set_solver_settings())
-    self.tstart = 1e-4
-    self.tend = 1e10
-    self.tsteps = 20
-    self.ode_rtol = 1e-3
-    self.ode_atol = 1e-25
-
-    # ==== output variabels
-    self.rg_history = None
 
     # ==== Calculate initial radius
     self.rg = np.zeros_like(self.pres)

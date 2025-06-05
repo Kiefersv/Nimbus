@@ -69,6 +69,10 @@ def define_atmosphere_physics(self):
         # Note: We only check here the legality of the saturation input to
         # allow for a vecotrised input
         f_nuc_hom[sat <= 1] = 0
+
+        # ==== fudge with nucleation rate (No fudge: self.nuc_rate_fudge = 1)
+        f_nuc_hom *= self.nuc_rate_fudge
+
         return f_nuc_hom
 
     # ===================================================================================
@@ -108,6 +112,9 @@ def define_atmosphere_physics(self):
         fx = 0.5 * (1.0 - np.tanh(2.0*np.log10(knd)))
         dmdt = dmdt_low * fx + dmdt_high * (1.0 - fx)
 
+        # ==== fudge with accretion rate (No fudge: self.nuc_rate_fudge = 1)
+        dmdt *= self.acc_rate_fudge
+
         return dmdt
 
 
@@ -131,6 +138,9 @@ def define_atmosphere_physics(self):
 
         # ==== growth rate
         growth_rate = 4 * np.pi * rg ** 2  * n1 * ncl * self.vth * (1 - self.pvap / p1)
+
+        # ==== fudge with accretion rate (No fudge: self.nuc_rate_fudge = 1)
+        growth_rate *= self.acc_rate_fudge
 
         return growth_rate
 
