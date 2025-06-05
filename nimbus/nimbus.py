@@ -4,11 +4,10 @@ from scipy.integrate import solve_ivp
 from scipy.optimize import root_scalar
 import xarray as xr
 
-from pvap import _get_pvap
-from solver import set_up_fex
-from atmosphere_physics import set_up_atmosphere_physics
-from plotter import plot_initial_conditions, plot_full_structure, plot_spectrum
-from species_database import DataStorage
+from .src.solver import set_up_fex
+from .src.atmosphere_physics import set_up_atmosphere_physics
+from .src.plotter import plot_initial_conditions, plot_full_structure, plot_spectrum
+from .src.species_database import DataStorage
 
 #   universal gas constant (erg/mol/K)
 RGAS = 8.3143e7

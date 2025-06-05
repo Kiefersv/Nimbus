@@ -1,0 +1,6 @@
+.idea/
+*.egg-info/
+**/__pycache__/
+examples/*.png
+build/
+claus/util/*.so
