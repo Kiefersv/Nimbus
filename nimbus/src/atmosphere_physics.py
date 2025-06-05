@@ -6,7 +6,7 @@ AVOG = 6.02e23
 KB = RGAS / AVOG
 PF = 1000000  # Reference pressure [dyn / cm2]
 
-def set_up_atmosphere_physics(self):
+def define_atmosphere_physics(self):
     """
     Set up all functions that handle the microphysics of cloud formation. This includes:
         - Nucleation rate (Available: MCNT)
