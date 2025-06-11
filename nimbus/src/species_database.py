@@ -30,7 +30,7 @@ class DataStorage:
     def __init__(self, data_file=None):
         # open the cloud material data file and read it
         if data_file is None:
-            data_file = os.path.dirname(__file__) + '/../data/cloud_material.csv'
+            data_file = os.path.dirname(__file__) + '/../data/chem/cloud_material.csv'
         raw_data = np.array(list(csv.reader(open(data_file))))
         # initialise data dict
         self.cloud_material_data = {}

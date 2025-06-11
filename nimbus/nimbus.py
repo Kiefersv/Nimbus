@@ -12,9 +12,11 @@ class Nimbus:
     # ==== import set up functions
     from .src.atmosphere import set_up_atmosphere
     from .src.solver import set_up_solver
+    from .src.spectra import set_up_spectra_calculation
 
     # ==== import the main compuational function
     from .src.compute import compute
+    from .src.compute_ddw import compute_ddw
 
     # ==== import solver settings
     from .src.settings import set_cloud_settings, set_solver_settings, set_fudge_settings
@@ -22,12 +24,27 @@ class Nimbus:
     # ==== import data handling functions
     from .src.data_storage import load_previous_run
 
-    def __init__(self, working_dir='.',
-                 create_analytic_plots=False):
+    # ==== import plotting routines
+    from .src.spectra import plot_spectrum
+
+    def __init__(self, working_dir='.', create_analytic_plots=False, verbose=False):
+        """
+        Constructor.
+
+        Parameters
+        ----------
+        working_dir : str, optional
+            Directory to store and load files from
+        create_analytic_plots : bool, optional
+            If true, analytic plots will be produced, increases computation time
+        verbose : bool, optional
+            If true, additional information are printed, increases computation time
+        """
 
         # ==== Workflow settings
         self.working_dir = working_dir + '/'  # working directory
         self.do_plots = create_analytic_plots  # If true, analytic plots are created
+        self.verbose = verbose  # print diagonsic infos on the cost of computation time
 
         # ==== initialisation checks
         self.isset_atmosphere = False  # checks if an atmosphere was initialised
@@ -44,19 +61,27 @@ class Nimbus:
         self.tstart = 1e-4  # start time of simulation [s]
         self.tend = 1e15  # end time of simulation [s]
         self.tsteps = 20  # number of intermediated evaluations (log-spaced)
-        self.ode_rtol = 1e-3  # relative error of solve_ivp
+        self.ode_rtol = 1e-6  # relative error of solve_ivp
         self.ode_atol = 1e-25  # absolute error of solve_ivp
+        self.ode_minimum_mmr = 1e-30  # lowest MMR considered [g/g]
+        self.static_rg = True # True: itarate with const rg / False: calc rg on the fly
+
+        # ==== Misc settings
+        self.rg_fit_deg = 8  # degree of the polynomial to fit the ittarative radius
 
         # ==== storage variables
         self.results = {}  # stores results
         self.rg_history = None  # stores history of rg.
+        self.loop_nr = 0  # remember the current loop number
+        self.itterations = 0  # remember number of itterations performed
 
         # ==== Fudge factors to play around with simulation
         # IMPORTANT: The default values here correspond to a non-fudged run
         self.nuc_rate_fudge = 1  # factor to reduce or increase nucleation rate
         self.acc_rate_fudge = 1  # factor to reduce or increase growth rate
 
-
-
-
-
+        # ==== Welcom message
+        print('===========================================================')
+        print('                   Welcome to Nimbus                       ')
+        print('===========================================================')
+        print('[INFO] For questions contact: kiefersv.mail@gmail.com')

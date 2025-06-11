@@ -1,6 +1,37 @@
 """ Functions to sotre and load data """
 import xarray as xr
 
+def save_run(self, sol, save_file=None, tag=None):
+
+    # ==== How data is stored
+    ds = xr.Dataset(
+        data_vars={
+            'qv': (['pressure'], sol.y[:self.sz, -1]),
+            'qc': (['pressure'], sol.y[self.sz:self.sz * 2, -1]),
+            'qn': (['pressure'], sol.y[self.sz * 2:self.sz * 3, -1]),
+            'rg': (['pressure'], self.rg),
+        },
+        coords={
+            'pressure': self.pres * 1e-6,
+        },
+        attrs={
+            'mmw': self.mmw,
+            'y': sol.y[:, -1],
+        },
+    )
+
+    # ==== save data to file if a save file is given
+    if not isinstance(save_file, type(None)):
+        ds.to_netcdf(save_file + '.nc')
+
+    # ==== store data in Nimbus class
+    # define the tag
+    if tag is None:
+        tag = 'last_run'
+    self.results[tag] = ds
+
+
+
 def load_previous_run(self, file_name, tag=None):
     """
     Load previously saved Nimbus runs.
