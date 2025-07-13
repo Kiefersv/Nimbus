@@ -7,7 +7,7 @@ from .atmosphere_physics import define_atmosphere_physics
 from .species_database import DataStorage
 
 def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, specie,
-                      deep_mmr):
+                      deep_mmr, metalicity=1):
     """
     Set up the atmospheric structure of the simulation.
 
@@ -31,6 +31,8 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, spec
         Cloud particle specie (currently only 1 is supported).
     deep_mmr: np.array
         Mass mixing ratio of the cloud specie in the deep atmosphere.
+    metalicity : np.array or float, optional
+        metalicity of atmosphere (used for certain pvaps)
     """
 
     # ==== Size and shpae of inputs
@@ -44,12 +46,14 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, spec
     self.gravity = gravity  # gravity [cm/s2]
     self.fsed = fsed  # (initial) settling parameter [None]
     self.deep_gas_mmr = deep_mmr  # mass mixing ratio in the interior [g/g]
+    self.mh = metalicity  # metalicity relative to solar (not log!) []
 
     # ==== Set nucleation rate, accretion rate, and settling velocity
     define_atmosphere_physics(self)
 
     # ==== currently hardcoded for SiO, later this will be input
     ds = DataStorage()  # open the data storage
+    self.datastorage = ds  # remember the class
     self.r_ccn = 1e-7  # default for minimum cloudparticle radius [cm]
     self.cs_mol = 2e-15  # default for molecular cross section [cm2]
     self.eps_k = 59.7  # Depth of the Lennard-Jones potential [??]
@@ -61,7 +65,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, spec
     self.sig = ds.surface_tension(specie, self.temp)  # surface tension [??]
     self.m1 = ds.monomer_mass(specie)  # monomer mass [g]
     self.rgas_spec_cloud = ds.specific_gas_constant(specie)  # specific gas constant
-    self.pvap = ds.vapor_pressures(specie, self.temp)  # vapour pressure [dyn/cm2]
+    self.pvap = ds.vapor_pressures(specie, self.temp, self.mh)  # vapor press [dyn/cm2]
 
     # ==== calculate pressure grid
     # grid coordiantes
@@ -111,4 +115,13 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, spec
 
     # ==== Confirm that atmosphere has been set up
     self.isset_atmosphere = True
-    print('[INFO] Atmosphere set up.')
+    temperature, pressure, kzz, mmw, gravity, fsed, specie,
+    deep_mmr
+    print(f'[INFO] Atmosphere set up with:')
+    print(f'       -> pressure range: {np.max(pressure*1e-6):.2e} - {np.min(pressure*1e-6):.2e} bar')
+    print(f'       -> temperature range: {np.max(temperature):.2e} - {np.min(temperature):.2e} K')
+    print(f'       -> Kzz range: {np.max(kzz):.2e} - {np.min(kzz):.2e} cm2/s')
+    print(f'       -> Mean molecular weight: {mmw:.2e} amu')
+    print(f'       -> Gravity: {gravity:.2e} cm/s2')
+    print(f'       -> ' + specie + f' deep MMR: {deep_mmr:.2e} g/g')
+

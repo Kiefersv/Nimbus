@@ -5,6 +5,7 @@ material species.
 import os
 import csv
 import numpy as np
+import xarray as xr
 
 class DataStorage:
     """
@@ -22,12 +23,13 @@ class DataStorage:
     """
 
     # pysical constants
-    RGAS = 8.3143e7  # Gas constant [erg/mol/K]
-    AVOG = 6.02e23  # avogadro constant [1/mol]
-    KB = RGAS / AVOG  # boltzmann constant [erg/K]
-    PF = 1000000  # Reference pressure [dyn / cm2]
+    rgas = 8.3143e7  # Gas constant [erg/mol/K]
+    avog = 6.02e23  # avogadro constant [1/mol]
+    kb = rgas / avog  # boltzmann constant [erg/K]
+    pf = 1000000  # Reference pressure [dyn / cm2]
 
     def __init__(self, data_file=None):
+        # ==== Read in of parametrised cloud properties and basic values ================
         # open the cloud material data file and read it
         if data_file is None:
             data_file = os.path.dirname(__file__) + '/../data/chem/cloud_material.csv'
@@ -57,6 +59,17 @@ class DataStorage:
                 'pvap_F': raw_data[s, 14],
             }
 
+        # ==== Read in of Gibbs free energies ===============================================
+        # kjpmol_to_ergpmol = 1e10
+        # self.gibbs_janaf = xr.open_dataset(
+        #     os.path.dirname(__file__) + '/../data/Gibbs/janaf.nc'
+        # ) * kjpmol_to_ergpmol
+        kjpmol_to_ergpmol = 1e10
+        self.gibbs_janaf = xr.open_dataset(
+            os.path.dirname(__file__) + '/../data/Gibbs/ggchem.nc'
+        ) * kjpmol_to_ergpmol
+
+
     # =======================================================================================
     #   Simple physical properties calculation (derived not read in)
     # =======================================================================================
@@ -67,7 +80,7 @@ class DataStorage:
 
     def specific_gas_constant(self, species):
         mw = self.cloud_material_data[species]['molecular_weight']
-        return self.RGAS / mw
+        return self.rgas / mw
 
     # =======================================================================================
     #   Simple getter functions of physical properties
@@ -79,7 +92,6 @@ class DataStorage:
         return self.cloud_material_data[species]['molecular_weight']
 
     def solid_density(self, species):
-        test = self.cloud_material_data[species]
         return self.cloud_material_data[species]['solid_density']
 
     def surface_tension(self, species, temp):
@@ -90,21 +102,25 @@ class DataStorage:
             raise ValueError("No surface tension available for " + species)
         return float(a) + float(b) * temp
 
+    def gibbs_free_energy(self, species, temp):
+        return self.gibbs_janaf[species].interp({"temp_" + species: temp}).values
+
     # =======================================================================================
     #   Complex physical properties calculation (derived not read in)
     # =======================================================================================
-    def vapor_pressures(self, species, temp):
+    def vapor_pressures(self, species, temp, metalicity=1):
         """
         Data according to Lee et al. 2018 (A&A 614, A126)
 
         :param species: Name of species, see below for supported
         :param temp: Temperature in Kelvin, can be float or array
+        :param metalicity: metalicity, optional (only used by few pvaps)
         :return:
-            pvap : vapor pressure (only return if only_pvap is True)
-            n_ccn : number of monomers to form a ccn
-            r1 : radius of the monomer
-            m1 : mass of the monomer
+            pvap : vapor pressure
         """
+
+        # short hand notation
+        mh = metalicity
 
         # Check if temp is an array, make it one if not
         isarray = True
@@ -166,6 +182,10 @@ class DataStorage:
                 pvap[:] = np.exp(9.6 - 7510.0 / temp) * 1e6
                 pvap[temp<413.0] = np.exp(20.0 - 11800.0 / temp[temp<413.0]) * 1e6
 
+            elif species == 'SiO2':
+                # this vapor pressure includes a metalicity correction
+                pvap = 10.0**(13.168 - 28265/temp)*1e6/mh  # SiO + H2O -> SiO2[s] + H2
+
             else:
                 raise ValueError('The species "' + species + '" is flagged as special, but no '
                                                           'case handling is provided.')
@@ -179,3 +199,37 @@ class DataStorage:
             pvap = pvap[0]
 
         return pvap
+
+    def reaction_supersaturation(self, cloud_specie, gas_species_in,
+                                gas_species_out, temp):
+        """
+        Calculate teh reaction supersaturation according to Kiefer et al. 2024a
+
+        :param cloud_specie: str, name of cloud specie (should end in [s])
+        :param species_in: Dict including names and VMR of Reactants
+            Example: {'H2O': 2e-2, 'H2O': 2e-2, 'SiO': 1e-3}
+        :param temp: Dict including names and VMR of (excluding solid)
+        :return:
+            pvap : vapor pressure
+        """
+
+        # ==== energy of formation
+        e_form = -self.gibbs_free_energy(cloud_specie, temp)
+        for ins in gas_species_in:
+            e_form += self.gibbs_free_energy(ins, temp)
+        for outs in gas_species_out:
+            e_form -= self.gibbs_free_energy(outs, temp)
+
+        # ==== number density prefactor
+        n_fac = 1
+        for ins in gas_species_in:
+            n_fac *= gas_species_in[ins]
+        for outs in gas_species_out:
+            n_fac /= gas_species_out[outs]
+
+        # ==== reference pressure factor
+        pow = len(gas_species_out) - len(gas_species_in)
+        p_fac = (self.pf / self.kb / temp)**pow
+
+        # ==== reaction super saturation
+        return n_fac * p_fac * np.exp(e_form/self.rgas/temp)

@@ -2,8 +2,6 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import astropy.units as u
-import pandas as pd
 
 def set_up_spectra_calculation(self, mass_planet, radius_planet, temperature_star,
                                radius_star, metalicity_star, logg_star,
@@ -48,7 +46,7 @@ def set_up_spectra_calculation(self, mass_planet, radius_planet, temperature_sta
     self.isset_emission_spectrum = True
     print('[INFO] Spectra calculation set up.')
 
-def plot_spectrum(self, chem_data=None, data=None, chemical_abbundences=None, type='transmission', cloud_fraction=1, tag='last_run', plot=True):
+def plot_spectrum(self, chem_data=None, data=None, chemical_abbundences=None, type='transmission', cloud_fraction=1, tag='last_run', plot=True, cloud_less=False):
 
     # ==== check if spectrum can be calculated
     if not self.isset_transmission_spectrum and not self.isset_emission_spectrum:
@@ -57,6 +55,8 @@ def plot_spectrum(self, chem_data=None, data=None, chemical_abbundences=None, ty
     # ==== picaso is only imported within this function so Nimbus can be run without it
     import picaso.justdoit as jdip
     import virga.justdoit as jdi
+    import astropy.units as u
+    import pandas as pd
 
     # ==== get data from tag
     ds = self.results[tag]
@@ -83,7 +83,7 @@ def plot_spectrum(self, chem_data=None, data=None, chemical_abbundences=None, ty
         pressure=10 ** self.logp_mid * 1e-6, wavenumber=1 / wave_in[:, 0] / 1e-4,
     )
 
-    opa = jdip.opannection(wave_range=[1, 15])
+    opa = jdip.opannection(wave_range=[0, 15])
     case1 = jdip.inputs()
     case1.phase_angle(0)
     case1.gravity(mass=self.mass_planet, mass_unit=u.Unit('M_jup'),
@@ -100,7 +100,8 @@ def plot_spectrum(self, chem_data=None, data=None, chemical_abbundences=None, ty
         d[key] = chem_data[key]
     df = pd.DataFrame(data=d)
     case1.atmosphere(df=df)
-    case1.clouds(df=df_cloud)
+    if not cloud_less:
+        case1.clouds(df=df_cloud)
 
     # ==== Calculate transmission and emission spectra
     t_df = case1.spectrum(opa, full_output=True, calculation=type)

@@ -63,9 +63,10 @@ def plot_full_structure(self, y, title=''):
     growth_rate = self.acc_rate(self.rg, self.temp, n1, ncl)
     plt.plot(nuc_rate, self.pres, label='nucleation rate', color='red', linestyle='-')
     plt.plot(growth_rate, self.pres, label='accretion rate', color='magenta', linestyle='-')
-    #
+
     # ==== Plot vapour pressure limit
     plt.plot(self.pvap * self.mw / self.pres / self.mmw, self.pres, label='q_vap', color='blue', linestyle='-.')
+
     # ==== Plot vsed
     plt.plot(self.vsed(self.rg)*1e-10, self.pres, label='v_sed', color='orange', linestyle='-')
 

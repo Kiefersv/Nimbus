@@ -17,18 +17,25 @@ def save_run(self, sol, save_file=None, tag=None):
         attrs={
             'mmw': self.mmw,
             'y': sol.y[:, -1],
+            'itterations': self.loop_nr,
         },
     )
-
-    # ==== save data to file if a save file is given
-    if not isinstance(save_file, type(None)):
-        ds.to_netcdf(save_file + '.nc')
 
     # ==== store data in Nimbus class
     # define the tag
     if tag is None:
         tag = 'last_run'
     self.results[tag] = ds
+
+    # ==== Print info
+    print('[INFO] Saved run under tag: ' + tag)
+
+    # ==== save data to file if a save file is given
+    if not isinstance(save_file, type(None)):
+        ds.to_netcdf(save_file + '.nc')
+        print('       -> File name: ' + save_file)
+
+    return ds
 
 
 
@@ -55,6 +62,10 @@ def load_previous_run(self, file_name, tag=None):
 
     # load results into Nimbus
     self.results[tag] = ds
+
+    # ==== Print info
+    print('[INFO] Loaded previous run with tag: ' + tag)
+    print('       -> File name: ' + file_name)
 
     # return results
     return ds

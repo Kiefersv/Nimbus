@@ -85,3 +85,8 @@ class Nimbus:
         print('                   Welcome to Nimbus                       ')
         print('===========================================================')
         print('[INFO] For questions contact: kiefersv.mail@gmail.com')
+        print('[INFO] Settings selected:')
+        print('       -> working directory: ' + self.working_dir[:-1])
+        print('       -> verbose: ' + str(verbose))
+        print('       -> analytic plots: ' + str(create_analytic_plots))
+

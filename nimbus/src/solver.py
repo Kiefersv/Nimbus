@@ -74,6 +74,7 @@ def set_up_solver(self):
             rg = self.rg  # cloud particle radius [cm]
         else: # calculate rg on the fly
             rg = mass_to_radius(self, xn, xc)  # cloud particle radius [cm]
+            self.rg = rg
         ncl = xn * self.rhoatmo / self.m_ccn  # cloud particle number density [1/cm3]
         n1 = xv * self.rhoatmo / self.m1  # gas-phase number density [1/cm3]
 
@@ -128,7 +129,7 @@ def set_up_solver(self):
         # print progress information
         if self.verbose:
             prog = np.log10(t)/np.log10(self.tend) * 100
-            print('\r[INFO] Loop ' + str(self.loop_nr) + '/' + str(self.itterations)
+            print('\r[INFO] Loop ' + str(self.loop_nr) + '' + self.it_str
                   + ' || Current loop progress ' + f"{prog:05.2f}%", end='')
 
         # ==== Return time derivative
