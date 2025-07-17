@@ -14,186 +14,6 @@ def define_atmosphere_physics(self):
     """
 
     # ===================================================================================
-    #  Nucleation rates
-    # ===================================================================================
-    # Note: all nucleation rate functions must be of the form f(n1, temp) and have the
-    # follwing header:
-    """
-    :param n1: number density of cloud forming material [1/cm3]
-    :param temp: temperature [K]
-    :return:
-    """
-
-    def _nuc_rate_mini_cloud(n1, temp):
-        """
-        This nucleation rate was taken from Elsie Lee's mini cloud:
-        Citation: https://academic.oup.com/mnras/article/524/2/2918/7221353
-        Link: https://github.com/ELeeAstro/mini_cloud
-        """
-
-        # ==== Hard coded values
-        alpha = 1.0  # sticking coefficient []
-        Nf = 5.0  # MCNT factor []
-
-        # ==== Physical parameters
-        p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
-        sat = p1 / self.pvap  # log of saturation []
-        ln_ss = np.log(sat)  # log of supersaturation []
-        f0 = 4.0 * np.pi * self.r1 ** 2  # colisional corsssection [cm2]
-        kbT = self.kb * temp  # shorthand notation
-        theta_inf = (f0 * self.sig) / kbT  # theta inf [?]
-
-        # ==== Prevent unphysical sat values (will be removed at the end)
-        ln_ss[ln_ss <= 1e-30] = 1e-30
-
-        # ==== Calcualte cirtical cluster size
-        N_inf = (((2.0 / 3.0) * theta_inf) / ln_ss) ** 3
-        N_star = 1.0 + (N_inf/8.0) * (1.0 + np.sqrt(1.0 + 2.0 * (Nf/N_inf)**(1/3))
-                                      -2.0 * (Nf/N_inf)**(1/3))**3
-        N_star = np.maximum(1.00001, N_star)  # make sure Nstar-1 is not below 0
-        N_star_1 = N_star - 1.0  # shorthand notation
-
-        # ==== Gibbs free energy approximation
-        dg_rt = theta_inf * (N_star_1 / (N_star_1**(1/3) + Nf**(1/3)))
-
-        # ==== Zeldovich factor
-        Zel = np.sqrt((theta_inf / (9.0 * np.pi * N_star_1**(4.0/3.0)))
-                      * ((1.0 + 2.0 * (Nf/N_star_1)**(1/3))
-                      / (1.0 + (Nf/N_star_1)**(1/3))**3))
-
-        # ==== growth rate
-        tau_gr = ((f0 * N_star**(2.0/3.0)) * alpha
-                  * np.sqrt(kbT / (2.0 * np.pi * self.mw / self.avog)) * n1)
-
-        # ==== everything together gives the nucleaiton rate
-        exponent = np.maximum(-300.0, N_star_1 * ln_ss - dg_rt)
-        f_nuc_hom = n1 * tau_gr * Zel * np.exp(exponent)
-
-        # ==== Remove nans and other problems
-        # Note: We only check here the legality of the saturation input to
-        # allow for a vecotrised input
-        f_nuc_hom[sat <= 1] = 0
-
-        # ==== fudge with nucleation rate (No fudge: self.nuc_rate_fudge = 1)
-        f_nuc_hom *= self.nuc_rate_fudge
-
-        return f_nuc_hom
-
-    def _nuc_rate_sindel(n1, temp):
-        """
-        This nucleation rate follows the description of Sindel et al. (2022):
-        Citation:  https://doi.org/10.1051/0004-6361/202243306
-        """
-
-        # ==== Hard coded
-        alpha = 1.0  # sticking coefficient []
-
-        # ==== Physical parameters
-        p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
-        sat = p1 / self.pvap  # log of saturation []
-        ln_ss = np.log(sat)  # log of supersaturation []
-        f0 = 4.0 * np.pi * self.r1 ** 2  # colisional corsssection [cm2]
-        kbT = self.kb * temp  # shorthand notation
-        theta_inf = (f0 * self.sig) / kbT  # theta inf [?]
-
-        # ==== Prevent unphysical sat values (will be removed at the end)
-        ln_ss[ln_ss <= 1e-30] = 1e-30
-
-        # ==== Calcualte cirtical cluster size
-        N_inf = (((2.0 / 3.0) * theta_inf) / ln_ss) ** 3
-        N_star = 1.0 + (N_inf/8.0)
-        N_star = np.maximum(1.00001, N_star)  # make sure Nstar-1 is not below 0
-        N_star_1 = N_star - 1.0  # shorthand notation
-
-        # ==== Gibbs free energy approximation
-        dg_rt = theta_inf * N_star_1**(2/3)
-
-        # ==== Zeldovich factor
-        Zel = np.sqrt(theta_inf / (9.0 * np.pi * N_star_1**(4.0/3.0)))
-
-        # ==== growth rate
-        tau_gr = ((f0 * N_star**(2.0/3.0)) * alpha
-                  * np.sqrt(kbT / (2.0 * np.pi * self.mw / self.avog)) * n1)
-
-        # ==== everything together gives the nucleaiton rate
-        exponent = np.maximum(-300.0, N_star_1 * ln_ss - dg_rt)
-        f_nuc_hom = n1 * tau_gr * Zel * np.exp(exponent)
-
-        # ==== Remove nans and other problems
-        # Note: We only check here the legality of the saturation input to
-        # allow for a vecotrised input
-        f_nuc_hom[sat <= 1] = 0
-
-        # ==== fudge with nucleation rate (No fudge: self.nuc_rate_fudge = 1)
-        f_nuc_hom *= self.nuc_rate_fudge
-
-        return f_nuc_hom
-
-    # ===================================================================================
-    #  Accretion rates
-    # ===================================================================================
-    # Note: all nucleation rate functions must be of the form f(rg, temp, n1, ncl) and
-    # have the follwing header:
-    """
-    :param rg: cloud particle size [cm]
-    :param temp: temperature [K]
-    :param n1: number density of cloud forming material [1/cm3]
-    :param ncl: cloud particle number density [1/cm3]
-
-    :return: accretion rate [1/cm3]
-    """
-
-    def _acc_rate_mini_cloud(rg, temp, n1, ncl):
-        """
-        Accretion rate following Lee (2023):
-        Citation: https://doi.org/10.1093/mnras/stad2037
-        Link: https://github.com/ELeeAstro/mini_cloud
-        """
-
-        # ==== Physical parameters
-        p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
-
-        # ==== Gaseous diffusion constant
-        d0 = 2*self.r1
-        diff_const = (5.0/(16.0 * self.avog * d0**2 * self.rhoatmo) *
-                      np.sqrt((self.rgas * self.temp * self.mmw)/(2.0 * np.pi) *
-                              (self.mw + self.mmw)/self.mw))
-
-        # ==== Accreation rate in two limits
-        # high knudsen number limit
-        dmdt_high = 4*np.pi * rg**2 * n1 * ncl * self.vth * (1 - self.pvap/p1)
-        # low knudsen number limit
-        dmdt_low = 4*np.pi * rg * n1 * ncl * diff_const * (1 - self.pvap/p1)
-        # interpolate
-        val_low = np.maximum(dmdt_low, 1e-30)
-        val_high = np.maximum(dmdt_high, 1e-30)
-        # fx = 0.5 * (1.0 - np.tanh(2.0*np.log10(val_low/val_high)))
-        # dmdt = dmdt_low * fx + dmdt_high * (1.0 - fx)
-        dmdt = 1/(1/val_low + 1/val_high)  # changed interpolation scheme
-
-        # ==== fudge with accretion rate (No fudge: self.nuc_rate_fudge = 1)
-        dmdt *= self.acc_rate_fudge
-
-        return dmdt
-
-    def _acc_rate_sw(rg, temp, n1, ncl):
-        """
-        Accretion rate following Helling et al. (2006) assuming collisional regim:
-        Citation: https://www.aanda.org/10.1051/0004-6361:20054598
-        """
-
-        # ==== Physical parameters
-        p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
-
-        # ==== growth rate
-        growth_rate = 4*np.pi * rg**2 * n1 * ncl * self.vth * (1 - self.pvap/p1)
-
-        # ==== fudge with accretion rate (No fudge: self.nuc_rate_fudge = 1)
-        growth_rate *= self.acc_rate_fudge
-
-        return growth_rate
-
-    # ===================================================================================
     #  Settling velocity
     # ===================================================================================
     # Note: all settling velocity functions must be of the form f()
@@ -298,10 +118,206 @@ def define_atmosphere_physics(self):
     # ===================================================================================
     #  Set functions
     # ===================================================================================
-    self.nuc_rate = _nuc_rate_mini_cloud  # nucleation rate
-    self.acc_rate = _acc_rate_mini_cloud  # accreation rate
     self.vsed = _vsed_exolyn  # terminal settling velocity
 
+# =======================================================================================
+#  Nucleation rates
+# =======================================================================================
+def get_nucleation_rate_function(self, r1, sig, pvap, mw):
+    """
+    Function to prepare nucleation rate functions.
+
+    :param self: Nimbus object
+    :param r1: float, radius of the nucleating monomer
+    :param sig: function, surface tension of the nucleating species
+    :param pvap: function, vapor pressure of the nucleating species
+    """
+
+    # Note: all nucleation rate functions must be of the form f(n1, temp) and have the
+    # follwing header:
+    """
+    :param n1: number density of cloud forming material [1/cm3]
+    :param temp: temperature [K]
+    :return:
+    """
+
+    def _nuc_rate_mini_cloud(n1, temp):
+        """
+        This nucleation rate was taken from Elsie Lee's mini cloud:
+        Citation: https://academic.oup.com/mnras/article/524/2/2918/7221353
+        Link: https://github.com/ELeeAstro/mini_cloud
+        """
+
+        # ==== Hard coded values
+        alpha = 1.0  # sticking coefficient []
+        Nf = 5.0  # MCNT factor []
+
+        # ==== Physical parameters
+        p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
+        sat = p1 / pvap(temp)  # log of saturation []
+        ln_ss = np.log(sat)  # log of supersaturation []
+        f0 = 4.0 * np.pi * r1 ** 2  # colisional corsssection [cm2]
+        kbT = self.kb * temp  # shorthand notation
+        theta_inf = (f0 * sig(temp)) / kbT  # theta inf [?]
+
+        # ==== Prevent unphysical sat values (will be removed at the end)
+        ln_ss[ln_ss <= 1e-30] = 1e-30
+
+        # ==== Calcualte cirtical cluster size
+        N_inf = (((2.0 / 3.0) * theta_inf) / ln_ss) ** 3
+        N_star = 1.0 + (N_inf/8.0) * (1.0 + np.sqrt(1.0 + 2.0 * (Nf/N_inf)**(1/3))
+                                      -2.0 * (Nf/N_inf)**(1/3))**3
+        N_star = np.maximum(1.00001, N_star)  # make sure Nstar-1 is not below 0
+        N_star_1 = N_star - 1.0  # shorthand notation
+
+        # ==== Gibbs free energy approximation
+        dg_rt = theta_inf * (N_star_1 / (N_star_1**(1/3) + Nf**(1/3)))
+
+        # ==== Zeldovich factor
+        Zel = np.sqrt((theta_inf / (9.0 * np.pi * N_star_1**(4.0/3.0)))
+                      * ((1.0 + 2.0 * (Nf/N_star_1)**(1/3))
+                      / (1.0 + (Nf/N_star_1)**(1/3))**3))
+
+        # ==== growth rate
+        tau_gr = ((f0 * N_star**(2.0/3.0)) * alpha
+                  * np.sqrt(kbT / (2.0 * np.pi * mw / self.avog)) * n1)
+
+        # ==== everything together gives the nucleaiton rate
+        exponent = np.maximum(-300.0, N_star_1 * ln_ss - dg_rt)
+        f_nuc_hom = n1 * tau_gr * Zel * np.exp(exponent)
+
+        # ==== Remove nans and other problems
+        # Note: We only check here the legality of the saturation input to
+        # allow for a vecotrised input
+        f_nuc_hom[sat <= 1] = 0
+
+        # ==== fudge with nucleation rate (No fudge: self.nuc_rate_fudge = 1)
+        f_nuc_hom *= self.nuc_rate_fudge
+
+        return f_nuc_hom
+
+    def _nuc_rate_sindel(n1, temp):
+        """
+        This nucleation rate follows the description of Sindel et al. (2022):
+        Citation:  https://doi.org/10.1051/0004-6361/202243306
+        """
+
+        # ==== Hard coded
+        alpha = 1.0  # sticking coefficient []
+
+        # ==== Physical parameters
+        p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
+        sat = p1 / pvap(temp)  # log of saturation []
+        ln_ss = np.log(sat)  # log of supersaturation []
+        f0 = 4.0 * np.pi * r1 ** 2  # colisional corsssection [cm2]
+        kbT = self.kb * temp  # shorthand notation
+        theta_inf = (f0 * sig(temp)) / kbT  # theta inf [?]
+
+        # ==== Prevent unphysical sat values (will be removed at the end)
+        ln_ss[ln_ss <= 1e-30] = 1e-30
+
+        # ==== Calcualte cirtical cluster size
+        N_inf = (((2.0 / 3.0) * theta_inf) / ln_ss) ** 3
+        N_star = 1.0 + (N_inf/8.0)
+        N_star = np.maximum(1.00001, N_star)  # make sure Nstar-1 is not below 0
+        N_star_1 = N_star - 1.0  # shorthand notation
+
+        # ==== Gibbs free energy approximation
+        dg_rt = theta_inf * N_star_1**(2/3)
+
+        # ==== Zeldovich factor
+        Zel = np.sqrt(theta_inf / (9.0 * np.pi * N_star_1**(4.0/3.0)))
+
+        # ==== growth rate
+        tau_gr = ((f0 * N_star**(2.0/3.0)) * alpha
+                  * np.sqrt(kbT / (2.0 * np.pi * mw / self.avog)) * n1)
+
+        # ==== everything together gives the nucleaiton rate
+        exponent = np.maximum(-300.0, N_star_1 * ln_ss - dg_rt)
+        f_nuc_hom = n1 * tau_gr * Zel * np.exp(exponent)
+
+        # ==== Remove nans and other problems
+        # Note: We only check here the legality of the saturation input to
+        # allow for a vecotrised input
+        f_nuc_hom[sat <= 1] = 0
+
+        # ==== fudge with nucleation rate (No fudge: self.nuc_rate_fudge = 1)
+        f_nuc_hom *= self.nuc_rate_fudge
+
+        return f_nuc_hom
+
+    # return the nucleation rate function for later use (all parameters fixed)
+    return _nuc_rate_mini_cloud
+
+# =======================================================================================
+#  Accretion rates
+# =======================================================================================
+def get_accretion_rate_function(self, r1, pvap, mw):
+
+    # Note: all nucleation rate functions must be of the form f(rg, temp, n1, ncl) and
+    # have the follwing header:
+    """
+    :param rg: cloud particle size [cm]
+    :param temp: temperature [K]
+    :param n1: number density of cloud forming material [1/cm3]
+    :param ncl: cloud particle number density [1/cm3]
+
+    :return: accretion rate [1/cm3]
+    """
+
+    def _acc_rate_mini_cloud(rg, temp, n1, ncl):
+        """
+        Accretion rate following Lee (2023):
+        Citation: https://doi.org/10.1093/mnras/stad2037
+        Link: https://github.com/ELeeAstro/mini_cloud
+        """
+
+        # ==== Physical parameters
+        p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
+        vth = np.sqrt(self.rgas * temp / (2 * np.pi * mw))  # thermal velocity [cm/s]
+
+        # ==== Gaseous diffusion constant
+        d0 = 2*r1
+        diff_const = (5.0/(16.0 * self.avog * d0**2 * self.rhoatmo) *
+                      np.sqrt((self.rgas * temp * self.mmw)/(2.0 * np.pi) *
+                              (mw + self.mmw)/mw))
+
+        # ==== Accreation rate in two limits
+        # high knudsen number limit
+        dmdt_high = 4*np.pi * rg**2 * n1 * ncl * vth * (1 - pvap(temp)/p1)
+        # low knudsen number limit
+        dmdt_low = 4*np.pi * rg * n1 * ncl * diff_const * (1 - pvap(temp)/p1)
+        # interpolate
+        val_low = np.maximum(dmdt_low, 1e-30)
+        val_high = np.maximum(dmdt_high, 1e-30)
+        # fx = 0.5 * (1.0 - np.tanh(2.0*np.log10(val_low/val_high)))
+        # dmdt = dmdt_low * fx + dmdt_high * (1.0 - fx)
+        dmdt = 1/(1/val_low + 1/val_high)  # changed interpolation scheme
+
+        # ==== fudge with accretion rate (No fudge: self.nuc_rate_fudge = 1)
+        dmdt *= self.acc_rate_fudge
+
+        return dmdt
+
+    def _acc_rate_sw(rg, temp, n1, ncl):
+        """
+        Accretion rate following Helling et al. (2006) assuming collisional regim:
+        Citation: https://www.aanda.org/10.1051/0004-6361:20054598
+        """
+
+        # ==== Physical parameters
+        p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
+
+        # ==== growth rate
+        growth_rate = 4*np.pi * rg**2 * n1 * ncl * self.vth * (1 - pvap(temp)/p1)
+
+        # ==== fudge with accretion rate (No fudge: self.nuc_rate_fudge = 1)
+        growth_rate *= self.acc_rate_fudge
+
+        return growth_rate
+
+    # return the accretion rate function for later use (all parameters fixed)
+    return _acc_rate_mini_cloud
 
 # =======================================================================================
 #  Fixed functions that don't need to be changed

@@ -10,7 +10,8 @@ class Nimbus:
     pf = 1000000  # Reference pressure [dyn/cm2]
 
     # ==== import set up functions
-    from .src.atmosphere import set_up_atmosphere
+    from .src.atmosphere import (set_up_atmosphere, set_initial_mmr,
+                                 add_nucleation_species, add_accreation_reaction)
     from .src.solver import set_up_solver
     from .src.spectra import set_up_spectra_calculation
 
@@ -52,9 +53,9 @@ class Nimbus:
         self.isset_transmission_spectrum = False  # checks if all info for ts are given
         self.isset_emission_spectrum = False  # checks if all info for es are given
 
-        # ==== working variables
+        # ==== working variables of solve_ivp
         self.fex = None  # right hand side of time evolution (solved with solve_ivp)
-        self.jac = None  # Jacobian matrix
+        self.jac = None  # Jacobian matrix, currently not used
         self.x0 = None  # initial mass mixing ratios
 
         # ==== Default solver settings (can be changed with set_solver_settings())
@@ -65,6 +66,22 @@ class Nimbus:
         self.ode_atol = 1e-25  # absolute error of solve_ivp
         self.ode_minimum_mmr = 1e-30  # lowest MMR considered [g/g]
         self.static_rg = True # True: itarate with const rg / False: calc rg on the fly
+
+        # ==== Solver working variables
+        self.species = ['xn']  # list of species, index is their internal id
+        self.initial_mmrs = [0]  # list of initial mmrs, same index as self.species
+        # dictionary of chemical reactions, example:
+        # {"name": {'k':f(temp, pres), 'i': ['Si', 'O2'], 'o': ['SiO', 'O']}}
+        self.chem_reacs = {}
+        # dictionary of nucleation reactions, example
+        # {"name": {'k':f(n1, temp), 'i': ['SiO']}}
+        self.nuc_reacs = {}
+        # dictionary of accreation reactions, example
+        # {"name": {'k':f(temp, ncl, n1), 'i': ['SiO'], 'o': ['SiO[s]']}}
+        self.acc_reacs = {}
+        # index lists for various purposes
+        self.idl_clmat = []  # cloud particle materials
+        self.idl_vsed = [0]  # species that gravitationally settle
 
         # ==== Misc settings
         self.rg_fit_deg = 8  # degree of the polynomial to fit the ittarative radius

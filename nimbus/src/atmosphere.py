@@ -3,11 +3,16 @@
 import numpy as np
 from scipy.optimize import root_scalar
 
-from .atmosphere_physics import define_atmosphere_physics
+from .atmosphere_physics import (define_atmosphere_physics, get_nucleation_rate_function,
+                                 get_accretion_rate_function)
 from .species_database import DataStorage
 
-def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, specie,
-                      deep_mmr, metalicity=1):
+# ==== file variables
+# namer for accreation rates
+acc_rec_nr = 1
+
+def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, metalicity=1,
+                      fsed=1, mixed_clouds=True):
     """
     Set up the atmospheric structure of the simulation.
 
@@ -25,14 +30,12 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, spec
         Mean molecular weight in amu.
     gravity : np.array
         Gravity in cm/s2
-    fsed : np.array
-        Initial settling parameter (defines cloud particle size).
-    specie: np.array
-        Cloud particle specie (currently only 1 is supported).
-    deep_mmr: np.array
-        Mass mixing ratio of the cloud specie in the deep atmosphere.
     metalicity : np.array or float, optional
-        metalicity of atmosphere (used for certain pvaps)
+        metalicity of atmosphere (used for certain pvaps), not always used
+    fsed : np.array, optional
+        Initial settling parameter (defines cloud particle size).
+    mixed_clouds : bool, optional
+        If true, cloud particles are assumed to be mixed.
     """
 
     # ==== Size and shpae of inputs
@@ -45,8 +48,8 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, spec
     self.mmw = mmw  # mean molecular weight [amu]
     self.gravity = gravity  # gravity [cm/s2]
     self.fsed = fsed  # (initial) settling parameter [None]
-    self.deep_gas_mmr = deep_mmr  # mass mixing ratio in the interior [g/g]
-    self.mh = metalicity  # metalicity relative to solar (not log!) []
+    self.mh = metalicity  # metalicity relative to solar (not log!) [None]
+    self.mixed = mixed_clouds  # if true, clouds are mixed
 
     # ==== Set nucleation rate, accretion rate, and settling velocity
     define_atmosphere_physics(self)
@@ -57,15 +60,8 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, spec
     self.r_ccn = 1e-7  # default for minimum cloudparticle radius [cm]
     self.cs_mol = 2e-15  # default for molecular cross section [cm2]
     self.eps_k = 59.7  # Depth of the Lennard-Jones potential [??]
-    self.specie = specie  # save name of cloud species
-    self.rho_ccn = ds.solid_density(specie)  # density of nucleation seads [g/cm3]
-    self.rhop = ds.solid_density(specie)  # density of cloud material [g/cm3]
-    self.mw = ds.molecular_weight(specie)  # cloud material molecular weight [amu]
-    self.r1 = ds.monomer_radius(specie)  # monomer radius [cm]
-    self.sig = ds.surface_tension(specie, self.temp)  # surface tension [??]
-    self.m1 = ds.monomer_mass(specie)  # monomer mass [g]
-    self.rgas_spec_cloud = ds.specific_gas_constant(specie)  # specific gas constant
-    self.pvap = ds.vapor_pressures(specie, self.temp, self.mh)  # vapor press [dyn/cm2]
+    self.rho_ccn = 3  # density of nucleation seads [g/cm3] (does not impact results)
+    self.m_ccn = 4/3 * np.pi * self.r_ccn**3 * self.rho_ccn  # monomer mass [g]
 
     # ==== calculate pressure grid
     # grid coordiantes
@@ -85,7 +81,6 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, spec
     self.natmo = self.pres / self.temp / self.kb  # total gas-phase number density [1/cm3]
     self.rhoatmo = self.mmw * self.pres / self.temp / self.rgas  # atmospheric density [g/cm]
     self.m_ccn = 4 / 3 * np.pi * self.r_ccn ** 3 * self.rho_ccn  # ccn mass [g]
-    self.vth = np.sqrt(self.rgas * self.temp / (2 * np.pi * self.mw))  # thermal velocity [cm/s]
     lmfpfac = np.sqrt(2) * self.rhoatmo * self.cs_mol
     self.lmfp = self.mmw / self.avog / lmfpfac  # mean free path length [cm]
     self.h = self.rgas * self.temp / self.gravity / self.mmw  # scale height [cm]
@@ -97,31 +92,107 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, spec
     self.temp_mid = np.interp(self.logp_mid, self.logp, self.temp)
     self.dz_mid = - self.rgas * self.temp_mid / self.mmw / gravity * self.dlogp_mid
 
-    # ==== find pressure levels which are always supersaturated
-    ndeep = self.deep_gas_mmr * self.rhoatmo / self.m1  # deep particle number density
-    pdeep = ndeep * self.kb * self.temp  # deep partial pressure
-    self.mask_psupsat = self.pvap / pdeep < 1  # mask where vapour can condense
-
-    # ==== Calculate initial radius
-    self.rg = np.zeros_like(self.pres)
-    for i, _ in enumerate(self.pres):
-        # minimisation function
-        def vsed_f(rg):
-            v_c = self.vsed(rg)[i]  # settling veloctity
-            vk = self.fsed * self.kzz[i] / self.h[i]  # fsed velocity
-            return vk - v_c
-        # call of minimisation function with optimised initial condiaitons
-        self.rg[i] = np.maximum(root_scalar(vsed_f, x0=self.r1 * 1e2).root, self.r_ccn)
-
     # ==== Confirm that atmosphere has been set up
     self.isset_atmosphere = True
-    temperature, pressure, kzz, mmw, gravity, fsed, specie,
-    deep_mmr
     print(f'[INFO] Atmosphere set up with:')
     print(f'       -> pressure range: {np.max(pressure*1e-6):.2e} - {np.min(pressure*1e-6):.2e} bar')
     print(f'       -> temperature range: {np.max(temperature):.2e} - {np.min(temperature):.2e} K')
     print(f'       -> Kzz range: {np.max(kzz):.2e} - {np.min(kzz):.2e} cm2/s')
     print(f'       -> Mean molecular weight: {mmw:.2e} amu')
     print(f'       -> Gravity: {gravity:.2e} cm/s2')
-    print(f'       -> ' + specie + f' deep MMR: {deep_mmr:.2e} g/g')
 
+def set_initial_mmr(self, mmr):
+    """
+    Do what the name says and set the initial mmrs.
+
+    mmr: dict
+        Dictionary of mmrs {'SiO': 3e-4, 'SiO[s]': 0}
+    """
+
+    # if no species were given, quit
+    if mmr is None:
+        return
+
+    # loop over all species
+    for spec in mmr:
+        # add new species
+        if spec not in self.species:
+            self.species.append(spec)
+            self.initial_mmrs.append(mmr[spec])
+        # update old species
+        else:
+            self.initial_mmrs[self.species.index(spec)] = mmr[spec]
+
+def add_nucleation_species(self, nucleation_species, initial_mmr=None):
+    """
+    Add a new nucleation species and all needed parameters
+
+    nucleation_species : string
+        Name of gas-phase species which nucleates
+    initial_mmr: dict, optional
+        Mass mixing ratio of the cloud specie in the deep atmosphere.
+    """
+
+    # ==== check if nucleating species already exists
+    if nucleation_species not in self.species:
+        self.species.append(nucleation_species)
+    if nucleation_species + '[s]' not in self.species:
+        self.species.append(nucleation_species + '[s]')
+        self.idl_clmat.append(len(self.species)-1)
+        self.idl_vsed.append(len(self.species)-1)
+
+    # ==== get data of nuclating species
+    # vapor pressure function
+    pvap = self.datastorage.vapor_pressure_function(nucleation_species)
+    r1 = self.datastorage.monomer_radius(nucleation_species)
+    sig = self.datastorage.surface_tension_function(nucleation_species)
+    mw = self.datastorage.molecular_weight(nucleation_species)
+
+    # ==== get the vapor pressure function and the nucleation rate
+    nuc_rate = get_nucleation_rate_function(self, r1, sig, pvap, mw)
+
+    # ==== save the nucleation rate
+    self.nuc_reacs[nucleation_species] = {'k': nuc_rate, 'i':[nucleation_species]}
+
+    # ==== set mmrs
+    set_initial_mmr(self, initial_mmr)
+
+def add_accreation_reaction(self, cloud_species, gas_phase_reactants,
+                            gas_phase_products, initial_mmr=None):
+    """
+    Add a new cloud formation reaction and all needed parameters
+
+    cloud_species : string
+        Name of the cloud particle material
+    gas_phase_reactants: List
+        Condensing gas-phase species (can be 1 or multiple)
+    gas_phase_products: List
+        Condensing gas-phase species (can be 0 or multiple)
+    initial_mmr: dict, optional
+        Mass mixing ratio of the cloud specie in the deep atmosphere.
+    """
+
+    # ==== check if all involved species already exists
+    all = [cloud_species] + gas_phase_products + gas_phase_reactants
+    for spec in all:
+        if spec not in self.species:
+            self.species.append(spec)
+            self.idl_clmat.append(len(self.species)-1)
+            self.idl_vsed.append(len(self.species)-1)
+
+    # ==== get data of accreting species
+    # vapor pressure function
+    pvap = self.datastorage.vapor_pressure_function(cloud_species[:-3])
+    r1 = self.datastorage.monomer_radius(cloud_species[:-3])
+    mw = self.datastorage.molecular_weight(cloud_species[:-3])
+
+    # ==== get the vapor pressure function and the nucleation rate
+    acc_rate = get_accretion_rate_function(self, r1, pvap, mw)
+
+    # ==== save the nucleation rate
+    name = 'reac_nr_' + str(acc_rec_nr)
+    self.nuc_reacs[name] = {'k': acc_rate, 'i': gas_phase_reactants,
+                            'o': gas_phase_products}
+
+    # ==== set mmrs
+    set_initial_mmr(self, initial_mmr)

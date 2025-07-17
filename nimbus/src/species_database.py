@@ -94,13 +94,15 @@ class DataStorage:
     def solid_density(self, species):
         return self.cloud_material_data[species]['solid_density']
 
-    def surface_tension(self, species, temp):
+    def surface_tension_function(self, species):
         a = self.cloud_material_data[species]['surface_tension_A']
         b = self.cloud_material_data[species]['surface_tension_B']
         # check if data is available
         if a == 'x' or b == 'x':
             raise ValueError("No surface tension available for " + species)
-        return float(a) + float(b) * temp
+        def sig(temp):
+            float(a) + float(b) * temp
+        return sig
 
     def gibbs_free_energy(self, species, temp):
         return self.gibbs_janaf[species].interp({"temp_" + species: temp}).values
@@ -108,7 +110,7 @@ class DataStorage:
     # =======================================================================================
     #   Complex physical properties calculation (derived not read in)
     # =======================================================================================
-    def vapor_pressures(self, species, temp, metalicity=1):
+    def vapor_pressure_function(self, species, metalicity=1):
         """
         Data according to Lee et al. 2018 (A&A 614, A126)
 
@@ -121,12 +123,6 @@ class DataStorage:
 
         # short hand notation
         mh = metalicity
-
-        # Check if temp is an array, make it one if not
-        isarray = True
-        if isinstance(temp, float):
-            temp = np.asarray([temp])
-            isarray = False
 
         # if all data is available, just read it in
         if self.cloud_material_data[species]['data_complete'] == 'yes':
@@ -147,44 +143,62 @@ class DataStorage:
             f = float(self.cloud_material_data[species]['pvap_F'])
 
             # calculate vapor pressure using data from file
-            pvap = pref*base**(a/temp**2 + b/temp + c + d*temp + e*temp**2 + f*temp**3)
+            def pvap_func(temp):
+                return pref*base**(a/temp**2+b/temp+c+d*temp+e*temp**2+f*temp**3)
 
         # if there is a special case, treat it uniquely below
         elif self.cloud_material_data[species]['data_complete'] == 'special':
-            # many special cases have casese which require arryfication
-            pvap = np.zeros_like(temp)
 
             if species == 'C':
-                pvap[:] = np.exp(3.27860e1 - 8.65139e4 / (temp + 4.80395e-1))
+                def pvap_func(temp):
+                    return np.exp(3.27860e1 - 8.65139e4 / (temp + 4.80395e-1))
 
             elif species == 'CH4':
-                pvap[:] = 10 ** (3.9895 - 443.028 / (temp - 0.49)) * 1e6
+                def pvap_func(temp):
+                    return 10 ** (3.9895 - 443.028 / (temp - 0.49)) * 1e6
 
             elif species == 'Fe':
-                pvap[temp > 1800.0] = np.exp(9.86 - 37120.0 / temp[temp > 1800.0]) * 1e6
-                pvap[temp < 1800.0] = np.exp(15.71 - 47664.0 / temp[temp < 1800.0]) * 1e6
+                def pvap_func(temp):
+                    pvap = np.ones_like(temp)
+                    pvap[temp > 1800.0] = np.exp(9.86 - 37120.0 / temp[temp > 1800.0]) * 1e6
+                    pvap[temp < 1800.0] = np.exp(15.71 - 47664.0 / temp[temp < 1800.0]) * 1e6
+                    return pvap
 
             elif species == 'H2O':
-                temp_c = temp - 273.16
-                pvap[temp_c<0] = 6111.5 * np.exp((23.036*temp_c[temp_c<0] - temp_c[temp_c<0]**2/333.7) / (temp_c[temp_c<0] + 279.82))
-                pvap[temp_c>=0] = 6112.1 * np.exp((18.729*temp_c[temp_c<0] - temp_c[temp_c<0]**2/227.3) / (temp_c[temp_c<0] + 257.87))
+                def pvap_func(temp):
+                    pvap = np.ones_like(temp)
+                    temp_c = temp - 273.16
+                    pvap[temp_c<0] = 6111.5 * np.exp((23.036*temp_c[temp_c<0] - temp_c[temp_c<0]**2/333.7) / (temp_c[temp_c<0] + 279.82))
+                    pvap[temp_c>=0] = 6112.1 * np.exp((18.729*temp_c[temp_c<0] - temp_c[temp_c<0]**2/227.3) / (temp_c[temp_c<0] + 257.87))
+                    return pvap
 
             elif species == 'H2S': # Stull(1947)
-                pvap[:] = 10.0 ** (4.52887 - 958.587 / (temp - 0.539)) * 1e6
-                pvap[temp<212.8] = 10.0**(4.43681 - 829.439 / (temp[temp<212.8] - 25.412)) * 1e6
-                pvap[temp<30] = 10.0**(4.43681 - 829.439 / (30.0 - 25.412)) * 1e6
+                def pvap_func(temp):
+                    pvap = np.ones_like(temp)
+                    pvap[:] = 10.0 ** (4.52887 - 958.587 / (temp - 0.539)) * 1e6
+                    pvap[temp<212.8] = 10.0**(4.43681 - 829.439 / (temp[temp<212.8] - 25.412)) * 1e6
+                    pvap[temp<30] = 10.0**(4.43681 - 829.439 / (30.0 - 25.412)) * 1e6
+                    return pvap
 
             elif species == 'S2':
-                pvap[:] = np.exp(16.1 - 14000.0 / temp) * 1e6
-                pvap[temp<413.0] = np.exp(27.0 - 18500.0 / temp[temp<413.0]) * 1e6
+                def pvap_func(temp):
+                    pvap = np.ones_like(temp)
+                    pvap[:] = np.exp(16.1 - 14000.0 / temp) * 1e6
+                    pvap[temp<413.0] = np.exp(27.0 - 18500.0 / temp[temp<413.0]) * 1e6
+                    return pvap
 
             elif species == 'S8':
-                pvap[:] = np.exp(9.6 - 7510.0 / temp) * 1e6
-                pvap[temp<413.0] = np.exp(20.0 - 11800.0 / temp[temp<413.0]) * 1e6
+                def pvap_func(temp):
+                    pvap = np.ones_like(temp)
+                    pvap[:] = np.exp(9.6 - 7510.0 / temp) * 1e6
+                    pvap[temp<413.0] = np.exp(20.0 - 11800.0 / temp[temp<413.0]) * 1e6
+                    return pvap
 
             elif species == 'SiO2':
                 # this vapor pressure includes a metalicity correction
-                pvap = 10.0**(13.168 - 28265/temp)*1e6/mh  # SiO + H2O -> SiO2[s] + H2
+                def pvap_func(temp):
+                    pvap = 10.0**(13.168 - 28265/temp)*1e6/mh  # SiO + H2O -> SiO2[s] + H2
+                    return pvap
 
             else:
                 raise ValueError('The species "' + species + '" is flagged as special, but no '
@@ -194,11 +208,7 @@ class DataStorage:
         else:
             raise ValueError('Data for nucleating species "' + species + '" not complete.')
 
-        # If temp was not an array, return float
-        if not isarray:
-            pvap = pvap[0]
-
-        return pvap
+        return pvap_func
 
     def reaction_supersaturation(self, cloud_specie, gas_species_in,
                                 gas_species_out, temp):
