@@ -152,7 +152,8 @@ def add_nucleation_species(self, nucleation_species, initial_mmr=None):
     nuc_rate = get_nucleation_rate_function(self, r1, sig, pvap, mw)
 
     # ==== save the nucleation rate
-    self.nuc_reacs[nucleation_species] = {'k': nuc_rate, 'i':[nucleation_species]}
+    self.nuc_reacs[nucleation_species] = {'k': nuc_rate, 'i':nucleation_species,
+                                          'mw': mw}
 
     # ==== set mmrs
     set_initial_mmr(self, initial_mmr)
@@ -180,6 +181,14 @@ def add_accreation_reaction(self, cloud_species, gas_phase_reactants,
             self.idl_clmat.append(len(self.species)-1)
             self.idl_vsed.append(len(self.species)-1)
 
+    # ==== find and remember molecular weights
+    mwr = []
+    for spec in gas_phase_reactants:
+        mwr.append(self.datastorage.molecular_weight(spec))
+    mwp = []
+    for sepc in gas_phase_products:
+        mwp.append(self.datastorage.molecular_weight(sepc))
+
     # ==== get data of accreting species
     # vapor pressure function
     pvap = self.datastorage.vapor_pressure_function(cloud_species[:-3])
@@ -192,7 +201,7 @@ def add_accreation_reaction(self, cloud_species, gas_phase_reactants,
     # ==== save the nucleation rate
     name = 'reac_nr_' + str(acc_rec_nr)
     self.nuc_reacs[name] = {'k': acc_rate, 'i': gas_phase_reactants,
-                            'o': gas_phase_products}
+                            'o': gas_phase_products, 'mwr': mwr, 'mwp': mwp}
 
     # ==== set mmrs
     set_initial_mmr(self, initial_mmr)

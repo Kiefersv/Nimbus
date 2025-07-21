@@ -74,10 +74,10 @@ class Nimbus:
         # {"name": {'k':f(temp, pres), 'i': ['Si', 'O2'], 'o': ['SiO', 'O']}}
         self.chem_reacs = {}
         # dictionary of nucleation reactions, example
-        # {"name": {'k':f(n1, temp), 'i': ['SiO']}}
+        # {"name": {'k':f(n1, temp), 'i': 'SiO', 'mw': 44}}
         self.nuc_reacs = {}
         # dictionary of accreation reactions, example
-        # {"name": {'k':f(temp, ncl, n1), 'i': ['SiO'], 'o': ['SiO[s]']}}
+        # {"name": {'k':f(temp, ncl,), 'i': ['SiO'], 'o': ['SiO[s]']}}
         self.acc_reacs = {}
         # index lists for various purposes
         self.idl_clmat = []  # cloud particle materials

@@ -42,6 +42,20 @@ def set_up_solver(self):
     pdeep = ndeep * self.kb * self.temp  # deep partial pressure
     self.mask_psupsat = self.pvap / pdeep < 1  # mask where vapour can condense
 
+    # ==== prepare nucleation rates by adding indexes
+    for nreac in self.nuc_reacs:
+        idx = self.species.index(self.nuc_reacs[nreac]['i'])
+        self.nuc_reacs[nreac]['idx'] = idx
+
+    # ==== prepare accreation reates by adding indexes and mw
+    for areac in self.acc_reacs:
+        self.acc_reacs[areac]['idr'] = []  # indexes of reactants
+        self.acc_reacs[areac]['idp'] = []  # indexes of products
+        for re in self.acc_reacs[areac]['i']:
+            self.acc_reacs[areac]['idr'].append(self.species.index(re))
+        for re in self.acc_reacs[areac]['i']:
+            self.acc_reacs[areac]['idp'].append(self.species.index(re))
+
     # ==== Calculate initial radius
     self.rg = np.zeros_like(self.pres)
     for i, _ in enumerate(self.pres):
@@ -79,17 +93,17 @@ def set_up_solver(self):
         # default arrays
         d_dif = np.zeros_like(xw)  # diffusion terms
         d_adv = np.zeros_like(xw)  # advection terms
+        d_nuc = np.zeros_like(xw)  # nucleation terms
 
         # ==== Physical valuse ==========================================================
         ncl = xw[0] * self.rhoatmo / self.m_ccn  # cloud particle number density [1/cm3]
-        xc = np.sum(x[self.idl_clmat], axis=0)
+        xc = np.sum(x[self.idl_clmat], axis=0)  # total cloud mass mixing ratio [g/g]
         if self.static_rg:  # use static rg
             rg = self.rg  # cloud particle radius [cm]
         else: # calculate rg on the fly
             rg = mass_to_radius(self, xw[0], xc)  # cloud particle radius [cm]
             self.rg = rg
         vsed = self.vsed(rg)  # settling velocity [cm/s]
-        # TODO: n1
 
         # ==== Diffusion terms ==========================================================
         # !!! Note: Rounding errors prevents the definition of prefactors !!!
@@ -99,14 +113,31 @@ def set_up_solver(self):
 
         # ==== Advection terms ==========================================================
         # !!! Note: Rounding errors prevents the definition of prefactors !!!
-        # cloud material
         d_adv[self.idl_clmat, 0] = self.rhoatmo[0] * xc[self.idl_clmat, 0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
         d_adv[self.idl_clmat, -1] = 0
         d_adv[self.idl_clmat, 1:-1] = np.diff((self.rhoatmo * vsed * xc)[self.idl_clmat, :-1], axis=1) / self.dz[1:-1] / self.rhoatmo[1:-1]
 
         # ==== Nucleation terms =========================================================
+        for nreac in self.nuc_reacs:
+            idx = self.nuc_reacs[nreac]['idx']  # index of nucleating species
+            # number density of nucelating species [1/cm3]
+            n1 = xw[idx] * self.rhoatmo / self.nuc_reacs[nreac]['mw'] * self.avog
+            nuc_rate = self.nuc_reacs[nreac]['k'](n1, self.temp)  # [1/cm3/s]
+            d_nuc[0] = nuc_rate * self.m_ccn / self.rhoatmo  # add new cloud particles
+            d_nuc[idx] = - nuc_rate * self.m_ccn / self.rhoatmo  # remove gas phase
 
         # ==== Accretion terms ==========================================================
+        for areac in self.acc_reacs:
+            n_key = np.inf  # key species (lowest number density)
+            n_fac = 1  # supersaturation factor from number densities
+            for i, idr in enumerate(self.acc_reacs[areac]['idr']):
+                # find number density of each reactant [1/cm3]
+                nr = xw[idr] * self.rhoatmo / self.nuc_reacs[nreac]['mwr'][i] * self.avog
+                if nr < n_key: n_key = nr  # find smallest reactant
+                n_fac *= nr
+            for i, idp in enumerate(self.acc_reacs[areac]['idp']):
+                nr = xw[idp] * self.rhoatmo / self.nuc_reacs[nreac]['mwp'][i] * self.avog
+                n_fac /= nr
 
         # ==== source terms =============================================================
         dxv_src = - acc_rate * self.m1 / self.rhoatmo - nuc_rate * self.m_ccn / self.rhoatmo
