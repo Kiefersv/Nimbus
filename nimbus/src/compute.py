@@ -8,7 +8,7 @@ from time import time
 from .plotter import plot_initial_conditions, plot_full_structure
 from .solver import set_initial_condidtions, set_up_solver
 from .data_storage import save_run
-from .atmosphere_physics import mass_to_radius
+from .atmosphere_physics import mass_to_radius, get_rhop
 
 def compute(self, type='convergence', rel_dif_in_mmr=1e-3, max_itterations=None,
             save_file=None, tag=None):
@@ -85,7 +85,8 @@ def compute(self, type='convergence', rel_dif_in_mmr=1e-3, max_itterations=None,
         self.isset_solver = True
 
     # initial conditions
-    yin = set_initial_condidtions(self)  # load initial conditions
+    # yin = set_initial_condidtions(self)  # load initial conditions
+    yin = self.x0.flatten()
     # plot initial conditions
     if self.do_plots:
         plot_initial_conditions(self, yin)
@@ -129,8 +130,9 @@ def compute(self, type='convergence', rel_dif_in_mmr=1e-3, max_itterations=None,
             # ==== prepare next run
             yin = sol.y[:, -1]  # set initial conditions to last run
             # calculate acutal radius from output
+            rhop = get_rhop(self, yin.reshape((len(self.species), self.sz)))  # mixed cloud particle dnesity [g/cm3]
             rg = mass_to_radius(self, sol.y[self.sz * 2:, -1],
-                                sol.y[self.sz:self.sz * 2, -1])
+                                sol.y[self.sz:self.sz * 2, -1], rhop)
             # find out if there are enough data points for full polynomial degree
             deg_fit = self.rg_fit_deg
             if sum(self.mask_psupsat) - 1 < self.rg_fit_deg:

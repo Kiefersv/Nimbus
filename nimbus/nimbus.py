@@ -60,7 +60,7 @@ class Nimbus:
 
         # ==== Default solver settings (can be changed with set_solver_settings())
         self.tstart = 1e-4  # start time of simulation [s]
-        self.tend = 1e15  # end time of simulation [s]
+        self.tend = 1e10  # end time of simulation [s]
         self.tsteps = 20  # number of intermediated evaluations (log-spaced)
         self.ode_rtol = 1e-6  # relative error of solve_ivp
         self.ode_atol = 1e-25  # absolute error of solve_ivp
@@ -82,6 +82,8 @@ class Nimbus:
         # index lists for various purposes
         self.idl_clmat = []  # cloud particle materials
         self.idl_vsed = [0]  # species that gravitationally settle
+        # data tied to index lists
+        self.clmat_rhop = []  # cloud particle densities
 
         # ==== Misc settings
         self.rg_fit_deg = 8  # degree of the polynomial to fit the ittarative radius

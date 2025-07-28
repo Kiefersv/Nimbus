@@ -5,11 +5,9 @@ or added.
 
 import numpy as np
 
-def define_atmosphere_physics(self):
+def get_settling_velocity_function(self):
     """
-    Set up all functions that handle the microphysics of cloud formation. This includes:
-        - Nucleation rate (Available: MCNT)
-        - Growth rate (Available: SW)
+    Function to prepare settling velocity functions.
     :param self: Nimbus class object
     """
 
@@ -21,16 +19,20 @@ def define_atmosphere_physics(self):
     Settling velocity of cloud particles
 
     :param rg: cloud particle size [cm]
+    :param temp: temperature [K]
     :return: terminal cloud particle settling velocity [cm/s] 
     """
 
-    def _vsed_exolyn(rg):
+    def _vsed_exolyn(rg, rhop, temp):
         """
         Settling velocity taken from ExoLyn (Huang et al. 2024):
         Citation:  	https://doi.org/10.1051/0004-6361/202451112
         Link: https://github.com/helonghuangastro/exolyn
         """
-        vsed = (self.gravity * rg * self.rhop / (self.vth * self.rhoatmo) *
+        # ==== Physical parameters
+        vth = np.sqrt(self.rgas * temp / (2 * np.pi * self.mmw))  # thermal velocity [cm/s]
+        # ==== settling velocity
+        vsed = (self.gravity * rg * rhop / (vth * self.rhoatmo) *
                 np.sqrt(1 + (4 * rg / (9 * self.lmfp)) ** 2))
         return vsed
 
@@ -80,45 +82,7 @@ def define_atmosphere_physics(self):
 
         return vfall_r
 
-    # # ===================================================================================
-    # #  Coagoulation rate
-    # # ===================================================================================
-    # # Not implemented yet
-    # def _coag_mini_cloud(rg):
-    #
-    #     # atmospheric viscosity (dyne s/cm^2) from VIRGA
-    #     # EQN B2 in A & M 2001, originally from Rosner+2000
-    #     # Rosner, D. E. 2000, Transport Processes in Chemically Reacting Flow Systems (Dover: Mineola)
-    #     visc = (5. / 16. * np.sqrt(np.pi * self.kb * self.temp * (self.mmw / self.avog)) /
-    #             self.cs_mol / (1.22 * (self.temp / self.ps_k) ** (-0.16)))
-    #
-    #     # Knudsen number
-    #     Kn = self.lmfp/rg
-    #
-    #     # cloud particle mass
-    #     m_c = np.maximum(4/3 * np.pi *rg**3 * self.rhop, self.m_ccn)
-    #
-    #     # Cunningham slip factor (Kim et al. 2005)
-    #     Kn_b = min(Kn, 100.0)
-    #     beta = 1.0 + Kn_b*(1.165 + 0.483 * np.exp(-0.997/Kn_b))
-    #
-    #     # Particle diffusion rate
-    #     D_r = (self.kb*self.temp*beta)/(6.0*np.pi*visc*rg)
-    #
-    #     # Thermal velocity limit rate
-    #     V_r = np.sqrt((8.0*self.kb*self.temp)/(np.pi*m_c))
-    #
-    #     # Moran (2022) method using diffusive Knudsen number
-    #     Knd = (8.0*D_r)/(np.pi*V_r*rg)
-    #     phi = 1.0/np.sqrt(1.0 + np.pi**2/8.0 * Knd**2)
-    #     f_coag = (-4.0*self.kb*self.temp*beta)/(3.0*visc) * phi
-    #
-    #     return f_coag
-
-    # ===================================================================================
-    #  Set functions
-    # ===================================================================================
-    self.vsed = _vsed_exolyn  # terminal settling velocity
+    return _vsed_exolyn
 
 # =======================================================================================
 #  Nucleation rates
@@ -252,20 +216,18 @@ def get_nucleation_rate_function(self, r1, sig, pvap, mw):
 # =======================================================================================
 #  Accretion rates
 # =======================================================================================
-def get_accretion_rate_function(self, r1, pvap, mw):
+def get_accretion_rate_prefactor(self, r1, pvap, mw):
 
-    # Note: all nucleation rate functions must be of the form f(rg, temp, n1, ncl) and
+    # Note: all nucleation rate functions must be of the form f(rg, temp) and
     # have the follwing header:
     """
     :param rg: cloud particle size [cm]
     :param temp: temperature [K]
-    :param n1: number density of cloud forming material [1/cm3]
-    :param ncl: cloud particle number density [1/cm3]
 
     :return: accretion rate [1/cm3]
     """
 
-    def _acc_rate_mini_cloud(rg, temp, n1, ncl):
+    def _acc_rate_mini_cloud(rg, temp):
         """
         Accretion rate following Lee (2023):
         Citation: https://doi.org/10.1093/mnras/stad2037
@@ -273,7 +235,6 @@ def get_accretion_rate_function(self, r1, pvap, mw):
         """
 
         # ==== Physical parameters
-        p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
         vth = np.sqrt(self.rgas * temp / (2 * np.pi * mw))  # thermal velocity [cm/s]
 
         # ==== Gaseous diffusion constant
@@ -284,37 +245,34 @@ def get_accretion_rate_function(self, r1, pvap, mw):
 
         # ==== Accreation rate in two limits
         # high knudsen number limit
-        dmdt_high = 4*np.pi * rg**2 * n1 * ncl * vth * (1 - pvap(temp)/p1)
+        dmdt_high = 4*np.pi * rg**2 * vth
         # low knudsen number limit
-        dmdt_low = 4*np.pi * rg * n1 * ncl * diff_const * (1 - pvap(temp)/p1)
+        dmdt_low = 4*np.pi * rg * diff_const
         # interpolate
         val_low = np.maximum(dmdt_low, 1e-30)
         val_high = np.maximum(dmdt_high, 1e-30)
         # fx = 0.5 * (1.0 - np.tanh(2.0*np.log10(val_low/val_high)))
         # dmdt = dmdt_low * fx + dmdt_high * (1.0 - fx)
-        dmdt = 1/(1/val_low + 1/val_high)  # changed interpolation scheme
+        dmdt_pref = 1/(1/val_low + 1/val_high)  # changed interpolation scheme
 
         # ==== fudge with accretion rate (No fudge: self.nuc_rate_fudge = 1)
-        dmdt *= self.acc_rate_fudge
+        dmdt_pref *= self.acc_rate_fudge
 
-        return dmdt
+        return dmdt_pref
 
-    def _acc_rate_sw(rg, temp, n1, ncl):
+    def _acc_rate_sw(rg, temp):
         """
         Accretion rate following Helling et al. (2006) assuming collisional regim:
         Citation: https://www.aanda.org/10.1051/0004-6361:20054598
         """
 
-        # ==== Physical parameters
-        p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
-
         # ==== growth rate
-        growth_rate = 4*np.pi * rg**2 * n1 * ncl * self.vth * (1 - pvap(temp)/p1)
+        growth_rate_pref = 4*np.pi * rg**2 * self.vth
 
         # ==== fudge with accretion rate (No fudge: self.nuc_rate_fudge = 1)
-        growth_rate *= self.acc_rate_fudge
+        growth_rate_pref *= self.acc_rate_fudge
 
-        return growth_rate
+        return growth_rate_pref
 
     # return the accretion rate function for later use (all parameters fixed)
     return _acc_rate_mini_cloud
@@ -323,7 +281,7 @@ def get_accretion_rate_function(self, r1, pvap, mw):
 #  Fixed functions that don't need to be changed
 # =======================================================================================
 
-def mass_to_radius(self, xn, xc):
+def mass_to_radius(self, xn, xc, rhop):
     """
     Calculate cloud particle radius from mass
 
@@ -340,6 +298,59 @@ def mass_to_radius(self, xn, xc):
         Cloud particle radius [cm]
     """
     mp = np.nan_to_num(xc * self.m_ccn / xn)  # cloud particle mass [g]
-    rg = np.cbrt(3 * mp / (4 * np.pi * self.rhop)) # cloud particle radius [cm]
+    rg = np.cbrt(3 * mp / (4 * np.pi * rhop)) # cloud particle radius [cm]
     rg = np.maximum(rg, self.r_ccn)  # prevent low values
     return rg
+
+def get_rhop(self, x):
+    """
+    Calcualte density of mixed cloud particle.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Cloud particle mass mixing ratio [g/g]
+    """
+    vtot_p_rhoatmo = np.sum(x[self.idl_clmat] / self.clmat_rhop)
+    mtot_p_rhoatmo = np.sum(x[self.idl_clmat])
+    return mtot_p_rhoatmo / vtot_p_rhoatmo
+
+
+# # ===================================================================================
+# #  Coagoulation rate
+# # ===================================================================================
+# # Not implemented yet
+# def _coag_mini_cloud(rg):
+#
+#     # atmospheric viscosity (dyne s/cm^2) from VIRGA
+#     # EQN B2 in A & M 2001, originally from Rosner+2000
+#     # Rosner, D. E. 2000, Transport Processes in Chemically Reacting Flow Systems (Dover: Mineola)
+#     visc = (5. / 16. * np.sqrt(np.pi * self.kb * self.temp * (self.mmw / self.avog)) /
+#             self.cs_mol / (1.22 * (self.temp / self.ps_k) ** (-0.16)))
+#
+#     # Knudsen number
+#     Kn = self.lmfp/rg
+#
+#     # cloud particle mass
+#     m_c = np.maximum(4/3 * np.pi *rg**3 * self.rhop, self.m_ccn)
+#
+#     # Cunningham slip factor (Kim et al. 2005)
+#     Kn_b = min(Kn, 100.0)
+#     beta = 1.0 + Kn_b*(1.165 + 0.483 * np.exp(-0.997/Kn_b))
+#
+#     # Particle diffusion rate
+#     D_r = (self.kb*self.temp*beta)/(6.0*np.pi*visc*rg)
+#
+#     # Thermal velocity limit rate
+#     V_r = np.sqrt((8.0*self.kb*self.temp)/(np.pi*m_c))
+#
+#     # Moran (2022) method using diffusive Knudsen number
+#     Knd = (8.0*D_r)/(np.pi*V_r*rg)
+#     phi = 1.0/np.sqrt(1.0 + np.pi**2/8.0 * Knd**2)
+#     f_coag = (-4.0*self.kb*self.temp*beta)/(3.0*visc) * phi
+#
+#     return f_coag
+
+# ===================================================================================
+#  Set functions
+# ===================================================================================

@@ -3,8 +3,8 @@
 import numpy as np
 from scipy.optimize import root_scalar
 
-from .atmosphere_physics import (define_atmosphere_physics, get_nucleation_rate_function,
-                                 get_accretion_rate_function)
+from .atmosphere_physics import (get_nucleation_rate_function,
+                                 get_accretion_rate_prefactor)
 from .species_database import DataStorage
 
 # ==== file variables
@@ -51,9 +51,6 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, metalicity
     self.mh = metalicity  # metalicity relative to solar (not log!) [None]
     self.mixed = mixed_clouds  # if true, clouds are mixed
 
-    # ==== Set nucleation rate, accretion rate, and settling velocity
-    define_atmosphere_physics(self)
-
     # ==== currently hardcoded for SiO, later this will be input
     ds = DataStorage()  # open the data storage
     self.datastorage = ds  # remember the class
@@ -81,7 +78,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, metalicity
     self.natmo = self.pres / self.temp / self.kb  # total gas-phase number density [1/cm3]
     self.rhoatmo = self.mmw * self.pres / self.temp / self.rgas  # atmospheric density [g/cm]
     self.m_ccn = 4 / 3 * np.pi * self.r_ccn ** 3 * self.rho_ccn  # ccn mass [g]
-    lmfpfac = np.sqrt(2) * self.rhoatmo * self.cs_mol
+    lmfpfac = np.sqrt(2) * self.rhoatmo * self.cs_mol  # factor for mean free path length
     self.lmfp = self.mmw / self.avog / lmfpfac  # mean free path length [cm]
     self.h = self.rgas * self.temp / self.gravity / self.mmw  # scale height [cm]
     self.ct = np.sqrt(2 * self.rgas * self.temp / self.mmw)  # sound speed [cm/s]
@@ -136,8 +133,11 @@ def add_nucleation_species(self, nucleation_species, initial_mmr=None):
     # ==== check if nucleating species already exists
     if nucleation_species not in self.species:
         self.species.append(nucleation_species)
+        self.initial_mmrs.append(0)
     if nucleation_species + '[s]' not in self.species:
         self.species.append(nucleation_species + '[s]')
+        self.initial_mmrs.append(0)
+        self.clmat_rhop = self.datastorage.solid_density(nucleation_species)
         self.idl_clmat.append(len(self.species)-1)
         self.idl_vsed.append(len(self.species)-1)
 
@@ -174,12 +174,18 @@ def add_accreation_reaction(self, cloud_species, gas_phase_reactants,
     """
 
     # ==== check if all involved species already exists
-    all = [cloud_species] + gas_phase_products + gas_phase_reactants
+    if cloud_species not in self.species:
+        self.species.append(cloud_species + '[s]')
+        self.initial_mmrs.append(0)
+        self.clmat_rhop = self.datastorage.solid_density(cloud_species)
+        self.idl_clmat.append(len(self.species)-1)
+        self.idl_vsed.append(len(self.species)-1)
+        self.initial_mmrs[cloud_species + '[s]'] = 0
+    all = gas_phase_products + gas_phase_reactants
     for spec in all:
         if spec not in self.species:
             self.species.append(spec)
-            self.idl_clmat.append(len(self.species)-1)
-            self.idl_vsed.append(len(self.species)-1)
+            self.initial_mmrs.append(0)
 
     # ==== find and remember molecular weights
     mwr = []
@@ -193,15 +199,16 @@ def add_accreation_reaction(self, cloud_species, gas_phase_reactants,
     # vapor pressure function
     pvap = self.datastorage.vapor_pressure_function(cloud_species[:-3])
     r1 = self.datastorage.monomer_radius(cloud_species[:-3])
-    mw = self.datastorage.molecular_weight(cloud_species[:-3])
+    mwc = self.datastorage.molecular_weight(cloud_species[:-3])
 
     # ==== get the vapor pressure function and the nucleation rate
-    acc_rate = get_accretion_rate_function(self, r1, pvap, mw)
+    acc_pref = get_accretion_rate_prefactor(self, r1, pvap, mwc)
 
-    # ==== save the nucleation rate
+    # ==== save the accretion rate
     name = 'reac_nr_' + str(acc_rec_nr)
-    self.nuc_reacs[name] = {'k': acc_rate, 'i': gas_phase_reactants,
-                            'o': gas_phase_products, 'mwr': mwr, 'mwp': mwp}
+    self.acc_reacs[name] = {'k': acc_pref, 'c': cloud_species, 'i': gas_phase_reactants,
+                            'o': gas_phase_products, 'mwr': mwr, 'mwp': mwp, 'mwc': mwc,
+                            'pvap': pvap}
 
     # ==== set mmrs
     set_initial_mmr(self, initial_mmr)

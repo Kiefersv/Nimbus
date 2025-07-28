@@ -101,7 +101,7 @@ class DataStorage:
         if a == 'x' or b == 'x':
             raise ValueError("No surface tension available for " + species)
         def sig(temp):
-            float(a) + float(b) * temp
+            return float(a) + float(b) * temp
         return sig
 
     def gibbs_free_energy(self, species, temp):
