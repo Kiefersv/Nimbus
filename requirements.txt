@@ -4,3 +4,5 @@ xarray
 matplotlib
 pandas
 astropy
+netcdf4
+h5netcdf
