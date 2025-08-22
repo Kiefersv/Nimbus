@@ -2,7 +2,6 @@ import os
 import numpy as np
 from nimbus import Nimbus
 
-
 def test_nimbus():
     # ==== Example values
     # temperature = np.asarray([554, 572, 607, 653, 775, 951, 1073, 1111, 1540, 2654])
