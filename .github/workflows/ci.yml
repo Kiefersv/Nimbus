@@ -35,8 +35,8 @@ jobs:
         shell: bash -l {0}
         run: |
           pytest --cov= ci_test/*
-      - name: Upload coverage reports to Codecov
-          uses: codecov/codecov-action@v5
-          with:
-            token: ${{ secrets.CODECOV_TOKEN }}
-            slug: Kiefersv/Nimbus
+      - name: Upload code coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: Kiefersv/Nimbus
