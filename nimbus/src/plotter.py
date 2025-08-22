@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import pandas as pd
-import virga.justdoit as jdi
 import astropy.units as u
 
 #   universal gas constant (erg/mol/K)

@@ -2,3 +2,5 @@ numpy
 scipy
 xarray
 matplotlib
+pandas
+astropy
