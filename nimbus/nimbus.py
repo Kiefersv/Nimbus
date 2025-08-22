@@ -16,7 +16,7 @@ class Nimbus:
 
     # ==== import the main compuational function
     from .src.compute import compute
-    from .src.compute_ddw import compute_ddw
+    # from .src.compute_ddw import compute_ddw
 
     # ==== import solver settings
     from .src.settings import set_cloud_settings, set_solver_settings, set_fudge_settings
@@ -78,7 +78,7 @@ class Nimbus:
         # ==== Fudge factors to play around with simulation
         # IMPORTANT: The default values here correspond to a non-fudged run
         self.nuc_rate_fudge = 1  # factor to reduce or increase nucleation rate
-        self.acc_rate_fudge = 1  # factor to reduce or increase growth rate
+        self.sticking_coefficient = 1  # of collisional accreatin reaction rates
 
         # ==== Welcom message
         print('===========================================================')

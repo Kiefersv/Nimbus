@@ -162,6 +162,7 @@ def define_atmosphere_physics(self):
         # ==== Accreation rate in two limits
         # high knudsen number limit
         dmdt_high = 4*np.pi * rg**2 * n1 * ncl * self.vth * (1 - self.pvap/p1)
+        dmdt_high *= self.sticking_coefficient
         # low knudsen number limit
         dmdt_low = 4*np.pi * rg * n1 * ncl * diff_const * (1 - self.pvap/p1)
         # interpolate
@@ -172,7 +173,7 @@ def define_atmosphere_physics(self):
         dmdt = 1/(1/val_low + 1/val_high)  # changed interpolation scheme
 
         # ==== fudge with accretion rate (No fudge: self.nuc_rate_fudge = 1)
-        dmdt *= self.acc_rate_fudge
+        # dmdt *= self.acc_rate_fudge
 
         return dmdt
 

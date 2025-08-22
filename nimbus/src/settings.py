@@ -23,8 +23,11 @@ def set_cloud_settings(
 
 def set_fudge_settings(
         self, nucleation_rate_fudge=None, accreation_rate_fudge=None,
+        sticking_coefficient=None,
 ):
     if not isinstance(nucleation_rate_fudge, type(None)):
         self.nuc_rate_fudge = nucleation_rate_fudge
     if not isinstance(accreation_rate_fudge, type(None)):
-        self.acc_rate_fudge = accreation_rate_fudge
+        self.sticking_coefficient = accreation_rate_fudge
+    if not isinstance(sticking_coefficient, type(None)):
+        self.sticking_coefficient = sticking_coefficient
