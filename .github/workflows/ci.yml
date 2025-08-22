@@ -35,13 +35,8 @@ jobs:
         shell: bash -l {0}
         run: |
           pytest --cov= ci_test/*
-      - name: Upload code coverage to Codecov
-        uses: codecov/codecov-action@v1
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        with:
-          file: ./coverage.xml
-          flags: unittests
-          env_vars: OS,PYTHON
-          name: codecov-umbrella
-          fail_ci_if_error: false
+      - name: Upload coverage reports to Codecov
+          uses: codecov/codecov-action@v5
+          with:
+            token: ${{ secrets.CODECOV_TOKEN }}
+            slug: Kiefersv/Nimbus
