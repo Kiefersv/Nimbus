@@ -15,6 +15,21 @@ def test_nimbus():
     deepmmr = 1e-3
     fsed = 1
 
+    # variables for spectra
+    m_planet = 0.12  # in jupiter mass (Anderson et al. 2017)
+    r_planet = 0.94  # in jupiter radii (Anderson et al. 2017)
+    r_star = 0.67  # in solar radii (Piaulet et al. 2022)
+    t_star = 4425  # in K (Piaulet et al. 2022)
+    mh_star = 0.02  # in solar metalicity (Piaulet et al. 2022)
+    logg_star = 4.633  # in cgs (Piaulet et al. 2022)
+    distance = 64.7  # not used
+    # chemistry from ARCiS fit
+    chem = {
+        'H2O': np.ones_like(pressure) * 1e-2,
+        'H2S': np.ones_like(pressure) * 1e-3,
+        'NH3': np.ones_like(pressure) * 1e-5,
+    }
+
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True, create_analytic_plots=True)
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, fsed, species, deepmmr)
@@ -45,7 +60,13 @@ def test_nimbus():
     assert np.isclose(np.sum(y), 1.4858344032895963e-05)
     os.remove('test.nc')
 
-    # ==== simple breack down test
+    #==== spectra calc test
+    obj.set_up_spectra_calculation(m_planet, r_planet, t_star, r_star, mh_star, logg_star)
+    w, t = obj.plot_spectrum(type='transmission', chem_data=chem)
+    assert np.isclose(np.sum(w), 1482.0602667598862)
+    assert np.isclose(np.sum(t), 1064754.0876068077)
+
+
 
 def test_solversetters():
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
@@ -65,9 +86,6 @@ def test_solversetters():
                            sticking_coefficient=1)
     assert obj.nuc_rate_fudge == 1
     assert obj.sticking_coefficient == 1
-
-
-
 
 def test_datastorage():
     ds = DataStorage()
