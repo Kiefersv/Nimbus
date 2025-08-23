@@ -10,7 +10,7 @@ Nimbus is based on the following publication:
 
 And the following people have contributed:
 
-- `Sven Kiefer <https://https://kiefersv.github.io/>`_
+- `Sven Kiefer <https://kiefersv.github.io/>`_
 
 .. toctree::
    :maxdepth: 1
