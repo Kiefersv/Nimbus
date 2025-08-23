@@ -49,6 +49,13 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+mathjax_config = {
+    "TeX": {
+        "equationNumbers": {"autoNumber": "AMS"},
+        "extensions": ["AMSmath.js", "AMSsymbols.js"],
+    }
+}
+
 # https://stackoverflow.com/questions/12206334/sphinx-autosummary-toctree-contains-reference-to-nonexisting-document-warnings
 # numpydoc_show_class_members = False
 
