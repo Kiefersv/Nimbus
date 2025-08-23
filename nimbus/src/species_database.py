@@ -167,7 +167,7 @@ class DataStorage:
             elif species == 'H2O':
                 temp_c = temp - 273.16
                 pvap[temp_c<0] = 6111.5 * np.exp((23.036*temp_c[temp_c<0] - temp_c[temp_c<0]**2/333.7) / (temp_c[temp_c<0] + 279.82))
-                pvap[temp_c>=0] = 6112.1 * np.exp((18.729*temp_c[temp_c<0] - temp_c[temp_c<0]**2/227.3) / (temp_c[temp_c<0] + 257.87))
+                pvap[temp_c>=0] = 6112.1 * np.exp((18.729*temp_c[temp_c>=0] - temp_c[temp_c>=0]**2/227.3) / (temp_c[temp_c>=0] + 257.87))
 
             elif species == 'H2S': # Stull(1947)
                 pvap[:] = 10.0 ** (4.52887 - 958.587 / (temp - 0.539)) * 1e6

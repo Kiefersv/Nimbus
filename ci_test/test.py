@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from nimbus import Nimbus
+from nimbus import Nimbus, DataStorage
 
 def test_nimbus():
     # ==== Example values
@@ -35,3 +35,24 @@ def test_nimbus():
     ds = obj.load_previous_run('test.nc')
     y = np.asarray([ds['qc']]).T
     assert np.isclose(np.sum(y), 1.4858344032895963e-05)
+    os.remove('test.nc')
+
+def test_datastorage():
+    ds = DataStorage()
+    temp = np.asarray([500])
+    vp = ds.vapor_pressures('C', temp+3000)
+    assert np.isclose(np.sum(vp), 0)
+    vp = ds.vapor_pressures('CH4', temp)
+    assert np.isclose(np.sum(vp), 1266411405)
+    vp = ds.vapor_pressures('Fe', temp+3000)
+    assert np.isclose(np.sum(vp), 0)
+    vp = ds.vapor_pressures('H2O', temp)
+    assert np.isclose(np.sum(vp), 24544251)
+    vp = ds.vapor_pressures('H2S', temp)
+    assert np.isclose(np.sum(vp), 407030596)
+    vp = ds.vapor_pressures('S2', temp)
+    assert np.isclose(np.sum(vp), 6)
+    vp = ds.vapor_pressures('S8', temp)
+    assert np.isclose(np.sum(vp), 4427)
+    vp = ds.vapor_pressures('SiO2', temp+1000)
+    assert np.isclose(np.sum(vp), 2.111867499419599)
