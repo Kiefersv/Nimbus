@@ -84,7 +84,7 @@ def plot_full_structure(self, y, title=''):
     plt.xlabel('various')
     # plt.savefig(self.working_dir + '/ap_structure_' + title + '.png')
     plt.savefig(self.working_dir + '/ap_structure.png')
-    plt.show()
+    # plt.show()
     plt.close()
 
 def plot_initial_conditions(self, x0):

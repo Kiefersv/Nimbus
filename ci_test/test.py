@@ -16,7 +16,7 @@ def test_nimbus():
     fsed = 1
 
     # ==== set up nimbus itteratively
-    obj = Nimbus(working_dir='working/', verbose=True)
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True, create_analytic_plots=True)
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, fsed, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(type='iterate', max_itterations=3)
@@ -24,7 +24,7 @@ def test_nimbus():
     assert np.isclose(np.sum(y), 4.855594052733314e-05)
 
     # ==== set up nimbus itteratively
-    obj = Nimbus(working_dir='working/')
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, fsed, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(type='convergence', rel_dif_in_mmr=1e-3, save_file='test')
@@ -40,7 +40,7 @@ def test_nimbus():
     # ==== simple breack down test
 
 def test_solversetters():
-    obj = Nimbus(working_dir='working/')
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
 
     obj.set_solver_settings(initial_time_for_solver=1, end_time_for_solver=2,
         evaluation_steps_for_solver=3, degree_of_radius_polinomial=4)
