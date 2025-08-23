@@ -15,11 +15,23 @@ def test_nimbus():
     deepmmr = 1e-3
     fsed = 1
 
-    # ==== set up nimbus
+    # ==== set up nimbus itteratively
     obj = Nimbus(working_dir='working/')
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, fsed, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(type='iterate', max_itterations=3)
     y = np.asarray([ds['qc']]).T
-
     assert np.isclose(np.sum(y), 4.855594052733314e-05)
+
+    # ==== set up nimbus itteratively
+    obj = Nimbus(working_dir='working/')
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, fsed, species, deepmmr)
+    obj.set_up_solver()
+    ds = obj.compute(type='convergence', rel_dif_in_mmr=1e-3, save_file='test')
+    y = np.asarray([ds['qc']]).T
+    assert np.isclose(np.sum(y), 1.4858344032895963e-05)
+
+    # ==== load previous run
+    ds = obj.load_previous_run('test.nc')
+    y = np.asarray([ds['qc']]).T
+    assert np.isclose(np.sum(y), 1.4858344032895963e-05)
