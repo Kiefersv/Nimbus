@@ -65,6 +65,7 @@ def test_nimbus():
     w, t = obj.plot_spectrum(type='transmission', chem_data=chem)
     assert np.isclose(np.sum(w), 1482.0602667598862)
     assert np.isclose(np.sum(t), 1064754.0876068077)
+    os.remove(os.path.dirname(__file__) + '/working/transmission_spectrum.png')
 
 
 
