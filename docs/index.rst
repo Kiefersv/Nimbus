@@ -6,4 +6,13 @@ Credit
 ------
 Cite ??
 
+Index
+-----
+.. toctree::
+   :maxdepth: 1
+   :caption: Contents
+
+   Install_And_Quick_Start.ipynb
+   Physics_of_Nimbus.ipynb
+
 
