@@ -16,7 +16,7 @@ def test_nimbus():
     fsed = 1
 
     # ==== set up nimbus itteratively
-    obj = Nimbus(working_dir='working/')
+    obj = Nimbus(working_dir='working/', verbose=True)
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, fsed, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(type='iterate', max_itterations=3)
@@ -37,10 +37,34 @@ def test_nimbus():
     assert np.isclose(np.sum(y), 1.4858344032895963e-05)
     os.remove('test.nc')
 
+    # ==== simple breack down test
+
+def test_solversetters():
+    obj = Nimbus(working_dir='working/')
+
+    obj.set_solver_settings(initial_time_for_solver=1, end_time_for_solver=2,
+        evaluation_steps_for_solver=3, degree_of_radius_polinomial=4)
+    assert obj.tstart == 1
+    assert obj.tend == 2
+    assert obj.tsteps == 3
+    assert obj.rg_fit_deg == 4
+
+    obj.set_cloud_settings(minimum_cloud_particle_radius=1, molecular_cross_section=2)
+    assert obj.r_ccn == 1
+    assert obj.cs_mol == 2
+
+    obj.set_fudge_settings(nucleation_rate_fudge=1, accreation_rate_fudge=1,
+                           sticking_coefficient=1)
+    assert obj.nuc_rate_fudge == 1
+    assert obj.sticking_coefficient == 1
+
+
+
+
 def test_datastorage():
     ds = DataStorage()
     temp = np.asarray([500])
-    vp = ds.vapor_pressures('C', temp+3000)
+    vp = ds.vapor_pressures('C', 3500)
     assert np.isclose(np.sum(vp), 3200)
     vp = ds.vapor_pressures('CH4', temp)
     assert np.isclose(np.sum(vp), 1266411405)

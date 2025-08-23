@@ -124,7 +124,7 @@ class DataStorage:
 
         # Check if temp is an array, make it one if not
         isarray = True
-        if isinstance(temp, float):
+        if isinstance(temp, float) or isinstance(temp, int):
             temp = np.asarray([temp])
             isarray = False
 
@@ -200,36 +200,36 @@ class DataStorage:
 
         return pvap
 
-    def reaction_supersaturation(self, cloud_specie, gas_species_in,
-                                gas_species_out, temp):
-        """
-        Calculate teh reaction supersaturation according to Kiefer et al. 2024a
-
-        :param cloud_specie: str, name of cloud specie (should end in [s])
-        :param species_in: Dict including names and VMR of Reactants
-            Example: {'H2O': 2e-2, 'H2O': 2e-2, 'SiO': 1e-3}
-        :param temp: Dict including names and VMR of (excluding solid)
-        :return:
-            pvap : vapor pressure
-        """
-
-        # ==== energy of formation
-        e_form = -self.gibbs_free_energy(cloud_specie, temp)
-        for ins in gas_species_in:
-            e_form += self.gibbs_free_energy(ins, temp)
-        for outs in gas_species_out:
-            e_form -= self.gibbs_free_energy(outs, temp)
-
-        # ==== number density prefactor
-        n_fac = 1
-        for ins in gas_species_in:
-            n_fac *= gas_species_in[ins]
-        for outs in gas_species_out:
-            n_fac /= gas_species_out[outs]
-
-        # ==== reference pressure factor
-        pow = len(gas_species_out) - len(gas_species_in)
-        p_fac = (self.pf / self.kb / temp)**pow
-
-        # ==== reaction super saturation
-        return n_fac * p_fac * np.exp(e_form/self.rgas/temp)
+    # def reaction_supersaturation(self, cloud_specie, gas_species_in,
+    #                             gas_species_out, temp):
+    #     """
+    #     Calculate teh reaction supersaturation according to Kiefer et al. 2024a
+    #
+    #     :param cloud_specie: str, name of cloud specie (should end in [s])
+    #     :param species_in: Dict including names and VMR of Reactants
+    #         Example: {'H2O': 2e-2, 'H2O': 2e-2, 'SiO': 1e-3}
+    #     :param temp: Dict including names and VMR of (excluding solid)
+    #     :return:
+    #         pvap : vapor pressure
+    #     """
+    #
+    #     # ==== energy of formation
+    #     e_form = -self.gibbs_free_energy(cloud_specie, temp)
+    #     for ins in gas_species_in:
+    #         e_form += self.gibbs_free_energy(ins, temp)
+    #     for outs in gas_species_out:
+    #         e_form -= self.gibbs_free_energy(outs, temp)
+    #
+    #     # ==== number density prefactor
+    #     n_fac = 1
+    #     for ins in gas_species_in:
+    #         n_fac *= gas_species_in[ins]
+    #     for outs in gas_species_out:
+    #         n_fac /= gas_species_out[outs]
+    #
+    #     # ==== reference pressure factor
+    #     pow = len(gas_species_out) - len(gas_species_in)
+    #     p_fac = (self.pf / self.kb / temp)**pow
+    #
+    #     # ==== reaction super saturation
+    #     return n_fac * p_fac * np.exp(e_form/self.rgas/temp)
