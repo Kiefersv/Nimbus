@@ -1,8 +1,8 @@
+""" Functions for diagnostic plotting """
+
 import numpy as np
-import matplotlib.cm as cm
+from matplotlib import cm
 import matplotlib.pyplot as plt
-import pandas as pd
-import astropy.units as u
 
 #   universal gas constant (erg/mol/K)
 RGAS = 8.3143e7
@@ -31,7 +31,8 @@ def plot_full_structure(self, y, title=''):
     nit = len(y[0])-1
     for i in range(nit):
         plt.plot(y[:self.sz, i], self.pres, color=cm.viridis(i/nit), linestyle='-', alpha=0.3)
-        plt.plot(y[self.sz:self.sz*2, i], self.pres, color=cm.viridis(i/nit), linestyle=':', alpha=0.3)
+        plt.plot(y[self.sz:self.sz*2, i], self.pres, color=cm.viridis(i/nit),
+                 linestyle=':', alpha=0.3)
         plt.plot(y[self.sz*2:, i], self.pres, color=cm.viridis(i/nit), linestyle='--', alpha=0.3)
 
 
@@ -39,10 +40,13 @@ def plot_full_structure(self, y, title=''):
     mp = np.nan_to_num((y[self.sz:self.sz*2, -1]) * self.m_ccn / y[self.sz*2:, -1])
     rg = np.cbrt(3*mp/(4*np.pi*self.rhop))
     rg = np.maximum(rg, self.r_ccn)
-    plt.plot(self.rg_in[self.mask_psupsat], self.pres[self.mask_psupsat], color='k', linestyle='-.', label=r'r$_\mathrm{in}$ [$\mu$m]')
-    plt.plot(self.rg[self.mask_psupsat], self.pres[self.mask_psupsat], color='orange', linestyle='-.', label=r'r$_\mathrm{new}$ [$\mu$m]')
-    plt.plot(rg[self.mask_psupsat], self.pres[self.mask_psupsat], color='green', linestyle='-.', label=r'r$_\mathrm{out}$ [$\mu$m]')
-    plt.vlines([1e-4], self.pres[-1], self.pres[0], linestyle='-.', color='gray', label='1 $\mu$m')
+    plt.plot(self.rg_in[self.mask_psupsat], self.pres[self.mask_psupsat], color='k',
+             linestyle='-.', label=r'r$_\mathrm{in}$ [$\mu$m]')
+    plt.plot(self.rg[self.mask_psupsat], self.pres[self.mask_psupsat], color='orange',
+             linestyle='-.', label=r'r$_\mathrm{new}$ [$\mu$m]')
+    plt.plot(rg[self.mask_psupsat], self.pres[self.mask_psupsat], color='green',
+             linestyle='-.', label=r'r$_\mathrm{out}$ [$\mu$m]')
+    plt.vlines([1e-4], self.pres[-1], self.pres[0], linestyle='-.', color='gray', label=r'1 $\mu$m')
     #
     # ==== plot cloud particle number density
     ncl = y[self.sz * 2:, -1] / self.m_ccn * self.rhoatmo
@@ -64,7 +68,8 @@ def plot_full_structure(self, y, title=''):
     plt.plot(growth_rate, self.pres, label='accretion rate', color='magenta', linestyle='-')
 
     # ==== Plot vapour pressure limit
-    plt.plot(self.pvap * self.mw / self.pres / self.mmw, self.pres, label='q_vap', color='blue', linestyle='-.')
+    plt.plot(self.pvap * self.mw / self.pres / self.mmw, self.pres, label='q_vap',
+             color='blue', linestyle='-.')
 
     # ==== Plot vsed
     plt.plot(self.vsed(self.rg)*1e-10, self.pres, label='v_sed', color='orange', linestyle='-')
