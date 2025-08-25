@@ -4,16 +4,13 @@ from nimbus import Nimbus, DataStorage
 
 def test_nimbus():
     # ==== Example values
-    # temperature = np.asarray([554, 572, 607, 653, 775, 951, 1073, 1111, 1540, 2654])
-    # pressure = np.asarray([1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3])
-    temperature = np.asarray([775, 951, 1073, 1111, 1540, 2654])
-    pressure = np.asarray([1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3])
-    kzz = np.ones_like(pressure) * 1e9
-    gravity = 10**2.49
-    mmw = 2.34
+    temperature = np.asarray([775, 951, 1073, 1111, 1540, 2654])  # [K]
+    pressure = np.asarray([1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3])  # [bar]
+    kzz = np.ones_like(pressure) * 1e9  # [cm2/s]
+    gravity = 10**2.49  # [cm/s2]
+    mmw = 2.34  # [amu]
     species = 'SiO'
-    deepmmr = 1e-3
-    fsed = 1
+    deepmmr = 1e-3  # [g/g]
 
     # variables for spectra
     m_planet = 0.12  # in jupiter mass (Anderson et al. 2017)
@@ -32,15 +29,15 @@ def test_nimbus():
 
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True, create_analytic_plots=True)
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, fsed, species, deepmmr)
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
-    ds = obj.compute(type='iterate', max_itterations=3)
+    ds = obj.compute(type='iterate', max_iterations=3)
     y = np.asarray([ds['qc']]).T
     assert np.isclose(np.sum(y), 4.855594052733314e-05)
 
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, fsed, species, deepmmr)
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(type='full')
     y = np.asarray([ds['qc']]).T
@@ -48,7 +45,7 @@ def test_nimbus():
 
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, fsed, species, deepmmr)
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(type='convergence', rel_dif_in_mmr=1e-3, save_file='test')
     y = np.asarray([ds['qc']]).T

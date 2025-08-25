@@ -6,8 +6,8 @@ from scipy.optimize import root_scalar
 from .atmosphere_physics import define_atmosphere_physics
 from .species_database import DataStorage
 
-def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, specie,
-                      deep_mmr, metalicity=1):
+def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
+                      deep_mmr, fsed=1, metalicity=1):
     """
     Set up the atmospheric structure of the simulation.
 
@@ -25,12 +25,12 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, spec
         Mean molecular weight in amu.
     gravity : np.array
         Gravity in cm/s2
-    fsed : np.array
-        Initial settling parameter (defines cloud particle size).
-    specie: np.array
+    species: np.array
         Cloud particle specie (currently only 1 is supported).
     deep_mmr: np.array
         Mass mixing ratio of the cloud specie in the deep atmosphere.
+    fsed : np.array, optional
+        Initial settling parameter (defines cloud particle size).
     metalicity : np.array or float, optional
         metalicity of atmosphere (used for certain pvaps)
     """
@@ -40,7 +40,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, spec
 
     # ==== Setting input parameters
     self.temp = temperature  # temperature profile [K]
-    self.pres = pressure  # pressure profile [dyn/cm2]
+    self.pres = pressure*1e6  # pressure profile, convert from bar to [dyn/cm2]
     self.kzz = kzz  # mixing coefficient [cm2/s]
     self.mmw = mmw  # mean molecular weight [amu]
     self.gravity = gravity  # gravity [cm/s2]
@@ -57,19 +57,19 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, spec
     self.r_ccn = 1e-7  # default for minimum cloudparticle radius [cm]
     self.cs_mol = 2e-15  # default for molecular cross section [cm2]
     self.eps_k = 59.7  # Depth of the Lennard-Jones potential [??]
-    self.specie = specie  # save name of cloud species
-    self.rho_ccn = ds.solid_density(specie)  # density of nucleation seads [g/cm3]
-    self.rhop = ds.solid_density(specie)  # density of cloud material [g/cm3]
-    self.mw = ds.molecular_weight(specie)  # cloud material molecular weight [amu]
-    self.r1 = ds.monomer_radius(specie)  # monomer radius [cm]
-    self.sig = ds.surface_tension(specie, self.temp)  # surface tension [??]
-    self.m1 = ds.monomer_mass(specie)  # monomer mass [g]
-    self.rgas_spec_cloud = ds.specific_gas_constant(specie)  # specific gas constant
-    self.pvap = ds.vapor_pressures(specie, self.temp, self.mh)  # vapor press [dyn/cm2]
+    self.specie = species  # save name of cloud species
+    self.rho_ccn = ds.solid_density(species)  # density of nucleation seads [g/cm3]
+    self.rhop = ds.solid_density(species)  # density of cloud material [g/cm3]
+    self.mw = ds.molecular_weight(species)  # cloud material molecular weight [amu]
+    self.r1 = ds.monomer_radius(species)  # monomer radius [cm]
+    self.sig = ds.surface_tension(species, self.temp)  # surface tension [??]
+    self.m1 = ds.monomer_mass(species)  # monomer mass [g]
+    self.rgas_spec_cloud = ds.specific_gas_constant(species)  # specific gas constant
+    self.pvap = ds.vapor_pressures(species, self.temp, self.mh)  # vapor press [dyn/cm2]
 
     # ==== calculate pressure grid
     # grid coordiantes
-    self.logp = np.log(pressure)  # pressure grid
+    self.logp = np.log(self.pres)  # pressure grid
     self.logp_mid = (self.logp[1:] + self.logp[:-1]) / 2  # midpoints
     # pressure grid bin size
     self.dlogp = np.zeros_like(self.logp)
@@ -115,13 +115,12 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, fsed, spec
 
     # ==== Confirm that atmosphere has been set up
     self.isset_atmosphere = True
-    temperature, pressure, kzz, mmw, gravity, fsed, specie,
-    deep_mmr
+
     print(f'[INFO] Atmosphere set up with:')
     print(f'       -> pressure range: {np.max(pressure*1e-6):.2e} - {np.min(pressure*1e-6):.2e} bar')
     print(f'       -> temperature range: {np.max(temperature):.2e} - {np.min(temperature):.2e} K')
     print(f'       -> Kzz range: {np.max(kzz):.2e} - {np.min(kzz):.2e} cm2/s')
     print(f'       -> Mean molecular weight: {mmw:.2e} amu')
     print(f'       -> Gravity: {gravity:.2e} cm/s2')
-    print(f'       -> ' + specie + f' deep MMR: {deep_mmr:.2e} g/g')
+    print(f'       -> ' + species + f' deep MMR: {deep_mmr:.2e} g/g')
 

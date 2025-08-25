@@ -10,7 +10,7 @@ from .solver import set_initial_condidtions, set_up_solver
 from .data_storage import save_run
 from .atmosphere_physics import mass_to_radius
 
-def compute(self, type='convergence', rel_dif_in_mmr=1e-3, max_itterations=None,
+def compute(self, type='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             save_file=None, tag=None):
     """
     Compute the cloud structure.
@@ -25,7 +25,7 @@ def compute(self, type='convergence', rel_dif_in_mmr=1e-3, max_itterations=None,
     rel_dif_in_mmr : float, optional
         Convergence criterion given as maximum change in the relative MMR between
         itterations. Only used if type = 'iterate'.
-    max_itterations : int, optional
+    max_iterations : int, optional
         Number of itterations conducted; each itteration keeps the cloud particle radius
         constant. If type is 'iterate', this variable gives the number of itterations
         conducted (default 10). If type is 'convergence', this gives an additional
@@ -50,29 +50,29 @@ def compute(self, type='convergence', rel_dif_in_mmr=1e-3, max_itterations=None,
     if type == 'convergence':
         # settings if a convergence createrion is used
         self.static_rg = True  # keep radius constant in each itteration
-        if max_itterations is None:
-            max_itterations = 50  # default number of max_itterations
+        if max_iterations is None:
+            max_iterations = 50  # default number of max_iterations
             print('[INFO] Max itterations set to 50')
     elif type == 'iterate':
         self.static_rg = True  # keep radius constant in each itteration
-        if max_itterations is None:
-            max_itterations = 10  # default number of itterations
+        if max_iterations is None:
+            max_iterations = 10  # default number of itterations
             print('[INFO] Number of itterations set to 10')
-        self.it_str = '/' + str(max_itterations)
+        self.it_str = '/' + str(max_iterations)
     elif type == 'full':
         self.static_rg = False  # allow for a variable radius
-        max_itterations = 1  # this value is not used
+        max_iterations = 1  # this value is not used
     else:
         raise ValueError("[ERROR] Compute type unkown. Please select one of the "
                          "following: 'convergence', 'itterate', 'full'.")
 
     # additionally check itterations
-    if max_itterations < 1:
+    if max_iterations < 1:
         print('[WARN] Itterations cannot be less than 1.')
-        max_itterations = 1
-        self.it_str = str(max_itterations)
+        max_iterations = 1
+        self.it_str = str(max_iterations)
     # remember number of itterations
-    self.itterations = max_itterations
+    self.itterations = max_iterations
 
     # starting time to evaluate runtime
     start_time = time()
