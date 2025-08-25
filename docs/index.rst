@@ -18,5 +18,6 @@ And the following people have contributed:
 
    Install_And_Quick_Start.ipynb
    Physics_of_Nimbus.ipynb
+   Usage.ipynb
 
 
