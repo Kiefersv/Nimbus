@@ -16,58 +16,54 @@ def define_atmosphere_physics(self):
     # ===================================================================================
     #  Nucleation rates
     # ===================================================================================
-    # Note: all nucleation rate functions must be of the form f(n1, temp) and have the
-    # follwing header:
-    """
-    :param n1: number density of cloud forming material [1/cm3]
-    :param temp: temperature [K]
-    :return:
-    """
-
     def _nuc_rate_mini_cloud(n1, temp):
         """
         This nucleation rate was taken from Elsie Lee's mini cloud:
         Citation: https://academic.oup.com/mnras/article/524/2/2918/7221353
         Link: https://github.com/ELeeAstro/mini_cloud
+
+        :param n1: number density of cloud forming material [1/cm3]
+        :param temp: temperature [K]
+        :return:
         """
 
         # ==== Hard coded values
         alpha = 1.0  # sticking coefficient []
-        Nf = 5.0  # MCNT factor []
+        nf = 5.0  # MCNT factor []
 
         # ==== Physical parameters
         p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
         sat = p1 / self.pvap  # log of saturation []
         ln_ss = np.log(sat)  # log of supersaturation []
         f0 = 4.0 * np.pi * self.r1 ** 2  # colisional corsssection [cm2]
-        kbT = self.kb * temp  # shorthand notation
-        theta_inf = (f0 * self.sig) / kbT  # theta inf [?]
+        kbt = self.kb * temp  # shorthand notation
+        theta_inf = (f0 * self.sig) / kbt  # theta inf [?]
 
         # ==== Prevent unphysical sat values (will be removed at the end)
         ln_ss[ln_ss <= 1e-30] = 1e-30
 
         # ==== Calcualte cirtical cluster size
-        N_inf = (((2.0 / 3.0) * theta_inf) / ln_ss) ** 3
-        N_star = 1.0 + (N_inf/8.0) * (1.0 + np.sqrt(1.0 + 2.0 * (Nf/N_inf)**(1/3))
-                                      -2.0 * (Nf/N_inf)**(1/3))**3
-        N_star = np.maximum(1.00001, N_star)  # make sure Nstar-1 is not below 0
-        N_star_1 = N_star - 1.0  # shorthand notation
+        n_inf = (((2.0 / 3.0) * theta_inf) / ln_ss) ** 3
+        n_star = 1.0 + (n_inf/8.0) * (1.0 + np.sqrt(1.0 + 2.0 * (nf/n_inf)**(1/3))
+                                      -2.0 * (nf/n_inf)**(1/3))**3
+        n_star = np.maximum(1.00001, n_star)  # make sure Nstar-1 is not below 0
+        n_star_1 = n_star - 1.0  # shorthand notation
 
         # ==== Gibbs free energy approximation
-        dg_rt = theta_inf * (N_star_1 / (N_star_1**(1/3) + Nf**(1/3)))
+        dg_rt = theta_inf * (n_star_1 / (n_star_1**(1/3) + nf**(1/3)))
 
         # ==== Zeldovich factor
-        Zel = np.sqrt((theta_inf / (9.0 * np.pi * N_star_1**(4.0/3.0)))
-                      * ((1.0 + 2.0 * (Nf/N_star_1)**(1/3))
-                      / (1.0 + (Nf/N_star_1)**(1/3))**3))
+        zel = np.sqrt((theta_inf / (9.0 * np.pi * n_star_1**(4.0/3.0)))
+                      * ((1.0 + 2.0 * (nf/n_star_1)**(1/3))
+                      / (1.0 + (nf/n_star_1)**(1/3))**3))
 
         # ==== growth rate
-        tau_gr = ((f0 * N_star**(2.0/3.0)) * alpha
-                  * np.sqrt(kbT / (2.0 * np.pi * self.mw / self.avog)) * n1)
+        tau_gr = ((f0 * n_star**(2.0/3.0)) * alpha
+                  * np.sqrt(kbt / (2.0 * np.pi * self.mw / self.avog)) * n1)
 
         # ==== everything together gives the nucleaiton rate
-        exponent = np.maximum(-300.0, N_star_1 * ln_ss - dg_rt)
-        f_nuc_hom = n1 * tau_gr * Zel * np.exp(exponent)
+        exponent = np.maximum(-300.0, n_star_1 * ln_ss - dg_rt)
+        f_nuc_hom = n1 * tau_gr * zel * np.exp(exponent)
 
         # ==== Remove nans and other problems
         # Note: We only check here the legality of the saturation input to
@@ -93,8 +89,8 @@ def define_atmosphere_physics(self):
     #     sat = p1 / self.pvap  # log of saturation []
     #     ln_ss = np.log(sat)  # log of supersaturation []
     #     f0 = 4.0 * np.pi * self.r1 ** 2  # colisional corsssection [cm2]
-    #     kbT = self.kb * temp  # shorthand notation
-    #     theta_inf = (f0 * self.sig) / kbT  # theta inf [?]
+    #     kbt = self.kb * temp  # shorthand notation
+    #     theta_inf = (f0 * self.sig) / kbt  # theta inf [?]
     #
     #     # ==== Prevent unphysical sat values (will be removed at the end)
     #     ln_ss[ln_ss <= 1e-30] = 1e-30
@@ -113,7 +109,7 @@ def define_atmosphere_physics(self):
     #
     #     # ==== growth rate
     #     tau_gr = ((f0 * N_star**(2.0/3.0)) * alpha
-    #               * np.sqrt(kbT / (2.0 * np.pi * self.mw / self.avog)) * n1)
+    #               * np.sqrt(kbt / (2.0 * np.pi * self.mw / self.avog)) * n1)
     #
     #     # ==== everything together gives the nucleaiton rate
     #     exponent = np.maximum(-300.0, N_star_1 * ln_ss - dg_rt)
@@ -134,14 +130,14 @@ def define_atmosphere_physics(self):
     # ===================================================================================
     # Note: all nucleation rate functions must be of the form f(rg, temp, n1, ncl) and
     # have the follwing header:
-    """
-    :param rg: cloud particle size [cm]
-    :param temp: temperature [K]
-    :param n1: number density of cloud forming material [1/cm3]
-    :param ncl: cloud particle number density [1/cm3]
-
-    :return: accretion rate [1/cm3]
-    """
+    # """
+    # :param rg: cloud particle size [cm]
+    # :param temp: temperature [K]
+    # :param n1: number density of cloud forming material [1/cm3]
+    # :param ncl: cloud particle number density [1/cm3]
+    #
+    # :return: accretion rate [1/cm3]
+    # """
 
     def _acc_rate_mini_cloud(rg, temp, n1, ncl):
         """
@@ -198,12 +194,12 @@ def define_atmosphere_physics(self):
     #  Settling velocity
     # ===================================================================================
     # Note: all settling velocity functions must be of the form f()
-    """
-    Settling velocity of cloud particles
-
-    :param rg: cloud particle size [cm]
-    :return: terminal cloud particle settling velocity [cm/s] 
-    """
+    # """
+    # Settling velocity of cloud particles
+    #
+    # :param rg: cloud particle size [cm]
+    # :return: terminal cloud particle settling velocity [cm/s]
+    # """
 
     def _vsed_exolyn(rg):
         """
@@ -269,7 +265,8 @@ def define_atmosphere_physics(self):
     #
     #     # atmospheric viscosity (dyne s/cm^2) from VIRGA
     #     # EQN B2 in A & M 2001, originally from Rosner+2000
-    #     # Rosner, D. E. 2000, Transport Processes in Chemically Reacting Flow Systems (Dover: Mineola)
+    #     # Rosner, D. E. 2000, Transport Processes in Chemically Reacting Flow Systems
+    #     # (Dover: Mineola)
     #     visc = (5. / 16. * np.sqrt(np.pi * self.kb * self.temp * (self.mmw / self.avog)) /
     #             self.cs_mol / (1.22 * (self.temp / self.ps_k) ** (-0.16)))
     #

@@ -1,34 +1,34 @@
 """ Main computation functions for single cloud particle species calculations """
 
+from time import time
+
 import numpy as np
 from scipy.integrate import solve_ivp
-import xarray as xr
-from time import time
 
 from .plotter import plot_initial_conditions, plot_full_structure
 from .solver import set_initial_condidtions, set_up_solver
 from .data_storage import save_run
 from .atmosphere_physics import mass_to_radius
 
-def compute(self, type='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
+def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             save_file=None, tag=None):
     """
     Compute the cloud structure.
 
     Parameters
     ----------
-    type : str, optional
+    typ : str, optional
         This parameter determines the stopping creterion. Options are:
             - 'convergence': run itteratively until convergence (see rel_dif_in_mmr)
             - 'iterate': use a fixed number of itterations (see itterations)
             - 'full': fully time dependent simulation with variable radius
     rel_dif_in_mmr : float, optional
         Convergence criterion given as maximum change in the relative MMR between
-        itterations. Only used if type = 'iterate'.
+        itterations. Only used if typ = 'iterate'.
     max_iterations : int, optional
         Number of itterations conducted; each itteration keeps the cloud particle radius
-        constant. If type is 'iterate', this variable gives the number of itterations
-        conducted (default 10). If type is 'convergence', this gives an additional
+        constant. If typ is 'iterate', this variable gives the number of itterations
+        conducted (default 10). If typ is 'convergence', this gives an additional
         stopping creterion in case of non-convergence (default 50).
     save_file : str, optional
         Save the results under the given name as xarray dataset.
@@ -45,21 +45,21 @@ def compute(self, type='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
     # print info
     print('\r[INFO] Computation started ...', end='')
 
-    # ==== set up settings specific for the evaluation type
+    # ==== set up settings specific for the evaluation typ
     self.it_str = ''
-    if type == 'convergence':
+    if typ == 'convergence':
         # settings if a convergence createrion is used
         self.static_rg = True  # keep radius constant in each itteration
         if max_iterations is None:
             max_iterations = 50  # default number of max_iterations
             print('[INFO] Max itterations set to 50')
-    elif type == 'iterate':
+    elif typ == 'iterate':
         self.static_rg = True  # keep radius constant in each itteration
         if max_iterations is None:
             max_iterations = 10  # default number of itterations
             print('[INFO] Number of itterations set to 10')
         self.it_str = '/' + str(max_iterations)
-    elif type == 'full':
+    elif typ == 'full':
         self.static_rg = False  # allow for a variable radius
         max_iterations = 1  # this value is not used
     else:
@@ -124,7 +124,6 @@ def compute(self, type='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
                 rtol=self.ode_rtol, atol=self.ode_atol, t_eval=ts
             )
             self.all_runs.append(sol)
-            self.rg_history[:, t]
 
             # ==== prepare next run
             yin = sol.y[:, -1]  # set initial conditions to last run
@@ -155,10 +154,10 @@ def compute(self, type='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
                 plot_full_structure(self, sol.y, str(t))
 
             # ==== stopping creterion
-            if type == 'iterate' and t >= self.itterations:
+            if typ == 'iterate' and t >= self.itterations:
                 break
             # at least two itterations are needed for convergence
-            if type == 'convergence' and t > 1:
+            if typ == 'convergence' and t > 1:
                 # calculate max mmr offset
                 ynew = sol.y[:, -1]
                 yold = self.all_runs[-2].y[:, -1]
@@ -171,7 +170,6 @@ def compute(self, type='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
                     print('[WARN] Maximum itterations reached with '
                           'precision: ' + str(max_mmr))
                     break
-
 
             # ==== incremment itterations and start new loop
             t += 1
@@ -196,7 +194,8 @@ def compute(self, type='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
 
     # ==== Finish up ====================================================================
     # ==== print final informations
-    print(f'\r[INFO] Cloud structures completed in {time() - start_time:.2f}s ({self.loop_nr} iterations).')
+    print('\r[INFO] Cloud structures completed in '
+          f'{time() - start_time:.2f}s ({self.loop_nr} iterations).')
     # ==== save data internally
     ds = save_run(self, sol, save_file=save_file, tag=tag)
 

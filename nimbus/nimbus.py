@@ -16,7 +16,6 @@ class Nimbus:
 
     # ==== import the main compuational function
     from .src.compute import compute
-    # from .src.compute_ddw import compute_ddw
 
     # ==== import solver settings
     from .src.settings import set_cloud_settings, set_solver_settings, set_fudge_settings

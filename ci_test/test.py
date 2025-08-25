@@ -31,7 +31,7 @@ def test_nimbus():
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True, create_analytic_plots=True)
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
-    ds = obj.compute(type='iterate', max_iterations=3)
+    ds = obj.compute(typ='iterate', max_iterations=3)
     y = np.asarray([ds['qc']]).T
     assert np.isclose(np.sum(y), 4.855594052733314e-05)
 
@@ -39,7 +39,7 @@ def test_nimbus():
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
-    ds = obj.compute(type='full')
+    ds = obj.compute(typ='full')
     y = np.asarray([ds['qc']]).T
     assert np.isclose(np.sum(y), 1.4851959184978415e-05)
 
@@ -47,7 +47,7 @@ def test_nimbus():
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
-    ds = obj.compute(type='convergence', rel_dif_in_mmr=1e-3, save_file='test')
+    ds = obj.compute(typ='convergence', rel_dif_in_mmr=1e-3, save_file='test')
     y = np.asarray([ds['qc']]).T
     assert np.isclose(np.sum(y), 1.4858344032895963e-05)
 

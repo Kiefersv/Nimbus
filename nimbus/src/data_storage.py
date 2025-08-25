@@ -2,7 +2,25 @@
 import xarray as xr
 
 def save_run(self, sol, save_file=None, tag=None):
+    """
+    Save the run as xarray
 
+    Parameters
+    ----------
+    self : Nimbus object
+    sol : solve_ivp object
+        Solution of the run that should be saved.
+    save_file : str
+        Name of file to save to.
+    tag : str
+        Internal tag to remember run.
+
+    Return
+    ------
+    ds : xarray.Dataset
+        Xarray dataset containing the run
+
+    """
     # ==== How data is stored
     ds = xr.Dataset(
         data_vars={
