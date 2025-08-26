@@ -1,3 +1,7 @@
+.. figure:: social/temp_logo.png
+   :alt: Nimbus logo
+   :align: center
+
 Welcome to Nimbus
 =================
 
