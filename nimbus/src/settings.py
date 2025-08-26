@@ -2,7 +2,8 @@
 
 def set_solver_settings(
         self, initial_time_for_solver=None, end_time_for_solver=None,
-        evaluation_steps_for_solver=None, degree_of_radius_polinomial=None):
+        evaluation_steps_for_solver=None, degree_of_radius_polinomial=None,
+        rtol=None, atol=None, ode_minimum_mmr=None):
     """
     Settings regarding the ODE solver of teh compute function.
     See nimbus.py for explanation of individual variables
@@ -15,6 +16,12 @@ def set_solver_settings(
         self.tsteps = evaluation_steps_for_solver
     if not isinstance(degree_of_radius_polinomial, type(None)):
         self.rg_fit_deg = degree_of_radius_polinomial
+    if not isinstance(rtol, type(None)):
+        self.ode_rtol = rtol
+    if not isinstance(atol, type(None)):
+        self.ode_atol = atol
+    if not isinstance(ode_minimum_mmr, type(None)):
+        self.ode_minimum_mmr = ode_minimum_mmr
 
 def set_cloud_settings(
         self, minimum_cloud_particle_radius=None, molecular_cross_section=None):

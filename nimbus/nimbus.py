@@ -66,6 +66,11 @@ class Nimbus:
         self.ode_minimum_mmr = 1e-30  # lowest MMR considered [g/g]
         self.static_rg = True # True: itarate with const rg / False: calc rg on the fly
 
+        # ==== Default cloud physics parameters
+        self.r_ccn = 1e-7  # default for minimum cloudparticle radius [cm]
+        self.cs_mol = 2e-15  # default for molecular cross section [cm2]
+        self.eps_k = 59.7  # Depth of the Lennard-Jones potential [??]
+
         # ==== Misc settings
         self.rg_fit_deg = 8  # degree of the polynomial to fit the ittarative radius
 

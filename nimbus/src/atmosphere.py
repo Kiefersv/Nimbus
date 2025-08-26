@@ -54,9 +54,6 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     # ==== currently hardcoded for SiO, later this will be input
     ds = DataStorage()  # open the data storage
     self.datastorage = ds  # remember the class
-    self.r_ccn = 1e-7  # default for minimum cloudparticle radius [cm]
-    self.cs_mol = 2e-15  # default for molecular cross section [cm2]
-    self.eps_k = 59.7  # Depth of the Lennard-Jones potential [??]
     self.specie = species  # save name of cloud species
     self.rho_ccn = ds.solid_density(species)  # density of nucleation seads [g/cm3]
     self.rhop = ds.solid_density(species)  # density of cloud material [g/cm3]
