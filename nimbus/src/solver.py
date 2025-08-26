@@ -1,4 +1,5 @@
 """ All set-up functionalities of NIMBUS """
+# pylint: disable=C0301
 
 import numpy as np
 

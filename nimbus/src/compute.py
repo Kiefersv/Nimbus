@@ -42,9 +42,6 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
     """
 
     # ==== Preparations =================================================================
-    # print info
-    print('\r[INFO] Computation started ...', end='')
-
     # ==== set up settings specific for the evaluation typ
     self.it_str = ''
     if typ == 'convergence':
@@ -103,6 +100,9 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
     #   1) Keep rg constant, and itterate (convergence, itterate)
     #   2) Calculate rg on the fly (full)
 
+    # print info
+    print('\r[INFO] Computation started ...', end='')
+
     # ==== Itterate over static rg
     # This loop iterates of cloud particle size. In each loop, rg is held constant
     # and updated at the end of the loop.
@@ -136,9 +136,6 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
                 # This results in a preciese fit, but keep minimum of 1 degree
                 deg_fit = np.maximum(1, sum(self.mask_psupsat) - 1)
                 if deg_warn_flag:
-                    print()
-                    print('[WARN] Not enough data points, degree of radius fit '
-                          'chagned to: ' + str(deg_fit))
                     deg_warn_flag = False
             # create a polnom fit to the cloud particle radius to prevent sudden changes
             fit = np.polyval(np.polyfit(np.log10(self.pres[self.mask_psupsat]),
@@ -196,6 +193,10 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
     # ==== print final informations
     print('\r[INFO] Cloud structures completed in '
           f'{time() - start_time:.2f}s ({self.loop_nr} iterations).')
+    # ==== additional warnings
+    if not deg_warn_flag:
+        print('[WARN] Not enough data points, degree of radius fit '
+              'chagned to: ' + str(deg_fit))
     # ==== save data internally
     ds = save_run(self, sol, save_file=save_file, tag=tag)
 

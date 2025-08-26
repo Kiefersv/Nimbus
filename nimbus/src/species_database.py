@@ -74,11 +74,13 @@ class DataStorage:
     #   Simple physical properties calculation (derived not read in)
     # =======================================================================================
     def monomer_mass(self, species):
+        """ Return m_species [g]"""
         r1 = self.cloud_material_data[species]['monomer_radius']
         rho = self.cloud_material_data[species]['solid_density']
         return 4/3 * np.pi * r1**3 * rho
 
     def specific_gas_constant(self, species):
+        """ Return R_spec [erg/g/K]"""
         mw = self.cloud_material_data[species]['molecular_weight']
         return self.rgas / mw
 
@@ -86,15 +88,19 @@ class DataStorage:
     #   Simple getter functions of physical properties
     # =======================================================================================
     def monomer_radius(self, species):
+        """ Return r_species [cm]"""
         return self.cloud_material_data[species]['monomer_radius']
 
     def molecular_weight(self, species):
+        """ return mu_species [amu]"""
         return self.cloud_material_data[species]['molecular_weight']
 
     def solid_density(self, species):
+        """ Return rho_species [g/cm3]"""
         return self.cloud_material_data[species]['solid_density']
 
     def surface_tension(self, species, temp):
+        """ Return sigma_species(temp) [erg/cm2]"""
         a = self.cloud_material_data[species]['surface_tension_A']
         b = self.cloud_material_data[species]['surface_tension_B']
         # check if data is available
@@ -103,6 +109,7 @@ class DataStorage:
         return float(a) + float(b) * temp
 
     def gibbs_free_energy(self, species, temp):
+        """ Return G_species(temp) [erg]"""
         return self.gibbs_janaf[species].interp({"temp_" + species: temp}).values
 
     # =======================================================================================
@@ -124,7 +131,7 @@ class DataStorage:
 
         # Check if temp is an array, make it one if not
         isarray = True
-        if isinstance(temp, float) or isinstance(temp, int):
+        if isinstance(temp, (float, int)):
             temp = np.asarray([temp])
             isarray = False
 
@@ -166,8 +173,12 @@ class DataStorage:
 
             elif species == 'H2O':
                 temp_c = temp - 273.16
-                pvap[temp_c<0] = 6111.5 * np.exp((23.036*temp_c[temp_c<0] - temp_c[temp_c<0]**2/333.7) / (temp_c[temp_c<0] + 279.82))
-                pvap[temp_c>=0] = 6112.1 * np.exp((18.729*temp_c[temp_c>=0] - temp_c[temp_c>=0]**2/227.3) / (temp_c[temp_c>=0] + 257.87))
+                pvap[temp_c<0] = 6111.5 * np.exp((23.036*temp_c[temp_c<0]
+                                                  - temp_c[temp_c<0]**2/333.7)
+                                                 / (temp_c[temp_c<0] + 279.82))
+                pvap[temp_c>=0] = 6112.1 * np.exp((18.729*temp_c[temp_c>=0]
+                                                   - temp_c[temp_c>=0]**2/227.3)
+                                                  / (temp_c[temp_c>=0] + 257.87))
 
             elif species == 'H2S': # Stull(1947)
                 pvap[:] = 10.0 ** (4.52887 - 958.587 / (temp - 0.539)) * 1e6

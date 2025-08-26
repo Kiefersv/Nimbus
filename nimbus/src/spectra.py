@@ -2,6 +2,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+# pylint: disable=C0415
 
 def set_up_spectra_calculation(self, mass_planet, radius_planet, temperature_star,
                                radius_star, metalicity_star, logg_star,
@@ -46,7 +47,34 @@ def set_up_spectra_calculation(self, mass_planet, radius_planet, temperature_sta
     self.isset_emission_spectrum = True
     print('[INFO] Spectra calculation set up.')
 
-def plot_spectrum(self, chem_data=None, data=None, chemical_abbundences=None, type='transmission', cloud_fraction=1, tag='last_run', plot=True, cloud_less=False):
+def plot_spectrum(self, chem_data=None, data=None, typ='transmission', tag='last_run',
+                  plot=True, cloud_less=False):
+    """
+    Simple plotting function using PICASO and VIRGA to facilitate opacity calculations.
+
+    Parameters
+    ----------
+    chem_data : dict
+        Dictionary with all abundances for all pressures. Takes the form:
+            chem_data = {
+                'H2O': np.asarray([0.1, 0.2, 0.1, 0.1]),
+            }
+        data : np.ndarray
+            Observational data in the form [wavelengths, data, error]
+        typ : str
+            Can be 'transmission' or 'emission' depending on the use case.
+        tag : str, optional
+            Tag of the model to be calculated. Default is the last run.
+        plot : bool, optional
+            Create a diagnostic (but ugly) plot.
+        cloud_less : bool, optional
+            If True, ignore clouds and calculate a cloud less spectra.
+
+    Return
+    ------
+    (wavelength, spectra) : tuple
+        The calculated spectrum and the wavelengths used
+    """
 
     # ==== check if spectrum can be calculated
     if not self.isset_transmission_spectrum and not self.isset_emission_spectrum:
@@ -74,8 +102,8 @@ def plot_spectrum(self, chem_data=None, data=None, chemical_abbundences=None, ty
     rmin = np.min(radius)
     rmax = np.max(radius)
 
-    radius, rup, dr = jdi.get_r_grid_w_max(rmin, rmax, n_radii=nradii)
-    opd, w0, g0, opd_gas = jdi.calc_optics(nwave, qc, qc, rgin, rgin, ndz, radius,
+    radius, _, dr = jdi.get_r_grid_w_max(rmin, rmax, n_radii=nradii)
+    opd, w0, g0, _ = jdi.calc_optics(nwave, qc, qc, rgin, rgin, ndz, radius,
                                            dr, qext, qscat, cos_qscat, 2, rmin, nradii)
 
     df_cloud = jdi.picaso_format(
@@ -104,15 +132,15 @@ def plot_spectrum(self, chem_data=None, data=None, chemical_abbundences=None, ty
         case1.clouds(df=df_cloud)
 
     # ==== Calculate transmission and emission spectra
-    t_df = case1.spectrum(opa, full_output=True, calculation=type)
+    t_df = case1.spectrum(opa, full_output=True, calculation=typ)
 
     # ==== Regrid output
-    if type == 'transmission':
+    if typ == 'transmission':
         trans_wavn, trans_rprs2 = t_df['wavenumber'], t_df['transit_depth']
         trans_wavn_bins, trans_wavn_rprs2 = jdip.mean_regrid(trans_wavn, trans_rprs2, R=100)
         wvl = 1 / trans_wavn_bins * 1e4
         spectrum = trans_wavn_rprs2
-    elif type == 'thermal':
+    elif typ == 'thermal':
         emis_wavn, _, emis_fp = t_df['wavenumber'], t_df['fpfs_thermal'], t_df['thermal']
         emis_wavn_bin, emis_fp_bin = jdip.mean_regrid(emis_wavn, emis_fp, R=200)
         wvl = 1 / emis_wavn_bin * 1e4
@@ -120,17 +148,18 @@ def plot_spectrum(self, chem_data=None, data=None, chemical_abbundences=None, ty
 
 
     if plot:
-        if type == 'transmission':
+        if typ == 'transmission':
             plt.figure()
             offset = 0
             if data is not None:
                 mask = (wvl > data[0, 0]) * (wvl < data[0, -1])
                 offset =  np.mean(data[1]) / np.mean(spectrum[mask])
-                plt.errorbar(data[0], data[1], yerr=data[2], fmt='.', color='black', alpha=0.5, linewidth=0.7)
+                plt.errorbar(data[0], data[1], yerr=data[2], fmt='.', color='black',
+                             alpha=0.5, linewidth=0.7)
             plt.plot(wvl, spectrum * offset)
             plt.xscale('log')
             plt.savefig(self.working_dir + '/transmission_spectrum.png')
-        elif type == 'thermal':
+        elif typ == 'thermal':
             pass
 
     return wvl, spectrum

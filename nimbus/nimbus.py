@@ -1,4 +1,5 @@
 """ This is the header file of Nimbus. To find functionalities check the src folder. """
+# pylint: disable=C0415
 
 class Nimbus:
     """ Main class to handle the cloud structure calculation """
@@ -88,4 +89,3 @@ class Nimbus:
         print('       -> working directory: ' + self.working_dir[:-1])
         print('       -> verbose: ' + str(verbose))
         print('       -> analytic plots: ' + str(create_analytic_plots))
-
