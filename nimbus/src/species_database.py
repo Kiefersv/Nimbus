@@ -195,7 +195,7 @@ class DataStorage:
 
             elif species == 'SiO2':
                 # this vapor pressure includes a metalicity correction
-                pvap = 10.0**(13.168 - 28265/temp)*1e6/mh  # SiO + H2O -> SiO2[s] + H2
+                pvap = 10.0**(13.168 - 28265/temp - np.log10(mh))*1e6  # SiO + H2O -> SiO2[s] + H2
 
             else:
                 raise ValueError('The species "' + species + '" is flagged as special, but no '

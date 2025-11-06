@@ -82,7 +82,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     self.natmo = self.pres / self.temp / self.kb  # total gas-phase number density [1/cm3]
     self.rhoatmo = self.mmw * self.pres / self.temp / self.rgas  # atmospheric density [g/cm]
     self.m_ccn = 4 / 3 * np.pi * self.r_ccn ** 3 * self.rho_ccn  # ccn mass [g]
-    self.vth = np.sqrt(self.rgas * self.temp / (2 * np.pi * self.mw))  # thermal velocity [cm/s]
+    self.vth = np.sqrt(8 * self.rgas * self.temp / (np.pi * self.mmw))  # thermal velocity [cm/s]
     lmfpfac = np.sqrt(2) * self.rhoatmo * self.cs_mol
     self.lmfp = self.mmw / self.avog / lmfpfac  # mean free path length [cm]
     self.h = self.rgas * self.temp / self.gravity / self.mmw  # scale height [cm]
