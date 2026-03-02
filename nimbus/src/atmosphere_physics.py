@@ -157,16 +157,20 @@ def define_atmosphere_physics(self):
 
         # ==== Accreation rate in two limits
         # high knudsen number limit
-        dmdt_high = 4*np.pi * rg**2 * n1 * ncl * self.vth * (1 - self.pvap/p1)
+        dmdt_high = 4*np.pi * rg**2 * n1 * ncl * self.rvv * (1 - self.pvap/p1)
         dmdt_high *= self.sticking_coefficient
         # low knudsen number limit
         dmdt_low = 4*np.pi * rg * n1 * ncl * diff_const * (1 - self.pvap/p1)
         # interpolate
         val_low = np.maximum(dmdt_low, 1e-30)
         val_high = np.maximum(dmdt_high, 1e-30)
-        # fx = 0.5 * (1.0 - np.tanh(2.0*np.log10(val_low/val_high)))
-        # dmdt = dmdt_low * fx + dmdt_high * (1.0 - fx)
-        dmdt = 1/(1/val_low + 1/val_high)  # changed interpolation scheme
+        fx = 0.5 * (1.0 - np.tanh(2.0*np.log10(val_low/val_high)))
+        fx = np.maximum(np.minimum(fx, 1.0), 0)
+        fx = np.maximum(fx, 0)
+        dmdt = val_low * fx + val_high * (1.0 - fx)
+        dmdt = np.maximum(dmdt, 1e-30)
+        #dmdt = 1/(1/val_low + 1/val_high)  # changed interpolation scheme
+        # dmdt = np.minimum(val_low, val_high)
 
         # ==== fudge with accretion rate (No fudge: self.nuc_rate_fudge = 1)
         # dmdt *= self.acc_rate_fudge
@@ -210,6 +214,23 @@ def define_atmosphere_physics(self):
         vsed = (self.gravity * rg * self.rhop / (self.vth * self.rhoatmo) *
                 np.sqrt(1 + (4 * rg / (9 * self.lmfp)) ** 2))
         return vsed
+
+    def _vsed_ohno(rg):
+        """
+        Settling velocity taken from ExoLyn (Huang et al. 2024):
+        Citation:  	https://doi.org/10.1051/0004-6361/202451112
+        Link: https://github.com/helonghuangastro/exolyn
+        """
+        # visc = (5. / 16. * np.sqrt(np.pi * self.kb * temp * (self.mmw / self.avog)) /
+        #         self.cs_mol / (1.22 * (self.temp / self.eps_k) ** (-0.16)))
+        visc = 5.877e-7 * 10 * np.sqrt(self.temp)
+        knudsen = self.lmfp / rg
+        beta_slip = 1. + knudsen*(1.257 + 0.4*np.exp(-1.1/knudsen))
+        rho_atmos = self.rhoatmo # calculate density of the atmosphere
+        vfall_r = ((2.0*self.gravity*(rg**2)*self.rhop/(9.0*visc)*beta_slip)
+                   * (1.0 + (0.45*self.gravity*(rg**3)*rho_atmos*self.rhop/(54.0*visc**2)
+                             )**(2.0/5.0) )**(-5.0/4.0))
+        return vfall_r
 
     # def _vsed_diffudrift(rg):
     #     """
