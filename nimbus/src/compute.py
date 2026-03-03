@@ -49,12 +49,14 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
         self.static_rg = True  # keep radius constant in each itteration
         if max_iterations is None:
             max_iterations = 50  # default number of max_iterations
-            print('[INFO] Max itterations set to 50')
+            if not self.mute:
+                print('[INFO] Max itterations set to 50')
     elif typ == 'iterate':
         self.static_rg = True  # keep radius constant in each itteration
         if max_iterations is None:
             max_iterations = 10  # default number of itterations
-            print('[INFO] Number of itterations set to 10')
+            if not self.mute:
+                print('[INFO] Number of itterations set to 10')
         self.it_str = '/' + str(max_iterations)
     elif typ == 'full':
         self.static_rg = False  # allow for a variable radius
@@ -65,7 +67,8 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
 
     # additionally check itterations
     if max_iterations < 1:
-        print('[WARN] Itterations cannot be less than 1.')
+        if not self.mute:
+            print('[WARN] Itterations cannot be less than 1.')
         max_iterations = 1
         self.it_str = str(max_iterations)
     # remember number of itterations
@@ -76,8 +79,9 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
 
     # check if solver is setup, and do set up if necessary
     if not self.isset_solver:
-        print('[WARN] Solver set up automatically. '
-              'Use set_up_solver() for more control.')
+        if not self.mute:
+            print('[WARN] Solver set up automatically. '
+                  'Use set_up_solver() for more control.')
         set_up_solver()
         self.isset_solver = True
 
@@ -101,7 +105,8 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
     #   2) Calculate rg on the fly (full)
 
     # print info
-    print('\r[INFO] Computation started ...', end='')
+    if not self.mute:
+        print('\r[INFO] Computation started ...', end='')
 
     # ==== Itterate over static rg
     # This loop iterates of cloud particle size. In each loop, rg is held constant
@@ -114,7 +119,7 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             ts = np.logspace(np.log10(self.tstart), np.log10(self.tend), self.tsteps)
 
             # ==== print progress if verbose
-            if self.verbose:
+            if self.verbose and not self.mute:
                 print('\r[INFO] Loop ' + str(self.loop_nr) + '' + self.it_str
                       + ' || Current loop progress 00.00%', end='')
 
@@ -163,7 +168,7 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
                 if max_mmr < rel_dif_in_mmr:
                     break
                 # break if maximum number of itterations has been reached
-                if t >= self.itterations:
+                if t >= self.itterations and not self.mute:
                     print('[WARN] Maximum itterations reached with '
                           'precision: ' + str(max_mmr))
                     break
@@ -190,13 +195,14 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             plot_full_structure(self, sol.y, str(0))
 
     # ==== Finish up ====================================================================
-    # ==== print final informations
-    print('\r[INFO] Cloud structures completed in '
-          f'{time() - start_time:.2f}s ({self.loop_nr} iterations).')
-    # ==== additional warnings
-    if not deg_warn_flag:
-        print('[WARN] Not enough data points, degree of radius fit '
-              'chagned to: ' + str(deg_fit))
+    if not self.mute:
+        # ==== print final informations
+        print('\r[INFO] Cloud structures completed in '
+              f'{time() - start_time:.2f}s ({self.loop_nr} iterations).')
+        # ==== additional warnings
+        if not deg_warn_flag:
+            print('[WARN] Not enough data points, degree of radius fit '
+                  'chagned to: ' + str(deg_fit))
     # ==== save data internally
     ds = save_run(self, sol, save_file=save_file, tag=tag)
 

@@ -27,6 +27,7 @@ class DataStorage:
     avog = 6.02e23  # avogadro constant [1/mol]
     kb = rgas / avog  # boltzmann constant [erg/K]
     pf = 1000000  # Reference pressure [dyn / cm2]
+    kjpmol_to_ergpmol = 1e10  # conversion factor
 
     def __init__(self, data_file=None):
         # ==== Read in of parametrised cloud properties and basic values ================
@@ -64,10 +65,9 @@ class DataStorage:
         # self.gibbs_janaf = xr.open_dataset(
         #     os.path.dirname(__file__) + '/../data/Gibbs/janaf.nc'
         # ) * kjpmol_to_ergpmol
-        kjpmol_to_ergpmol = 1e10
         self.gibbs_janaf = xr.open_dataset(
             os.path.dirname(__file__) + '/../data/Gibbs/ggchem.nc'
-        ) * kjpmol_to_ergpmol
+        ) * self.kjpmol_to_ergpmol
 
 
     # =======================================================================================
@@ -210,37 +210,3 @@ class DataStorage:
             pvap = pvap[0]
 
         return pvap
-
-    # def reaction_supersaturation(self, cloud_specie, gas_species_in,
-    #                             gas_species_out, temp):
-    #     """
-    #     Calculate teh reaction supersaturation according to Kiefer et al. 2024a
-    #
-    #     :param cloud_specie: str, name of cloud specie (should end in [s])
-    #     :param species_in: Dict including names and VMR of Reactants
-    #         Example: {'H2O': 2e-2, 'H2O': 2e-2, 'SiO': 1e-3}
-    #     :param temp: Dict including names and VMR of (excluding solid)
-    #     :return:
-    #         pvap : vapor pressure
-    #     """
-    #
-    #     # ==== energy of formation
-    #     e_form = -self.gibbs_free_energy(cloud_specie, temp)
-    #     for ins in gas_species_in:
-    #         e_form += self.gibbs_free_energy(ins, temp)
-    #     for outs in gas_species_out:
-    #         e_form -= self.gibbs_free_energy(outs, temp)
-    #
-    #     # ==== number density prefactor
-    #     n_fac = 1
-    #     for ins in gas_species_in:
-    #         n_fac *= gas_species_in[ins]
-    #     for outs in gas_species_out:
-    #         n_fac /= gas_species_out[outs]
-    #
-    #     # ==== reference pressure factor
-    #     pow = len(gas_species_out) - len(gas_species_in)
-    #     p_fac = (self.pf / self.kb / temp)**pow
-    #
-    #     # ==== reaction super saturation
-    #     return n_fac * p_fac * np.exp(e_form/self.rgas/temp)

@@ -114,10 +114,12 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     # ==== Confirm that atmosphere has been set up
     self.isset_atmosphere = True
 
-    print('[INFO] Atmosphere set up with:')
-    print(f'       -> pressure range: {np.max(pressure*1e-6):.2e} - {np.min(pressure*1e-6):.2e} bar')
-    print(f'       -> temperature range: {np.max(temperature):.2e} - {np.min(temperature):.2e} K')
-    print(f'       -> Kzz range: {np.max(kzz):.2e} - {np.min(kzz):.2e} cm2/s')
-    print(f'       -> Mean molecular weight: {mmw:.2e} amu')
-    print(f'       -> Gravity: {gravity:.2e} cm/s2')
-    print('       -> ' + species + f' deep MMR: {deep_mmr:.2e} g/g')
+    # ==== Print current setup
+    if not self.mute:
+        print('[INFO] Atmosphere set up with:')
+        print(f'       -> pressure range: {np.max(pressure*1e-6):.2e} - {np.min(pressure*1e-6):.2e} bar')
+        print(f'       -> temperature range: {np.max(temperature):.2e} - {np.min(temperature):.2e} K')
+        print(f'       -> Kzz range: {np.max(kzz):.2e} - {np.min(kzz):.2e} cm2/s')
+        print(f'       -> Mean molecular weight: {mmw:.2e} amu')
+        print(f'       -> Gravity: {gravity:.2e} cm/s2')
+        print('       -> ' + species + f' deep MMR: {deep_mmr:.2e} g/g')

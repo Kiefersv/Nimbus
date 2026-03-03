@@ -27,7 +27,8 @@ class Nimbus:
     # ==== import plotting routines
     from .src.spectra import plot_spectrum
 
-    def __init__(self, working_dir='.', create_analytic_plots=False, verbose=False):
+    def __init__(self, working_dir='.', create_analytic_plots=False, verbose=False,
+                 mute=False):
         """
         Constructor.
 
@@ -39,12 +40,15 @@ class Nimbus:
             If true, analytic plots will be produced, increases computation time
         verbose : bool, optional
             If true, additional information are printed, increases computation time
+        mute : bool, optional
+            If true, Nimbus runs completely quietly, no output at all.
         """
 
         # ==== Workflow settings
         self.working_dir = working_dir + '/'  # working directory
         self.do_plots = create_analytic_plots  # If true, analytic plots are created
         self.verbose = verbose  # print diagonsic infos on the cost of computation time
+        self.mute = mute  # overwrites verbose and do_plots and makes Nimbus run quietly
 
         # ==== initialisation checks
         self.isset_atmosphere = False  # checks if an atmosphere was initialised
@@ -86,11 +90,12 @@ class Nimbus:
         self.sticking_coefficient = 1  # of collisional accreatin reaction rates
 
         # ==== Welcom message
-        print('===========================================================')
-        print('                   Welcome to Nimbus                       ')
-        print('===========================================================')
-        print('[INFO] For questions contact: kiefersv.mail@gmail.com')
-        print('[INFO] Settings selected:')
-        print('       -> working directory: ' + self.working_dir[:-1])
-        print('       -> verbose: ' + str(verbose))
-        print('       -> analytic plots: ' + str(create_analytic_plots))
+        if not self.mute:
+            print('===========================================================')
+            print('                   Welcome to Nimbus                       ')
+            print('===========================================================')
+            print('[INFO] For questions contact: kiefersv.mail@gmail.com')
+            print('[INFO] Settings selected:')
+            print('       -> working directory: ' + self.working_dir[:-1])
+            print('       -> verbose: ' + str(verbose))
+            print('       -> analytic plots: ' + str(create_analytic_plots))

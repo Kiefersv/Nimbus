@@ -128,7 +128,7 @@ def set_up_solver(self):
         # combine output
         dx = np.hstack([dxv, dxc, dxn])
         # print progress information
-        if self.verbose:
+        if self.verbose and not self.mute:
             prog = np.log10(t)/np.log10(self.tend) * 100
             print('\r[INFO] Loop ' + str(self.loop_nr) + '' + self.it_str
                   + ' || Current loop progress ' + f"{prog:05.2f}%", end='')
@@ -136,63 +136,8 @@ def set_up_solver(self):
         # ==== Return time derivative
         return dx
 
-    # # ==== Jacobian
-    # def jac(t, x):
-    #     """
-    #     Function to be solved by solve_ivp
-    #
-    #     Parameters
-    #     ----------
-    #     t : float
-    #         time [s]
-    #     x : ndarray
-    #         Mass mixing ratios of the form:
-    #         [xv(p1), ..., xv(pN), xc(p1), ..., xc(pN), xn(p1), ..., xn(pN)]
-    #     """
-    #
-    #     # define jacobian
-    #     J = np.zeros((self.sz * 3, self.sz * 3))
-    #
-    #     # # advection terms
-    #     # vsed = self.vsed(self.rg)
-    #     # J[self.sz, self.sz] = self.rhoatmo[0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
-    #     # J[self.sz*2, self.sz*2] = self.rhoatmo[0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
-    #     # for i in range(self.sz)[1:-1]:
-    #     #     J[self.sz*1+i, self.sz*1+i] = self.rhoatmo[i] * vsed[i] / self.dz[i] / self.rhoatmo[i]
-    #     #     J[self.sz*1+i, self.sz*1+i-1] = - self.rhoatmo[i-1] * vsed[i-1] / self.dz[i] / self.rhoatmo[i]
-    #     #     J[self.sz*2+i, self.sz*2+i] = self.rhoatmo[i] * vsed[i] / self.dz[i] / self.rhoatmo[i]
-    #     #     J[self.sz*2+i, self.sz*2+i-1] = - self.rhoatmo[i-1] * vsed[i-1] / self.dz[i] / self.rhoatmo[i]
-    #     #
-    #     # # diffusion terms
-    #     # J[self.sz*0, self.sz*0] = - self.kzz[0] * self.rhoatmo[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
-    #     # J[self.sz*0, self.sz*0+1] = self.kzz[0] * self.rhoatmo[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
-    #     # J[self.sz*1, self.sz*1] = - self.kzz[0] * self.rhoatmo[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
-    #     # J[self.sz*1, self.sz*1+1] = self.kzz[0] * self.rhoatmo[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
-    #     # J[self.sz*2, self.sz*2] = - self.kzz[0] * self.rhoatmo[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
-    #     # J[self.sz*2, self.sz*2+1] = self.kzz[0] * self.rhoatmo[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
-    #     # for i in range(self.sz)[1:-1]:
-    #     #     J[self.sz*0+i, self.sz*0+i-1] = self.kzz_mid[i-1] * self.rhoatmo_mid[i-1] / self.dz_mid[i-1] / self.dz[i] / self.rhoatmo[i]
-    #     #     J[self.sz*0+i, self.sz*0+i+0] = - self.kzz_mid[i-1] * self.rhoatmo_mid[i-1] / self.dz_mid[i-1] / self.dz[i] / self.rhoatmo[i] - self.kzz_mid[i] * self.rhoatmo_mid[i] / self.dz_mid[i] / self.dz[i] / self.rhoatmo[i]
-    #     #     J[self.sz*0+i, self.sz*0+i+1] = self.kzz_mid[i] * self.rhoatmo_mid[i] / self.dz_mid[i] / self.dz[i] / self.rhoatmo[i]
-    #     #     J[self.sz*1+i, self.sz*1+i-1] = self.kzz_mid[i-1] * self.rhoatmo_mid[i-1] / self.dz_mid[i-1] / self.dz[i] / self.rhoatmo[i]
-    #     #     J[self.sz*1+i, self.sz*1+i+0] = - self.kzz_mid[i-1] * self.rhoatmo_mid[i-1] / self.dz_mid[i-1] / self.dz[i] / self.rhoatmo[i] - self.kzz_mid[i] * self.rhoatmo_mid[i] / self.dz_mid[i] / self.dz[i] / self.rhoatmo[i]
-    #     #     J[self.sz*1+i, self.sz*1+i+1] = self.kzz_mid[i] * self.rhoatmo_mid[i] / self.dz_mid[i] / self.dz[i] / self.rhoatmo[i]
-    #     #     J[self.sz*2+i, self.sz*2+i-1] = self.kzz_mid[i-1] * self.rhoatmo_mid[i-1] / self.dz_mid[i-1] / self.dz[i] / self.rhoatmo[i]
-    #     #     J[self.sz*2+i, self.sz*2+i+0] = - self.kzz_mid[i-1] * self.rhoatmo_mid[i-1] / self.dz_mid[i-1] / self.dz[i] / self.rhoatmo[i] - self.kzz_mid[i] * self.rhoatmo_mid[i] / self.dz_mid[i] / self.dz[i] / self.rhoatmo[i]
-    #     #     J[self.sz*2+i, self.sz*2+i+1] = self.kzz_mid[i] * self.rhoatmo_mid[i] / self.dz_mid[i] / self.dz[i] / self.rhoatmo[i]
-    #
-    #     # # source terms:
-    #     # dx = np.maximum(1e-15, np.abs(x) * 1e-3)
-    #     # y0 = fex(t, x)  # , src_only=True)
-    #     # for i in range(self.sz * 3):
-    #     #     x0 = x.copy()
-    #     #     x0[i] += dx[i]
-    #     #     y1 = fex(t, x0)  # , src_only=True)
-    #     #     J[:, i] += (y1 - y0) / dx[i]
-    #
-    #     return J
-
     # ==== Set the functions
     self.fex = fex
     self.isset_solver = True
-    print('[INFO] Solver set up.')
+    if not self.mute:
+        print('[INFO] Solver set up.')
