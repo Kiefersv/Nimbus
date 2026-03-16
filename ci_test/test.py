@@ -57,13 +57,6 @@ def test_nimbus():
     assert np.isclose(np.sum(y), 0.00017411877560450766)
     os.remove('test.nc')
 
-    # #==== spectra calc test
-    # obj.set_up_spectra_calculation(m_planet, r_planet, t_star, r_star, mh_star, logg_star)
-    # w, t = obj.plot_spectrum(type='transmission', chem_data=chem)
-    # assert np.isclose(np.sum(w), 1482.0602667598862)
-    # assert np.isclose(np.sum(t), 1064754.0876068077)
-    # os.remove(os.path.dirname(__file__) + '/working/transmission_spectrum.png')
-
 
 
 def test_solversetters():
