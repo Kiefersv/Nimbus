@@ -1,5 +1,6 @@
 """ Functions to sotre and load data """
 import xarray as xr
+import numpy as np
 
 def save_run(self, sol, save_file=None, tag=None):
     """
@@ -21,6 +22,12 @@ def save_run(self, sol, save_file=None, tag=None):
         Xarray dataset containing the run
 
     """
+    # ==== calcualte dependent variables
+    nc = sol.y[self.sz * 2:self.sz * 3, -1] * self.rhoatmo / self.m_ccn
+    n1 = sol.y[:self.sz, -1] * self.rhoatmo / self.m1
+    nuc_rate = np.nan_to_num(self.nuc_rate(n1, self.temp))
+    growth_rate = self.acc_rate(self.rg, self.temp, n1, nc)
+
     # ==== How data is stored
     ds = xr.Dataset(
         data_vars={
@@ -28,14 +35,35 @@ def save_run(self, sol, save_file=None, tag=None):
             'qc': (['pressure'], sol.y[self.sz:self.sz * 2, -1]),
             'qn': (['pressure'], sol.y[self.sz * 2:self.sz * 3, -1]),
             'rg': (['pressure'], self.rg),
+            'nc': (['pressure'], nc),
+            'n1': (['pressure'], n1),
+            'J': (['pressure'], nuc_rate),
+            'G': (['pressure'], growth_rate),
+            'rho_atmo': (['pressure'], self.rhoatmo),
+            'temperature': (['pressure'], self.temp),
+            'kzz': (['pressure'], self.kzz),
+            'full_y': (['pressurex3', 'evaltimes'], sol.y),
         },
         coords={
             'pressure': self.pres * 1e-6,
+            'evaltimes': self.evaltimes,
+            'pressurex3': np.append(np.append(self.pres, self.pres), self.pres),
         },
         attrs={
             'mmw': self.mmw,
             'y': sol.y[:, -1],
             'itterations': self.loop_nr,
+            'tstart': self.tstart,
+            'tend': self.tend,
+            'tsteps': self.tsteps,
+            'ode_rtol': self.ode_rtol,
+            'ode_atol': self.ode_atol,
+            'ode_minimum_mmr': self.ode_minimum_mmr,
+            'static_rg': int(self.static_rg),
+            'r_ccn': self.r_ccn ,
+            'cs_mol': self.cs_mol,
+            'eps_k': self.eps_k,
+            'rg_fit_deg': self.rg_fit_deg,
         },
     )
 
@@ -46,12 +74,14 @@ def save_run(self, sol, save_file=None, tag=None):
     self.results[tag] = ds
 
     # ==== Print info
-    print('[INFO] Saved run under tag: ' + tag)
+    if not self.mute:
+        print('[INFO] Saved run under tag: ' + tag)
 
     # ==== save data to file if a save file is given
     if not isinstance(save_file, type(None)):
         ds.to_netcdf(save_file + '.nc')
-        print('       -> File name: ' + save_file)
+        if not self.mute:
+            print('       -> File name: ' + save_file)
 
     return ds
 

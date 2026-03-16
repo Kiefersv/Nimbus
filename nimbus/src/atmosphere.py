@@ -117,9 +117,37 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     # ==== Print current setup
     if not self.mute:
         print('[INFO] Atmosphere set up with:')
-        print(f'       -> pressure range: {np.max(pressure*1e-6):.2e} - {np.min(pressure*1e-6):.2e} bar')
+        print(f'       -> pressure range: {np.max(pressure):.2e} - {np.min(pressure):.2e} bar')
         print(f'       -> temperature range: {np.max(temperature):.2e} - {np.min(temperature):.2e} K')
         print(f'       -> Kzz range: {np.max(kzz):.2e} - {np.min(kzz):.2e} cm2/s')
         print(f'       -> Mean molecular weight: {mmw:.2e} amu')
         print(f'       -> Gravity: {gravity:.2e} cm/s2')
         print('       -> ' + species + f' deep MMR: {deep_mmr:.2e} g/g')
+
+
+def set_up_top_of_atmosphere_influx(self, influx_function):
+    """
+    Set up the top of atmosphere source function.
+
+    Parameters
+    ----------
+    self : Nimbus class
+        Nimbus object that is set up
+    influx_function : Function
+        def top_function(pressure, temperature, time):
+            pressure : np.ndarray[N]
+                pressure structure
+            temperature : np.ndarray[N]
+                temperature structure
+            time : float
+                current time (can be unused if constant)
+            return : np.ndarray[3, N]
+                the influx of gas-phase material at index 0, solid cloud material at
+                index 1, and cloud particles at index 2. Index 1 should in general be
+                all zeros.
+    """
+    self.tf = influx_function
+
+    # ==== Print current setup
+    if not self.mute:
+        print('[INFO] Top of atmosphere influx function added')

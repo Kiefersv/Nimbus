@@ -77,6 +77,10 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
     # starting time to evaluate runtime
     start_time = time()
 
+    # set timesteps
+    self.evaltimes = np.logspace(np.log10(self.tstart), np.log10(self.tend), self.tsteps)
+
+
     # check if solver is setup, and do set up if necessary
     if not self.isset_solver:
         if not self.mute:
@@ -116,7 +120,6 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             # ==== preparations
             self.loop_nr = t  # loop number
             self.rg_in = self.rg # remember input radius
-            ts = np.logspace(np.log10(self.tstart), np.log10(self.tend), self.tsteps)
 
             # ==== print progress if verbose
             if self.verbose and not self.mute:
@@ -126,7 +129,7 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             # ==== call the solver
             sol = solve_ivp(
                 self.fex, [self.tstart, self.tend], yin, method='LSODA',
-                rtol=self.ode_rtol, atol=self.ode_atol, t_eval=ts
+                rtol=self.ode_rtol, atol=self.ode_atol, t_eval=self.evaltimes
             )
             self.all_runs.append(sol)
 
@@ -182,12 +185,11 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
         self.rg_history = self.rg  # remember input radius
         self.loop_nr = 1  # there is only 1 loop
         self.rg_in = self.rg  # remember input radius for plotting
-        ts = np.logspace(np.log10(self.tstart), np.log10(self.tend), self.tsteps)
 
         # ==== call the solver
         sol = solve_ivp(
             self.fex, [self.tstart, self.tend], yin, method='LSODA',
-            rtol=self.ode_rtol, atol=self.ode_atol, t_eval=ts
+            rtol=self.ode_rtol, atol=self.ode_atol, t_eval=self.evaltimes
         )
 
         # ==== analytic cloud structure plot (a bit messy, not gonna lie)

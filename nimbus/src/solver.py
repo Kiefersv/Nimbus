@@ -89,6 +89,13 @@ def set_up_solver(self):
         dxc_src = acc_rate * self.m1 / self.rhoatmo + nuc_rate * self.m_ccn / self.rhoatmo
         dxn_src = nuc_rate * self.m_ccn / self.rhoatmo
 
+        # ===== additional top of atmosphere influx ====================================
+        if self.tf is not None:
+            influx = self.tf(self.pres, self.temp, t)
+            dxv_src += influx[0]
+            dxc_src += influx[1]
+            dxn_src += influx[2]
+
         # ==== Diffusion terms ==========================================================
         # !!! Note: Rounding errors prevents the definition of prefactors !!!
         # gas-phase

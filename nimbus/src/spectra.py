@@ -59,16 +59,16 @@ def plot_spectrum(self, chem_data=None, data=None, typ='transmission', tag='last
             chem_data = {
                 'H2O': np.asarray([0.1, 0.2, 0.1, 0.1]),
             }
-        data : np.ndarray
-            Observational data in the form [wavelengths, data, error]
-        typ : str
-            Can be 'transmission' or 'emission' depending on the use case.
-        tag : str, optional
-            Tag of the model to be calculated. Default is the last run.
-        plot : bool, optional
-            Create a diagnostic (but ugly) plot.
-        cloud_less : bool, optional
-            If True, ignore clouds and calculate a cloud less spectra.
+    data : np.ndarray
+        Observational data in the form [wavelengths, data, error]
+    typ : str
+        Can be 'transmission' or 'emission' depending on the use case.
+    tag : str, optional
+        Tag of the model to be calculated. Default is the last run.
+    plot : bool, optional
+        Create a diagnostic (but ugly) plot.
+    cloud_less : bool, optional
+        If True, ignore clouds and calculate a cloud less spectra.
 
     Return
     ------
@@ -163,3 +163,61 @@ def plot_spectrum(self, chem_data=None, data=None, typ='transmission', tag='last
             pass
 
     return wvl, spectrum
+
+
+def picaso_formater(self, tag='last_run', path_to_opacities=None):
+    """
+    Create pandas dataframe of opacities that can be read into PICASO.
+
+    Parameters
+    ----------
+    tag : str, optional
+        Tag of the model to be calculated. Default is the last run.
+
+    Return
+    ------
+    df_cloud : pd.dataframe
+        Opacities in PICASO format
+    """
+
+    # ==== import virga only here so Nimbus can be run without it
+    import virga.justdoit as jdi
+
+
+    # ==== Set optional inputs
+    if path_to_opacities is None:
+        self.dir_opac = os.path.dirname(__file__) + '/../data/opacities/'
+    else:
+        self.dir_opac = path_to_opacities + '/'
+
+    # ==== get data from tag
+    ds = self.results[tag]
+
+    # ==== Get cloud particle opacities
+    qe, qs, cos_q, nwave, radius, wave_in = jdi.get_mie(self.specie, self.dir_opac)
+    qext = qe[:, :, np.newaxis]  # extinction coefficient
+    qscat = qs[:, :, np.newaxis]  # scattering coefficient
+    cos_qscat = cos_q[:, :, np.newaxis]  # asymmetry parameter
+
+    # ==== Get cloud structure
+    qc = np.asarray([ds['qc'].values]).T
+    ndz = np.asarray([-ds['qn'] / self.m_ccn * self.dz * self.rhoatmo]).T
+    rgin = np.asarray([ds['rg'].values]).T
+    ndz[~self.mask_psupsat] = 0  # all values below cloud deck are zero
+    nradii = len(radius)
+    rmin = np.min(radius)
+    rmax = np.max(radius)
+
+    # ==== Use Virga to calculate opacities
+    radius, _, dr = jdi.get_r_grid_w_max(rmin, rmax, n_radii=nradii)
+    opd, w0, g0, _ = jdi.calc_optics(
+        nwave, qc, qc, rgin, rgin, ndz, radius, dr, qext, qscat,
+        cos_qscat, 2, rmin, nradii
+    )
+
+    # ==== Create opacities in picaso format
+    df_cloud = jdi.picaso_format(
+        opd[:-1], w0[:-1], g0[:-1],
+        pressure=10 ** self.logp_mid * 1e-6, wavenumber=1 / wave_in[:, 0] / 1e-4,
+    )
+    return df_cloud

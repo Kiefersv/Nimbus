@@ -12,6 +12,7 @@ class Nimbus:
 
     # ==== import set up functions
     from .src.atmosphere import set_up_atmosphere
+    from .src.atmosphere import set_up_top_of_atmosphere_influx
     from .src.solver import set_up_solver
     from .src.spectra import set_up_spectra_calculation
 
@@ -26,6 +27,7 @@ class Nimbus:
 
     # ==== import plotting routines
     from .src.spectra import plot_spectrum
+    from .src.spectra import picaso_formater
 
     def __init__(self, working_dir='.', create_analytic_plots=False, verbose=False,
                  mute=False):
@@ -60,6 +62,8 @@ class Nimbus:
         self.fex = None  # right hand side of time evolution (solved with solve_ivp)
         self.jac = None  # Jacobian matrix
         self.x0 = None  # initial mass mixing ratios
+        self.tf = None  # top flux function (see setup function for details)
+        self.evaltimes = None  # evaluation timesteps
 
         # ==== Default solver settings (can be changed with set_solver_settings())
         self.tstart = 1e-4  # start time of simulation [s]
