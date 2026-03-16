@@ -99,15 +99,15 @@ def set_up_solver(self):
         # ==== Diffusion terms ==========================================================
         # !!! Note: Rounding errors prevents the definition of prefactors !!!
         # gas-phase
-        dxv_dif[0] = self.kzz[0] * self.rhoatmo[0] * np.diff(xv[:2]) / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
+        dxv_dif[0] = self.kzz[0] * self.rhoatmo[0] * np.diff(xv[:2])[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
         dxv_dif[-1] = 0
         dxv_dif[1:-1] = np.diff(self.kzz_mid * self.rhoatmo_mid * np.diff(xv) / self.dz_mid) / self.dz[1:-1] / self.rhoatmo[1:-1]
         # cloud material
-        dxc_dif[0] = self.kzz[0] * self.rhoatmo[0] * np.diff(xc[:2]) / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
+        dxc_dif[0] = self.kzz[0] * self.rhoatmo[0] * np.diff(xc[:2])[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
         dxc_dif[-1] = 0
         dxc_dif[1:-1] = np.diff(self.kzz_mid * self.rhoatmo_mid * np.diff(xc) / self.dz_mid) / self.dz[1:-1] / self.rhoatmo[1:-1]
         # cloud particle number density
-        dxn_dif[0] = self.kzz[0] * self.rhoatmo[0] * np.diff(xn[:2]) / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
+        dxn_dif[0] = self.kzz[0] * self.rhoatmo[0] * np.diff(xn[:2])[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
         dxn_dif[-1] = 0
         dxn_dif[1:-1] = np.diff(self.kzz_mid * self.rhoatmo_mid * np.diff(xn) / self.dz_mid) / self.dz[1:-1] / self.rhoatmo[1:-1]
 
