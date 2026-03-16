@@ -14,4 +14,3 @@ Documentation
 -------------
 You can find a description of Nimbus, tutorials, and current functionalities in the read the docs [here](https://nimbus-kiefersv.readthedocs.io/en/latest/).
 
-![image](social/temp_logo.png)

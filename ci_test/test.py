@@ -108,3 +108,7 @@ def test_datastorage():
     assert np.isclose(np.sum(vp), 4427)
     vp = ds.vapor_pressures('SiO2', temp+1000)
     assert np.isclose(np.sum(vp), 2.111867499419599)
+    vp = ds.vapor_pressures('KCl', 3500)
+    assert np.isclose(np.sum(vp), 2.880546279845562e+23)
+    vp = ds.gibbs_free_energy('SiO2', 1000)
+    assert np.isclose(np.sum(vp), -9854695640143.047)
