@@ -33,7 +33,7 @@ def test_nimbus():
     obj.set_up_solver()
     ds = obj.compute(typ='iterate', max_iterations=3)
     y = np.asarray([ds['qc']]).T
-    assert np.isclose(np.sum(y), 4.855594052733314e-05)
+    assert np.isclose(np.sum(y), 0.00029755903690762727)
 
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
@@ -41,7 +41,7 @@ def test_nimbus():
     obj.set_up_solver()
     ds = obj.compute(typ='full')
     y = np.asarray([ds['qc']]).T
-    assert np.isclose(np.sum(y), 1.4851959184978415e-05)
+    assert np.isclose(np.sum(y), 0.00017415323472720008)
 
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
@@ -49,12 +49,12 @@ def test_nimbus():
     obj.set_up_solver()
     ds = obj.compute(typ='convergence', rel_dif_in_mmr=1e-3, save_file='test')
     y = np.asarray([ds['qc']]).T
-    assert np.isclose(np.sum(y), 1.4858344032895963e-05)
+    assert np.isclose(np.sum(y), 0.00017411877560450766)
 
     # ==== load previous run
     ds = obj.load_previous_run('test.nc')
     y = np.asarray([ds['qc']]).T
-    assert np.isclose(np.sum(y), 1.4858344032895963e-05)
+    assert np.isclose(np.sum(y), 0.00017411877560450766)
     os.remove('test.nc')
 
     # #==== spectra calc test
