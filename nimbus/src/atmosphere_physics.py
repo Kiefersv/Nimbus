@@ -215,22 +215,22 @@ def define_atmosphere_physics(self):
                 np.sqrt(1 + (4 * rg / (9 * self.lmfp)) ** 2))
         return vsed
 
-    def _vsed_ohno(rg):
-        """
-        Settling velocity taken from ExoLyn (Huang et al. 2024):
-        Citation:  	https://doi.org/10.1051/0004-6361/202451112
-        Link: https://github.com/helonghuangastro/exolyn
-        """
-        # visc = (5. / 16. * np.sqrt(np.pi * self.kb * temp * (self.mmw / self.avog)) /
-        #         self.cs_mol / (1.22 * (self.temp / self.eps_k) ** (-0.16)))
-        visc = 5.877e-7 * 10 * np.sqrt(self.temp)
-        knudsen = self.lmfp / rg
-        beta_slip = 1. + knudsen*(1.257 + 0.4*np.exp(-1.1/knudsen))
-        rho_atmos = self.rhoatmo # calculate density of the atmosphere
-        vfall_r = ((2.0*self.gravity*(rg**2)*self.rhop/(9.0*visc)*beta_slip)
-                   * (1.0 + (0.45*self.gravity*(rg**3)*rho_atmos*self.rhop/(54.0*visc**2)
-                             )**(2.0/5.0) )**(-5.0/4.0))
-        return vfall_r
+    # def _vsed_ohno(rg):
+    #     """
+    #     Settling velocity taken from ExoLyn (Huang et al. 2024):
+    #     Citation:  	https://doi.org/10.1051/0004-6361/202451112
+    #     Link: https://github.com/helonghuangastro/exolyn
+    #     """
+    #     # visc = (5. / 16. * np.sqrt(np.pi * self.kb * temp * (self.mmw / self.avog)) /
+    #     #         self.cs_mol / (1.22 * (self.temp / self.eps_k) ** (-0.16)))
+    #     visc = 5.877e-7 * 10 * np.sqrt(self.temp)
+    #     knudsen = self.lmfp / rg
+    #     beta_slip = 1. + knudsen*(1.257 + 0.4*np.exp(-1.1/knudsen))
+    #     rho_atmos = self.rhoatmo # calculate density of the atmosphere
+    #     vfall_r = ((2.0*self.gravity*(rg**2)*self.rhop/(9.0*visc)*beta_slip)
+    #                * (1.0 + (0.45*self.gravity*(rg**3)*rho_atmos*self.rhop/(54.0*visc**2)
+    #                          )**(2.0/5.0) )**(-5.0/4.0))
+    #     return vfall_r
 
     # def _vsed_diffudrift(rg):
     #     """

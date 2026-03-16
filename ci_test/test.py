@@ -70,11 +70,15 @@ def test_solversetters():
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
 
     obj.set_solver_settings(initial_time_for_solver=1, end_time_for_solver=2,
-        evaluation_steps_for_solver=3, degree_of_radius_polinomial=4)
+        evaluation_steps_for_solver=3, degree_of_radius_polinomial=4, rtol=5, atol=6,
+        ode_minimum_mmr=7)
     assert obj.tstart == 1
     assert obj.tend == 2
     assert obj.tsteps == 3
     assert obj.rg_fit_deg == 4
+    assert obj.ode_rtol == 5
+    assert obj.ode_atol == 6
+    assert obj.ode_minimum_mmr == 7
 
     obj.set_cloud_settings(minimum_cloud_particle_radius=1, molecular_cross_section=2)
     assert obj.r_ccn == 1
