@@ -2,6 +2,7 @@
 Functions concerning atmospheric properties. Different functions might be used
 or added.
 """
+# pylint: disable=R0914
 
 import numpy as np
 

@@ -1,5 +1,5 @@
 """ All set-up functionalities of NIMBUS """
-
+# pylint: disable=R0913,E0402,R0915
 import numpy as np
 from scipy.optimize import root_scalar
 
@@ -68,10 +68,14 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     ds = DataStorage()  # open the data storage
     self.ds = ds  # remember the class
     # ==== Assign material information
-    self.rhop = np.asarray([ds.solid_density(spec) for spec in self.species])  # density of cloud material [g/cm3]
-    self.mw = np.asarray([ds.molecular_weight(spec) for spec in self.species])  # cloud material molecular weight [amu]
-    self.m1 = np.asarray([ds.monomer_mass(spec) for spec in self.species])  # monomer mass [g]
-    self.rgas_spec_cloud = np.asarray([ds.specific_gas_constant(spec) for spec in self.species])  # specific gas constant
+    # density of cloud material [g/cm3]
+    self.rhop = np.asarray([ds.solid_density(spec) for spec in self.species])
+    # cloud material molecular weight [amu]
+    self.mw = np.asarray([ds.molecular_weight(spec) for spec in self.species])
+    # monomer mass [g]
+    self.m1 = np.asarray([ds.monomer_mass(spec) for spec in self.species])
+    # specific gas constant
+    self.rgas_spec_cloud = np.asarray([ds.specific_gas_constant(spec) for spec in self.species])
 
     # ==== calculate pressure grid
     # grid coordiantes
@@ -93,7 +97,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     self.calc_atmos_struct()
 
     # ==== find pressure levels which are always supersaturated
-    self.mask_psupsat = (self.pres > 0)
+    self.mask_psupsat = self.pres > 0
     for s, spec in enumerate(self.species):
         ndeep = self.deep_gas_mmr[s] * self.rhoatmo / self.m1[s]  # deep particle number density
         pdeep = ndeep * self.kb * self.temp  # deep partial pressure
@@ -118,7 +122,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     if not self.mute:
         print('[INFO] Atmosphere set up with:')
         print(f'       -> pressure range: {np.max(pressure):.2e} - {np.min(pressure):.2e} bar')
-        print(f'       -> temperature range: {np.max(temperature):.2e} - {np.min(temperature):.2e} K')
+        print(f'       -> temperature range: {np.max(self.temp):.2e} - {np.min(self.temp):.2e} K')
         print(f'       -> Kzz range: {np.max(kzz):.2e} - {np.min(kzz):.2e} cm2/s')
         print(f'       -> Mean molecular weight: {mmw:.2e} amu')
         print(f'       -> Gravity: {gravity:.2e} cm/s2')

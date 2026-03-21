@@ -39,20 +39,24 @@ def save_run(self, sol, save_file=None, tag=None):
         nuc_rate = np.zeros((self.nspec, len(self.all_runs), self.sz))
         acc_rate = np.zeros((self.nspec, len(self.all_runs), self.sz))
         n1 = np.zeros((self.nspec, len(self.all_runs), self.sz))
+        total_mmr = np.zeros((len(self.all_runs), self.sz))
         ncl = np.zeros((len(self.all_runs), self.sz))
         rg = np.zeros((len(self.all_runs), self.sz))
         for r, run in enumerate(self.all_runs):
             xrun = run.y[:, -1].reshape((self.nspec*2 + 1, self.sz))
             # calculate the physics
             xrun[xrun < self.ode_minimum_mmr] = self.ode_minimum_mmr
+            total_mmr[r] = np.sum(xrun[1::2], axis=0)
             xn = xrun[-1]  # cloud number density mmr
             ncl[r] = xn * self.rhoatmo / self.m_ccn  # cloud particle number density [1/cm3]
             rg[r] = self.rg_history[r]
-            for s, spec in enumerate(self.species):
-                n1[s, r] = xrun[s*2] * self.rhoatmo / self.m1[s]  # gas-phase number density [1/cm3]
-                # assign the values
-                acc_rate[s, r] = self.acc_rate(rg[r], self.temp, n1[s, r], ncl[r], s)  # accretion rate [1/cm3/s]
-                nuc_rate[s, r] = self.nuc_rate(n1[s, r], self.temp, s)  # nucleation rate [1/cm3/s]
+            for s, _ in enumerate(self.species):
+                # gas-phase number density [1/cm3]
+                n1[s, r] = xrun[s*2] * self.rhoatmo / self.m1[s]
+                # accretion rate [1/cm3/s]
+                acc_rate[s, r] = self.acc_rate(rg[r], self.temp, n1[s, r], ncl[r], s)
+                # nucleation rate [1/cm3/s]
+                nuc_rate[s, r] = self.nuc_rate(n1[s, r], self.temp, s)
                 gas_mmr[s, r] = xrun[s*2]
                 solid_mmr[s, r] = xrun[s*2 + 1]
         data = {
@@ -82,6 +86,7 @@ def save_run(self, sol, save_file=None, tag=None):
         nuc_rate = np.zeros((self.nspec, self.tsteps, self.sz))
         acc_rate = np.zeros((self.nspec, self.tsteps, self.sz))
         n1 = np.zeros((self.nspec, self.tsteps, self.sz))
+        total_mmr = np.zeros((self.tsteps, self.sz))
         ncl = np.zeros((self.tsteps, self.sz))
         rg = np.zeros((self.tsteps, self.sz))
         for t, _ in enumerate(self.evaltimes):
@@ -89,11 +94,12 @@ def save_run(self, sol, save_file=None, tag=None):
             # calculate the physics
             xrun[xrun < self.ode_minimum_mmr] = self.ode_minimum_mmr
             xtot = np.sum(xrun[1::2], axis=0)
+            total_mmr[t] = xtot
             rhotot = np.sum(xrun[1::2]*self.rhop[:, np.newaxis], axis=0)/xtot
             xn = xrun[-1]  # cloud number density mmr
             ncl[t] = xn * self.rhoatmo / self.m_ccn  # cloud particle number density [1/cm3]
             rg[t] = mass_to_radius(self, xrun[-1], xtot, rhotot)
-            for s, spec in enumerate(self.species):
+            for s, _ in enumerate(self.species):
                 n1[s, t] = xrun[s*2] * self.rhoatmo / self.m1[s]  # gas-phase number density [1/cm3]
                 # assign the values
                 acc_rate[s, t] = self.acc_rate(rg[t], self.temp, n1[s, t], ncl[t], s)  # accretion rate [1/cm3/s]
@@ -102,6 +108,7 @@ def save_run(self, sol, save_file=None, tag=None):
                 solid_mmr[s, t] = xrun[s*2 + 1]
         data = {
             'gas_mmr': (co, gas_mmr),
+            'total_cloud_mmr': (co[1:], total_mmr),
             'cloud_mmr': (co, solid_mmr),
             'nucleation_rate': (co, nuc_rate),
             'growth_rate': (co, acc_rate),

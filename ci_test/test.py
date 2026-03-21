@@ -5,6 +5,7 @@ import numpy as np
 from nimbus import Nimbus, DataStorage
 
 def test_nimbus():
+    """ Integration testing """
     # ==== Example values
     temperature = np.asarray([775, 951, 1073, 1111, 1540, 2654])  # [K]
     pressure = np.asarray([1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3])  # [bar]
@@ -15,7 +16,8 @@ def test_nimbus():
     deepmmr = 1e-3  # [g/g]
 
     # ==== set up nimbus itteratively
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True, create_analytic_plots=True)
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
+                 verbose=True, create_analytic_plots=True)
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(typ='iterate', max_iterations=3)
@@ -56,6 +58,7 @@ def test_nimbus():
 
 
 def test_solversetters():
+    "Unit testing of Nimbus"
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
 
     obj.set_solver_settings(initial_time_for_solver=1, end_time_for_solver=2,
@@ -79,6 +82,7 @@ def test_solversetters():
     assert obj.sticking_coefficient == 1
 
 def test_datastorage():
+    """ Unit testing of DataStorage """
     ds = DataStorage()
     temp = np.asarray([500])
     vp = ds.vapor_pressures('C', 3500)
