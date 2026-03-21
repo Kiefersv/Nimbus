@@ -13,7 +13,7 @@ class Nimbus:
     # ==== import set up functions
     from .src.atmosphere import set_up_atmosphere
     from .src.atmosphere import set_up_top_of_atmosphere_influx
-    #from .src.atmosphere import calc_atmos_struct
+    from .src.atmosphere import calc_atmos_struct
     from .src.solver import set_up_solver
     from .src.spectra import set_up_spectra_calculation
 

@@ -16,7 +16,7 @@ def define_atmosphere_physics(self):
     # ===================================================================================
     #  Nucleation rates
     # ===================================================================================
-    def _nuc_rate_mini_cloud(n1, temp):
+    def _nuc_rate_mini_cloud(n1, temp, s):
         """
         This nucleation rate was taken from Elsie Lee's mini cloud:
         Citation: https://academic.oup.com/mnras/article/524/2/2918/7221353
@@ -27,17 +27,21 @@ def define_atmosphere_physics(self):
         :return:
         """
 
+        # ==== Physical parameters
+        pvap = self.ds.vapor_pressures(self.species[s], self.temp, self.mh)
+        sig = self.ds.surface_tension(self.species[s], self.temp)
+
         # ==== Hard coded values
         alpha = 1.0  # sticking coefficient []
         nf = 5.0  # MCNT factor []
 
         # ==== Physical parameters
         p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
-        sat = p1 / self.pvap  # log of saturation []
+        sat = p1 / pvap  # log of saturation []
         ln_ss = np.log(sat)  # log of supersaturation []
         f0 = 4.0 * np.pi * self.r1 ** 2  # colisional corsssection [cm2]
         kbt = self.kb * temp  # shorthand notation
-        theta_inf = (f0 * self.sig) / kbt  # theta inf [?]
+        theta_inf = (f0 * sig) / kbt  # theta inf [?]
 
         # ==== Prevent unphysical sat values (will be removed at the end)
         ln_ss[ln_ss <= 1e-30] = 1e-30
@@ -59,7 +63,7 @@ def define_atmosphere_physics(self):
 
         # ==== growth rate
         tau_gr = ((f0 * n_star**(2.0/3.0)) * alpha
-                  * np.sqrt(kbt / (2.0 * np.pi * self.mw / self.avog)) * n1)
+                  * np.sqrt(kbt / (2.0 * np.pi * self.mw[s] / self.avog)) * n1)
 
         # ==== everything together gives the nucleaiton rate
         exponent = np.maximum(-300.0, n_star_1 * ln_ss - dg_rt)
@@ -139,7 +143,7 @@ def define_atmosphere_physics(self):
     # :return: accretion rate [1/cm3]
     # """
 
-    def _acc_rate_mini_cloud(rg, temp, n1, ncl):
+    def _acc_rate_mini_cloud(rg, temp, n1, ncl, s):
         """
         Accretion rate following Lee (2023):
         Citation: https://doi.org/10.1093/mnras/stad2037
@@ -148,19 +152,21 @@ def define_atmosphere_physics(self):
 
         # ==== Physical parameters
         p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
+        pvap = self.ds.vapor_pressures(self.species[s], self.temp, self.mh)
+        rvv = np.sqrt(self.rgas * self.temp / (2 * np.pi * self.mw[s]))  # rel vel of vapour [cm/s]
 
         # ==== Gaseous diffusion constant
         d0 = 2*self.r1
         diff_const = (5.0/(16.0 * self.avog * d0**2 * self.rhoatmo) *
                       np.sqrt((self.rgas * self.temp * self.mmw)/(2.0 * np.pi) *
-                              (self.mw + self.mmw)/self.mw))
+                              (self.mw[s] + self.mmw)/self.mw[s]))
 
         # ==== Accreation rate in two limits
         # high knudsen number limit
-        dmdt_high = 4*np.pi * rg**2 * n1 * ncl * self.rvv * (1 - self.pvap/p1)
+        dmdt_high = 4*np.pi * rg**2 * n1 * ncl * rvv * (1 - pvap/p1)
         dmdt_high *= self.sticking_coefficient
         # low knudsen number limit
-        dmdt_low = 4*np.pi * rg * n1 * ncl * diff_const * (1 - self.pvap/p1)
+        dmdt_low = 4*np.pi * rg * n1 * ncl * diff_const * (1 - pvap/p1)
         # interpolate
         val_low = np.maximum(dmdt_low, 1e-30)
         val_high = np.maximum(dmdt_high, 1e-30)
@@ -169,11 +175,6 @@ def define_atmosphere_physics(self):
         fx = np.maximum(fx, 0)
         dmdt = val_low * fx + val_high * (1.0 - fx)
         dmdt = np.maximum(dmdt, 1e-30)
-        #dmdt = 1/(1/val_low + 1/val_high)  # changed interpolation scheme
-        # dmdt = np.minimum(val_low, val_high)
-
-        # ==== fudge with accretion rate (No fudge: self.nuc_rate_fudge = 1)
-        # dmdt *= self.acc_rate_fudge
 
         return dmdt
 
@@ -205,13 +206,13 @@ def define_atmosphere_physics(self):
     # :return: terminal cloud particle settling velocity [cm/s]
     # """
 
-    def _vsed_exolyn(rg):
+    def _vsed_exolyn(rg, rhop):
         """
         Settling velocity taken from ExoLyn (Huang et al. 2024):
         Citation:  	https://doi.org/10.1051/0004-6361/202451112
         Link: https://github.com/helonghuangastro/exolyn
         """
-        vsed = (self.gravity * rg * self.rhop / (self.vth * self.rhoatmo) *
+        vsed = (self.gravity * rg * rhop / (self.vth * self.rhoatmo) *
                 np.sqrt(1 + (4 * rg / (9 * self.lmfp)) ** 2))
         return vsed
 
@@ -326,7 +327,7 @@ def define_atmosphere_physics(self):
 #  Fixed functions that don't need to be changed
 # =======================================================================================
 
-def mass_to_radius(self, xn, xc):
+def mass_to_radius(self, xn, xc, rhop):
     """
     Calculate cloud particle radius from mass
 
@@ -343,6 +344,6 @@ def mass_to_radius(self, xn, xc):
         Cloud particle radius [cm]
     """
     mp = np.nan_to_num(xc * self.m_ccn / xn)  # cloud particle mass [g]
-    rg = np.cbrt(3 * mp / (4 * np.pi * self.rhop)) # cloud particle radius [cm]
+    rg = np.cbrt(3 * mp / (4 * np.pi * rhop)) # cloud particle radius [cm]
     rg = np.maximum(rg, self.r_ccn)  # prevent low values
     return rg

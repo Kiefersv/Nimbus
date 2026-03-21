@@ -91,12 +91,12 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
 
     # initial conditions
     yin = set_initial_condidtions(self)  # load initial conditions
-    # plot initial conditions
-    if self.do_plots:
-        plot_initial_conditions(self, yin)
+    # # plot initial conditions
+    # if self.do_plots:
+    #     plot_initial_conditions(self, yin)
 
     # Variables to save intermediate results
-    self.rg_history = np.zeros((len(self.pres), self.itterations + 2))
+    self.rg_history = []
     self.all_runs = []
     # remember the number of itterations
     t = 1
@@ -136,8 +136,12 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             # ==== prepare next run
             yin = sol.y[:, -1]  # set initial conditions to last run
             # calculate acutal radius from output
-            rg = mass_to_radius(self, sol.y[self.sz * 2:, -1],
-                                sol.y[self.sz:self.sz * 2, -1])
+            xrun = yin.reshape((self.nspec*2 + 1, self.sz))
+            # calculate the physics
+            xrun[xrun < self.ode_minimum_mmr] = self.ode_minimum_mmr
+            xtot = np.sum(xrun[1::2], axis=0)
+            rhotot = np.sum(xrun[1::2]*self.rhop[:, np.newaxis], axis=0)/xtot
+            rg = mass_to_radius(self, xrun[-1], xtot, rhotot)
             # find out if there are enough data points for full polynomial degree
             deg_fit = self.rg_fit_deg
             if sum(self.mask_psupsat) - 1 < self.rg_fit_deg:
@@ -153,10 +157,11 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             rg = 10 ** np.maximum(np.minimum(fit, 50), -50)  # prevent extreme values
             rg = 10 ** ((np.log10(rg) + np.log10(self.rg)) / 2)
             self.rg = np.maximum(rg, self.r_ccn)
+            self.rg_history.append(self.rg)
 
-            # ==== analytic cloud structure plot (a bit messy, not gonna lie)
-            if self.do_plots:
-                plot_full_structure(self, sol.y, str(t))
+            # # ==== analytic cloud structure plot (a bit messy, not gonna lie)
+            # if self.do_plots:
+            #     plot_full_structure(self, sol.y, str(t))
 
             # ==== stopping creterion
             if typ == 'iterate' and t >= self.itterations:

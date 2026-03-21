@@ -14,27 +14,12 @@ def test_nimbus():
     species = 'SiO'
     deepmmr = 1e-3  # [g/g]
 
-    # variables for spectra
-    m_planet = 0.12  # in jupiter mass (Anderson et al. 2017)
-    r_planet = 0.94  # in jupiter radii (Anderson et al. 2017)
-    r_star = 0.67  # in solar radii (Piaulet et al. 2022)
-    t_star = 4425  # in K (Piaulet et al. 2022)
-    mh_star = 0.02  # in solar metalicity (Piaulet et al. 2022)
-    logg_star = 4.633  # in cgs (Piaulet et al. 2022)
-    distance = 64.7  # not used
-    # chemistry from ARCiS fit
-    chem = {
-        'H2O': np.ones_like(pressure) * 1e-2,
-        'H2S': np.ones_like(pressure) * 1e-3,
-        'NH3': np.ones_like(pressure) * 1e-5,
-    }
-
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True, create_analytic_plots=True)
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(typ='iterate', max_iterations=3)
-    y = np.asarray([ds['qc']]).T
+    y = np.asarray([ds['cloud_mmr'][0, -1]]).T
     assert np.isclose(np.sum(y), 0.00029755903690762727)
 
     # ==== set up nimbus itteratively
@@ -42,7 +27,7 @@ def test_nimbus():
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(typ='full')
-    y = np.asarray([ds['qc']]).T
+    y = np.asarray([ds['cloud_mmr'][0, -1]]).T
     assert np.isclose(np.sum(y), 0.00017415323472720008)
 
     # ==== set up nimbus itteratively
@@ -50,14 +35,23 @@ def test_nimbus():
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(typ='convergence', rel_dif_in_mmr=1e-3, save_file='test')
-    y = np.asarray([ds['qc']]).T
+    y = np.asarray([ds['cloud_mmr'][0, -1]]).T
     assert np.isclose(np.sum(y), 0.00017411877560450766)
 
     # ==== load previous run
     ds = obj.load_previous_run('test.nc')
-    y = np.asarray([ds['qc']]).T
+    y = np.asarray([ds['cloud_mmr'][0, -1]]).T
     assert np.isclose(np.sum(y), 0.00017411877560450766)
     os.remove('test.nc')
+
+    # ==== set up nimbus with multiple materials
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity,
+                          ['SiO', 'MgSiO3'], [1e-3, 1e-4])
+    obj.set_up_solver()
+    ds = obj.compute(typ='full')
+    y = np.asarray([ds['cloud_mmr'][0, -1]]).T
+    assert np.isclose(np.sum(y), 0.99)
 
 
 

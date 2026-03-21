@@ -35,9 +35,6 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
         metalicity of atmosphere (used for certain pvaps)
     """
 
-    # ==== Size and shpae of inputs
-    self.sz = len(pressure)
-
     # ==== Initialise all cloud species =================================================
     # Note: Each species gets an index according to the input order. Until the output,
     # only the index is used to identify the species.
@@ -45,10 +42,14 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
         self.species = [species]
         self.deep_gas_mmr = np.asarray([deep_mmr])
     elif isinstance(species, (list, tuple)):
+        self.species = species
         # if given as dict, transform to ordered list
         if isinstance(deep_mmr, dict):
             deep_mmr = [deep_mmr[spec] for spec in species]
         self.deep_gas_mmr = np.asarray(deep_mmr)
+
+    # ==== Size and shpae of inputs
+    self.sz = len(pressure)
     self.nspec = len(self.species)
 
     # ==== Setting input parameters
@@ -58,7 +59,6 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     self.mmw = mmw  # mean molecular weight [amu]
     self.gravity = gravity  # gravity [cm/s2]
     self.fsed = fsed  # (initial) settling parameter [None]
-    self.deep_gas_mmr = deep_mmr  # mass mixing ratio in the interior [g/g]
     self.mh = metalicity  # metalicity relative to solar (not log!) []
 
     # ==== Set nucleation rate, accretion rate, and settling velocity
@@ -66,16 +66,12 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
 
     # ==== currently hardcoded for SiO, later this will be input
     ds = DataStorage()  # open the data storage
-    self.datastorage = ds  # remember the class
-    self.specie = species  # save name of cloud species
-    self.rho_ccn = ds.solid_density(species)  # density of nucleation seads [g/cm3]
-    self.rhop = ds.solid_density(species)  # density of cloud material [g/cm3]
-    self.mw = ds.molecular_weight(species)  # cloud material molecular weight [amu]
-    self.r1 = ds.monomer_radius(species)  # monomer radius [cm]
-    self.sig = ds.surface_tension(species, self.temp)  # surface tension [??]
-    self.m1 = ds.monomer_mass(species)  # monomer mass [g]
-    self.rgas_spec_cloud = ds.specific_gas_constant(species)  # specific gas constant
-    self.pvap = ds.vapor_pressures(species, self.temp, self.mh)  # vapor press [dyn/cm2]
+    self.ds = ds  # remember the class
+    # ==== Assign material information
+    self.rhop = np.asarray([ds.solid_density(spec) for spec in self.species])  # density of cloud material [g/cm3]
+    self.mw = np.asarray([ds.molecular_weight(spec) for spec in self.species])  # cloud material molecular weight [amu]
+    self.m1 = np.asarray([ds.monomer_mass(spec) for spec in self.species])  # monomer mass [g]
+    self.rgas_spec_cloud = np.asarray([ds.specific_gas_constant(spec) for spec in self.species])  # specific gas constant
 
     # ==== calculate pressure grid
     # grid coordiantes
@@ -88,37 +84,28 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     self.dlogp[-1] = self.logp[-1] - self.logp[-2]
     # midpoints bin size
     self.dlogp_mid = self.logp[1:] - self.logp[:-1]
-    # derivatives to be used later
-    self.dz = - self.rgas * self.temp / self.mmw / self.gravity * self.dlogp
 
     # ==== Derive physical properties
-    self.natmo = self.pres / self.temp / self.kb  # total gas-phase number density [1/cm3]
-    self.rhoatmo = self.mmw * self.pres / self.temp / self.rgas  # atmospheric density [g/cm]
     self.m_ccn = 4 / 3 * np.pi * self.r_ccn ** 3 * self.rho_ccn  # ccn mass [g]
-    self.vth = np.sqrt(8 * self.rgas * self.temp / (np.pi * self.mmw))
-    self.rvv = np.sqrt(self.rgas * self.temp / (2 * np.pi * self.mw))  # rel vel of vapour [cm/s]
-    lmfpfac = np.sqrt(2) * self.rhoatmo * self.cs_mol
-    self.lmfp = self.mmw / self.avog / lmfpfac  # mean free path length [cm]
-    self.h = self.rgas * self.temp / self.gravity / self.mmw  # scale height [cm]
-    self.ct = np.sqrt(2 * self.rgas * self.temp / self.mmw)  # sound speed [cm/s]
-
-    # ==== mid point values (see above for explenation of values)
     self.kzz_mid = np.interp(self.logp_mid, self.logp, self.kzz)
-    self.rhoatmo_mid = np.interp(self.logp_mid, self.logp, self.rhoatmo)
-    self.temp_mid = np.interp(self.logp_mid, self.logp, self.temp)
-    self.dz_mid = - self.rgas * self.temp_mid / self.mmw / gravity * self.dlogp_mid
+
+    # ==== pre-compute constant values
+    self.calc_atmos_struct()
 
     # ==== find pressure levels which are always supersaturated
-    ndeep = self.deep_gas_mmr * self.rhoatmo / self.m1  # deep particle number density
-    pdeep = ndeep * self.kb * self.temp  # deep partial pressure
-    self.mask_psupsat = self.pvap / pdeep < 1  # mask where vapour can condense
+    self.mask_psupsat = (self.pres > 0)
+    for s, spec in enumerate(self.species):
+        ndeep = self.deep_gas_mmr[s] * self.rhoatmo / self.m1[s]  # deep particle number density
+        pdeep = ndeep * self.kb * self.temp  # deep partial pressure
+        pvap = self.ds.vapor_pressures(spec, self.temp, self.mh)
+        self.mask_psupsat *= pvap / pdeep < 1  # mask where vapour can condense
 
     # ==== Calculate initial radius
     self.rg = np.zeros_like(self.pres)
     for i, _ in enumerate(self.pres):
         # minimisation function
         def vsed_f(rg):
-            v_c = self.vsed(rg)[i]  # settling veloctity
+            v_c = self.vsed(rg, self.rho_ccn)[i]  # settling veloctity
             vk = self.fsed * self.kzz[i] / self.h[i]  # fsed velocity
             return vk - v_c
         # call of minimisation function with optimised initial condiaitons
@@ -135,7 +122,8 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
         print(f'       -> Kzz range: {np.max(kzz):.2e} - {np.min(kzz):.2e} cm2/s')
         print(f'       -> Mean molecular weight: {mmw:.2e} amu')
         print(f'       -> Gravity: {gravity:.2e} cm/s2')
-        print('       -> ' + species + f' deep MMR: {deep_mmr:.2e} g/g')
+        for s in range(self.nspec):
+            print('       -> ' + self.species[s] + f' deep MMR: {self.deep_gas_mmr[s]:.2e} g/g')
 
 
 def set_up_top_of_atmosphere_influx(self, influx_function):
@@ -164,3 +152,22 @@ def set_up_top_of_atmosphere_influx(self, influx_function):
     # ==== Print current setup
     if not self.mute:
         print('[INFO] Top of atmosphere influx function added')
+
+def calc_atmos_struct(self):
+    """ This function performs atmospheric calculation updates """
+
+    # ==== Derive physical properties
+    self.natmo = self.pres / self.temp / self.kb  # total gas-phase number density [1/cm3]
+    self.rhoatmo = self.mmw * self.pres / self.temp / self.rgas  # atmospheric density [g/cm]
+    self.vth = np.sqrt(8 * self.rgas * self.temp / (np.pi * self.mmw))
+    lmfpfac = np.sqrt(2) * self.rhoatmo * self.cs_mol
+    self.lmfp = self.mmw / self.avog / lmfpfac  # mean free path length [cm]
+    self.h = self.rgas * self.temp / self.gravity / self.mmw  # scale height [cm]
+    self.ct = np.sqrt(2 * self.rgas * self.temp / self.mmw)  # sound speed [cm/s]
+    # derivatives to be used later
+    self.dz = - self.rgas * self.temp / self.mmw / self.gravity * self.dlogp
+
+    # ==== mid point values (see above for explenation of values)
+    self.rhoatmo_mid = np.interp(self.logp_mid, self.logp, self.rhoatmo)
+    self.temp_mid = np.interp(self.logp_mid, self.logp, self.temp)
+    self.dz_mid = - self.rgas * self.temp_mid / self.mmw / self.gravity * self.dlogp_mid

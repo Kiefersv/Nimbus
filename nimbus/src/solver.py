@@ -11,14 +11,18 @@ def set_initial_condidtions(self):
     saturaded vapour. Below the cloud layer, the deep MMR is assumed. This has proven to
     be a generally accaptable choice. However, improvments could be made here.
     """
-    # set all values to mimimum of ode solver
-    x0 = np.zeros(3 * self.sz) + self.ode_minimum_mmr
-    # calculate vapour mmr
-    x0[:self.sz] = self.pvap * self.mw / self.pres / self.mmw
-    # assighn deep mmr
-    x0[:self.sz][~self.mask_psupsat] = self.deep_gas_mmr
+    # ==== Initialise array, and set all values to the minimum value
+    x0 = np.zeros((self.nspec*2 + 1, self.sz)) + self.ode_minimum_mmr
 
-    return x0
+    # ==== loop over the materials
+    for s, deep in enumerate(self.deep_gas_mmr):
+        # calculate vapour mmr
+        pvap = self.ds.vapor_pressures(self.species[s], self.temp, self.mh)
+        x0[s*2] = pvap * self.mw[s] / self.pres / self.mmw
+        # assign deep mmr
+        x0[s*2, ~self.mask_psupsat] = deep
+
+    return x0.flatten()
 
 def set_up_solver(self):
     """
@@ -54,41 +58,34 @@ def set_up_solver(self):
         """
 
         # ==== Read in the input ========================================================
-        xw = x.reshape((3, self.sz))  # reshape array
+        xw = x.reshape((self.nspec*2 + 1, self.sz))  # reshape array
         # prevent underflow of values
         xw[xw < self.ode_minimum_mmr] = self.ode_minimum_mmr
         dx = np.zeros((self.nspec*2 + 1, self.sz))
-        xv = xw[0]  # gas-phase mmr
-        xc = xw[1]  # cloud particle mmr
-        xn = xw[2]  # cloud number density mmr
         # total mass
         xtot = np.sum(xw[1::2], axis=0)
+        rhotot = np.sum(xw[1::2]*self.rhop[:, np.newaxis], axis=0)/xtot
 
         # ==== calcualte physical parameters ============================================
         if self.static_rg:  # use static rg
             rg = self.rg  # cloud particle radius [cm]
         else: # calculate rg on the fly
-            rg = mass_to_radius(self, xn, xc)  # cloud particle radius [cm]
-            self.rg = rg
-        ncl = xn * self.rhoatmo / self.m_ccn  # cloud particle number density [1/cm3]
-        n1 = xv * self.rhoatmo / self.m1  # gas-phase number density [1/cm3]
+            rg = mass_to_radius(self, xw[-1], xtot, rhotot)  # cloud particle radius [cm]
+            self.rg = rg  # safe rg for outside of function
+        ncl = xw[-1] * self.rhoatmo / self.m_ccn  # cloud particle number density [1/cm3]
+        vsed = self.vsed(rg, rhotot)  # settling velocity [cm/s]
+        self.calc_atmos_struct()   # Update atmosphere
 
         # ==== Rate calculations
-        acc_rate = self.acc_rate(rg, self.temp, n1, ncl)  # accretion rate [1/cm3/s]
-        nuc_rate = self.nuc_rate(n1, self.temp)  # nucleation rate [1/cm3/s]
-        vsed = self.vsed(rg)  # settling velocity [cm/s]
+        for s, _ in enumerate(self.species):
+            n1 = xw[s*2] * self.rhoatmo / self.m1[s]  # gas-phase number density [1/cm3]
+            acc_rate = self.acc_rate(rg, self.temp, n1, ncl, s)  # accretion rate [1/cm3/s]
+            nuc_rate = self.nuc_rate(n1, self.temp, s)  # nucleation rate [1/cm3/s]
 
-        # ==== source terms =============================================================
-        dx[0] += - acc_rate * self.m1 / self.rhoatmo - nuc_rate * self.m_ccn / self.rhoatmo
-        dx[1] += acc_rate * self.m1 / self.rhoatmo + nuc_rate * self.m_ccn / self.rhoatmo
-        dx[2] += nuc_rate * self.m_ccn / self.rhoatmo
-
-        # ===== additional top of atmosphere influx ====================================
-        if self.tf is not None:
-            influx = self.tf(self.pres, self.temp, t)
-            dx[0] += influx[0]
-            dx[1] += influx[1]
-            dx[2] += influx[2]
+            # ==== source terms =============================================================
+            dx[s*2] += - acc_rate * self.m1[s] / self.rhoatmo - nuc_rate * self.m_ccn / self.rhoatmo
+            dx[s*2+1] += acc_rate * self.m1[s] / self.rhoatmo + nuc_rate * self.m_ccn / self.rhoatmo
+            dx[-1] += nuc_rate * self.m_ccn / self.rhoatmo
 
         # ==== Diffusion terms ==========================================================
         # !!! Note: Rounding errors prevents the definition of prefactors !!!
@@ -105,6 +102,10 @@ def set_up_solver(self):
                 1:-1]
         dx[-1, 0] += self.rhoatmo[0] * xw[-1, 0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
         dx[-1, 1:-1] += np.diff((self.rhoatmo * vsed * xw[-1])[:-1]) / self.dz[1:-1] / self.rhoatmo[1:-1]
+
+        # ===== additional top of atmosphere influx ====================================
+        if self.tf is not None:
+            dx += self.tf(self.pres, self.temp, t)
 
         # ==== Finalsing output =========================================================
         # set all values below the vapour pressure to zero (speeds up calculation)
