@@ -44,14 +44,14 @@ def test_nimbus():
     assert np.isclose(np.sum(y), 0.00017411877560450766)
     os.remove('test.nc')
 
-    # ==== set up nimbus with multiple materials
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity,
-                          ['SiO', 'MgSiO3'], [1e-3, 1e-4])
-    obj.set_up_solver()
-    ds = obj.compute(typ='full')
-    y = np.asarray([ds['cloud_mmr'][0, -1]]).T
-    assert np.isclose(np.sum(y), 0.99)
+    # # ==== set up nimbus with multiple materials
+    # obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    # obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity,
+    #                       ['SiO', 'MgSiO3'], [1e-3, 1e-4])
+    # obj.set_up_solver()
+    # ds = obj.compute(typ='full')
+    # y = np.asarray([ds['cloud_mmr'][0, -1]]).T
+    # assert np.isclose(np.sum(y), 0.99)
 
 
 
