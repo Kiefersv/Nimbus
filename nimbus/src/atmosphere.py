@@ -38,6 +38,19 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     # ==== Size and shpae of inputs
     self.sz = len(pressure)
 
+    # ==== Initialise all cloud species =================================================
+    # Note: Each species gets an index according to the input order. Until the output,
+    # only the index is used to identify the species.
+    if isinstance(species, str):
+        self.species = [species]
+        self.deep_gas_mmr = np.asarray([deep_mmr])
+    elif isinstance(species, (list, tuple)):
+        # if given as dict, transform to ordered list
+        if isinstance(deep_mmr, dict):
+            deep_mmr = [deep_mmr[spec] for spec in species]
+        self.deep_gas_mmr = np.asarray(deep_mmr)
+    self.nspec = len(self.species)
+
     # ==== Setting input parameters
     self.temp = temperature  # temperature profile [K]
     self.pres = pressure*1e6  # pressure profile, convert from bar to [dyn/cm2]

@@ -13,6 +13,7 @@ class Nimbus:
     # ==== import set up functions
     from .src.atmosphere import set_up_atmosphere
     from .src.atmosphere import set_up_top_of_atmosphere_influx
+    #from .src.atmosphere import calc_atmos_struct
     from .src.solver import set_up_solver
     from .src.spectra import set_up_spectra_calculation
 
@@ -78,6 +79,8 @@ class Nimbus:
         self.r_ccn = 1e-7  # default for minimum cloudparticle radius [cm]
         self.cs_mol = 2e-15  # default for molecular cross section [cm2]
         self.eps_k = 59.7  # Depth of the Lennard-Jones potential [??]
+        self.r1 = 2.001e-8 # monomer radius [cm]
+        self.rho_ccn = 2.18  # density of nucleation seads [g/cm3]
 
         # ==== Misc settings
         self.rg_fit_deg = 8  # degree of the polynomial to fit the ittarative radius

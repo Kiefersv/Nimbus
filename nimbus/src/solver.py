@@ -57,18 +57,10 @@ def set_up_solver(self):
         xw = x.reshape((3, self.sz))  # reshape array
         # prevent underflow of values
         xw[xw < self.ode_minimum_mmr] = self.ode_minimum_mmr
+        dx = np.zeros((self.nspec*2 + 1, self.sz))
         xv = xw[0]  # gas-phase mmr
         xc = xw[1]  # cloud particle mmr
         xn = xw[2]  # cloud number density mmr
-        # define empty arrays
-        dxv_src = np.zeros_like(xv)
-        dxv_dif = np.zeros_like(xv)
-        dxc_src = np.zeros_like(xc)
-        dxc_dif = np.zeros_like(xc)
-        dxc_adv = np.zeros_like(xc)
-        dxn_src = np.zeros_like(xn)
-        dxn_dif = np.zeros_like(xn)
-        dxn_adv = np.zeros_like(xn)
 
         # ==== calcualte physical parameters ============================================
         if self.static_rg:  # use static rg
@@ -85,55 +77,55 @@ def set_up_solver(self):
         vsed = self.vsed(rg)  # settling velocity [cm/s]
 
         # ==== source terms =============================================================
-        dxv_src = - acc_rate * self.m1 / self.rhoatmo - nuc_rate * self.m_ccn / self.rhoatmo
-        dxc_src = acc_rate * self.m1 / self.rhoatmo + nuc_rate * self.m_ccn / self.rhoatmo
-        dxn_src = nuc_rate * self.m_ccn / self.rhoatmo
+        dx[0] += - acc_rate * self.m1 / self.rhoatmo - nuc_rate * self.m_ccn / self.rhoatmo
+        dx[1] += acc_rate * self.m1 / self.rhoatmo + nuc_rate * self.m_ccn / self.rhoatmo
+        dx[2] += nuc_rate * self.m_ccn / self.rhoatmo
 
         # ===== additional top of atmosphere influx ====================================
         if self.tf is not None:
             influx = self.tf(self.pres, self.temp, t)
-            dxv_src += influx[0]
-            dxc_src += influx[1]
-            dxn_src += influx[2]
+            dx[0] += influx[0]
+            dx[1] += influx[1]
+            dx[2] += influx[2]
 
         # ==== Diffusion terms ==========================================================
         # !!! Note: Rounding errors prevents the definition of prefactors !!!
         # gas-phase
-        dxv_dif[0] = self.kzz[0] * self.rhoatmo[0] * np.diff(xv[:2])[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
-        dxv_dif[-1] = 0
-        dxv_dif[1:-1] = np.diff(self.kzz_mid * self.rhoatmo_mid * np.diff(xv) / self.dz_mid) / self.dz[1:-1] / self.rhoatmo[1:-1]
+        dx[0, 0] += self.kzz[0] * self.rhoatmo[0] * np.diff(xv[:2])[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
+        dx[0, -1] += 0
+        dx[0, 1:-1] += np.diff(self.kzz_mid * self.rhoatmo_mid * np.diff(xv) / self.dz_mid) / self.dz[1:-1] / self.rhoatmo[1:-1]
         # cloud material
-        dxc_dif[0] = self.kzz[0] * self.rhoatmo[0] * np.diff(xc[:2])[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
-        dxc_dif[-1] = 0
-        dxc_dif[1:-1] = np.diff(self.kzz_mid * self.rhoatmo_mid * np.diff(xc) / self.dz_mid) / self.dz[1:-1] / self.rhoatmo[1:-1]
+        dx[1, 0] += self.kzz[0] * self.rhoatmo[0] * np.diff(xc[:2])[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
+        dx[1, -1] += 0
+        dx[1, 1:-1] += np.diff(self.kzz_mid * self.rhoatmo_mid * np.diff(xc) / self.dz_mid) / self.dz[1:-1] / self.rhoatmo[1:-1]
         # cloud particle number density
-        dxn_dif[0] = self.kzz[0] * self.rhoatmo[0] * np.diff(xn[:2])[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
-        dxn_dif[-1] = 0
-        dxn_dif[1:-1] = np.diff(self.kzz_mid * self.rhoatmo_mid * np.diff(xn) / self.dz_mid) / self.dz[1:-1] / self.rhoatmo[1:-1]
+        dx[2, 0] += self.kzz[0] * self.rhoatmo[0] * np.diff(xn[:2])[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
+        dx[2, -1] += 0
+        dx[2, 1:-1] += np.diff(self.kzz_mid * self.rhoatmo_mid * np.diff(xn) / self.dz_mid) / self.dz[1:-1] / self.rhoatmo[1:-1]
 
+        # # ==== Advection terms ==========================================================
+        # # !!! Note: Rounding errors prevents the definition of prefactors !!!
+        # for s, _ in enumerate(self.species):
+        #     dx[s * 2 + 1, 0] += self.rhoatmo[0] * xw[s * 2 + 1, 0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
+        #     dx[s * 2 + 1, 1:-1] += np.diff((self.rhoatmo * vsed * xw[s * 2 + 1])[:-1]) / self.dz[1:-1] / self.rhoatmo[
+        #         1:-1]
+        # dx[-1, 0] += self.rhoatmo[0] * xw[-1, 0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
+        # dx[-1, 1:-1] += np.diff((self.rhoatmo * vsed * xw[-1])[:-1]) / self.dz[1:-1] / self.rhoatmo[1:-1]
 
-        # ==== Advection terms ==========================================================
-        # !!! Note: Rounding errors prevents the definition of prefactors !!!
-        # cloud material
-        dxc_adv[0] = self.rhoatmo[0] * xc[0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
-        dxc_adv[-1] = 0
-        dxc_adv[1:-1] = np.diff((self.rhoatmo * vsed * xc)[:-1]) / self.dz[1:-1] / self.rhoatmo[1:-1]
-        # cloud particle number density
-        dxn_adv[0] = self.rhoatmo[0] * xn[0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
-        dxn_adv[-1] = 0
-        dxn_adv[1:-1] = np.diff((self.rhoatmo * vsed * xn)[:-1]) / self.dz[1:-1] / self.rhoatmo[1:-1]
+        # # ==== Advection terms ==========================================================
+        # # !!! Note: Rounding errors prevents the definition of prefactors !!!
+        # # cloud material
+        # dx[1, 0] += self.rhoatmo[0] * xc[0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
+        # dx[1, -1] += 0
+        # dx[1, 1:-1] += np.diff((self.rhoatmo * vsed * xc)[:-1]) / self.dz[1:-1] / self.rhoatmo[1:-1]
+        # # cloud particle number density
+        # dx[2, 0] += self.rhoatmo[0] * xn[0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
+        # dx[2, -1] += 0
+        # dx[2, 1:-1] += np.diff((self.rhoatmo * vsed * xn)[:-1]) / self.dz[1:-1] / self.rhoatmo[1:-1]
 
         # ==== Finalsing output =========================================================
-        # combine all parts of the ode
-        dxv = dxv_dif + dxv_src
-        dxc = dxc_dif + dxc_src + dxc_adv
-        dxn = dxn_dif + dxn_src + dxn_adv
         # set all values below the vapour pressure to zero (speeds up calculation)
-        dxv[~self.mask_psupsat] = 0
-        dxc[~self.mask_psupsat] = 0
-        dxn[~self.mask_psupsat] = 0
-        # combine output
-        dx = np.hstack([dxv, dxc, dxn])
+        dx[:, ~self.mask_psupsat] = 0
         # print progress information
         if self.verbose and not self.mute:
             prog = np.log10(t)/np.log10(self.tend) * 100
@@ -141,7 +133,7 @@ def set_up_solver(self):
                   + ' || Current loop progress ' + f"{prog:05.2f}%", end='')
 
         # ==== Return time derivative
-        return dx
+        return dx.flatten()
 
     # ==== Set the functions
     self.fex = fex
