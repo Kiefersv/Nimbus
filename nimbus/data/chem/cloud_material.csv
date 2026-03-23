@@ -21,6 +21,7 @@
 "NH3","yes","23.4","0","0.87","1.980e-8","17.031","exp","1e6","-86596","-2161","10.53","0","0","0","Mini-cloud","Weast et al. (1988); Lee et al. (2018)"
 "NH4Cl","yes","56","0","1.519","2.408e-8","53.4915","10","1e6","0","-4302","7.0220","0","0","0","Mini-cloud","radius approximated by volume and density"
 "NH4SH","yes","50","0","1.17","2.587e-8","51.1114","10","1e6","0","-2409.4","7.8974","0","0","0","Mini-cloud","E.Lee's fit to Walker & Lumsden (1897); radius approximated by volume and density"
+"Ni","special","1800","0","8.9","1.38e-8","58.69","x","x","x","x","x","x","x","x","Own work","Surface tension: Werkovits et al. 2020; surface tension fron nist"
 "S2","special","60.8","0","2.","2.334e-8","64.1300","x","x","x","x","x","x","x","x","Mini-cloud","Fanelli 1950; radius approximated by volume and density"
 "S8","special","60.8","0","2.","3.705e-8","256.5200","x","x","x","x","x","x","x","x","Mini-cloud","Fanelli 1950; radius approximated by volume and density"
 "SiC","no","1800","0","3.10","1.724e-8","40.0962","x","x","x","x","x","x","x","x","Mini-cloud","Nozawa et al. (2003); radius approximated by volume and density"

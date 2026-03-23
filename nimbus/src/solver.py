@@ -16,10 +16,11 @@ def set_initial_condidtions(self):
 
     # ==== loop over the materials
     for s, deep in enumerate(self.deep_gas_mmr):
+        # if self.deep_gas_mmr[s] > 0:
         # calculate vapour mmr
         pvap = self.ds.vapor_pressures(self.species[s], self.temp, self.mh)
-        x0[s*2] = pvap * self.mw[s] / self.pres / self.mmw
-        # assign deep mmr
+        x0[s*2] = np.minimum(pvap * self.mw[s] / self.pres / self.mmw, deep)
+        # # assign deep mmr
         x0[s*2, ~self.mask_psupsat] = deep
 
     return x0.flatten()
@@ -98,8 +99,7 @@ def set_up_solver(self):
         # !!! Note: Rounding errors prevents the definition of prefactors !!!
         for s, _ in enumerate(self.species):
             dx[s * 2 + 1, 0] += self.rhoatmo[0] * xw[s * 2 + 1, 0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
-            dx[s * 2 + 1, 1:-1] += np.diff((self.rhoatmo * vsed * xw[s * 2 + 1])[:-1]) / self.dz[1:-1] / self.rhoatmo[
-                1:-1]
+            dx[s * 2 + 1, 1:-1] += np.diff((self.rhoatmo * vsed * xw[s * 2 + 1])[:-1]) / self.dz[1:-1] / self.rhoatmo[1:-1]
         dx[-1, 0] += self.rhoatmo[0] * xw[-1, 0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
         dx[-1, 1:-1] += np.diff((self.rhoatmo * vsed * xw[-1])[:-1]) / self.dz[1:-1] / self.rhoatmo[1:-1]
 
@@ -115,7 +115,8 @@ def set_up_solver(self):
             prog = np.log10(t)/np.log10(self.tend) * 100
             print('\r[INFO] Loop ' + str(self.loop_nr) + '' + self.it_str
                   + ' || Current loop progress ' + f"{prog:05.2f}%", end='')
-
+        # dx[2] = 0
+        # dx[3] = 0
         # ==== Return time derivative
         return dx.flatten()
 

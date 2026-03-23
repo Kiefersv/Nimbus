@@ -159,9 +159,9 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             self.rg = np.maximum(rg, self.r_ccn)
             self.rg_history.append(self.rg)
 
-            # # ==== analytic cloud structure plot (a bit messy, not gonna lie)
-            # if self.do_plots:
-            #     plot_full_structure(self, sol.y, str(t))
+            # ==== analytic cloud structure plot (a bit messy, not gonna lie)
+            if self.do_plots:
+                plot_full_structure(self, sol.y, str(t))
 
             # ==== stopping creterion
             if typ == 'iterate' and t >= self.itterations:

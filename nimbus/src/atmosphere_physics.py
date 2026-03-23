@@ -28,6 +28,10 @@ def define_atmosphere_physics(self):
         :return:
         """
 
+        # ==== check if species nucleats
+        if self.species[s] in self.ian:
+            return np.zeros((len(temp),))
+
         # ==== Physical parameters
         pvap = self.ds.vapor_pressures(self.species[s], self.temp, self.mh)
         sig = self.ds.surface_tension(self.species[s], self.temp)
@@ -176,7 +180,7 @@ def define_atmosphere_physics(self):
         fx = np.maximum(fx, 0)
         dmdt = val_low * fx + val_high * (1.0 - fx)
         dmdt = np.maximum(dmdt, 1e-30)
-
+        dmdt = np.nan_to_num(dmdt)
         return dmdt
 
     # def _acc_rate_sw(rg, temp, n1, ncl):
@@ -215,6 +219,7 @@ def define_atmosphere_physics(self):
         """
         vsed = (self.gravity * rg * rhop / (self.vth * self.rhoatmo) *
                 np.sqrt(1 + (4 * rg / (9 * self.lmfp)) ** 2))
+        vsed = np.nan_to_num(vsed)
         return vsed
 
     # def _vsed_ohno(rg):

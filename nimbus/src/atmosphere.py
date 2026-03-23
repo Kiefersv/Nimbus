@@ -7,7 +7,7 @@ from .atmosphere_physics import define_atmosphere_physics
 from .species_database import DataStorage
 
 def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
-                      deep_mmr, fsed=1, metalicity=1):
+                      deep_mmr, fsed=1, metalicity=1, ignore_as_nucleator=[]):
     """
     Set up the atmospheric structure of the simulation.
 
@@ -33,6 +33,8 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
         Initial settling parameter (defines cloud particle size).
     metalicity : np.array or float, optional
         metalicity of atmosphere (used for certain pvaps)
+    ignore_as_nucleator : List[str]
+        Species which should not be considered to nucleate
     """
 
     # ==== Initialise all cloud species =================================================
@@ -60,6 +62,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     self.gravity = gravity  # gravity [cm/s2]
     self.fsed = fsed  # (initial) settling parameter [None]
     self.mh = metalicity  # metalicity relative to solar (not log!) []
+    self.ian = ignore_as_nucleator  # these species will not nucleate
 
     # ==== Set nucleation rate, accretion rate, and settling velocity
     define_atmosphere_physics(self)
@@ -99,10 +102,12 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     # ==== find pressure levels which are always supersaturated
     self.mask_psupsat = self.pres > 0
     for s, spec in enumerate(self.species):
-        ndeep = self.deep_gas_mmr[s] * self.rhoatmo / self.m1[s]  # deep particle number density
-        pdeep = ndeep * self.kb * self.temp  # deep partial pressure
-        pvap = self.ds.vapor_pressures(spec, self.temp, self.mh)
-        self.mask_psupsat *= pvap / pdeep < 1  # mask where vapour can condense
+        if self.deep_gas_mmr[s] > 0:
+            ndeep = self.deep_gas_mmr[s] * self.rhoatmo / self.m1[s]  # deep particle number density
+            pdeep = ndeep * self.kb * self.temp  # deep partial pressure
+            pvap = self.ds.vapor_pressures(spec, self.temp, self.mh)
+            mask = pvap / pdeep < 1
+            self.mask_psupsat *= pvap / pdeep < 1  # mask where vapour can condense
 
     # ==== Calculate initial radius
     self.rg = np.zeros_like(self.pres)

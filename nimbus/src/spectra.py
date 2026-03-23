@@ -194,25 +194,31 @@ def picaso_formater(self, tag='last_run', path_to_opacities=None):
     ds = self.results[tag]
 
     # ==== Get cloud particle opacities
-    qe, qs, cos_q, nwave, radius, wave_in = jdi.get_mie(self.specie, self.dir_opac)
-    qext = qe[:, :, np.newaxis]  # extinction coefficient
-    qscat = qs[:, :, np.newaxis]  # scattering coefficient
-    cos_qscat = cos_q[:, :, np.newaxis]  # asymmetry parameter
+    for s, spec in enumerate(self.species):
+        qe, qs, cos_q, nwave, radius, wave_in = jdi.get_mie(self.species[s], self.dir_opac)
+        if s == 0:
+            # define grid space of extinction, scattering, and asymmetry values
+            qext = np.zeros((nwave, len(radius), self.nspec))
+            qscat = np.zeros((nwave, len(radius), self.nspec))
+            cos_qscat = np.zeros((nwave, len(radius), self.nspec))
+        qext[:, :, s] = qe  # extinction coefficient
+        qscat[:, :, s] = qs  # scattering coefficient
+        cos_qscat[:, :, s] = cos_q  # asymmetry parameter
 
     # ==== Get cloud structure
-    qc = np.asarray([ds['qc'].values]).T
-    ndz = np.asarray([-ds['qn'] / self.m_ccn * self.dz * self.rhoatmo]).T
-    rgin = np.asarray([ds['rg'].values]).T
+    qc = np.asarray([ds['cloud_mmr'].values[:, -1]]).T
+    ndz = np.asarray([-ds['cloud_number_density'].values[-1] / self.m_ccn * self.dz * self.rhoatmo]).T
+    rgin = np.asarray([ds['cloud_radius'].values[-1]]).T
     ndz[~self.mask_psupsat] = 0  # all values below cloud deck are zero
-    nradii = len(radius)
     rmin = np.min(radius)
     rmax = np.max(radius)
 
     # ==== Use Virga to calculate opacities
-    radius, _, dr = jdi.get_r_grid_w_max(rmin, rmax, n_radii=nradii)
+    radius, _, dr = jdi.get_r_grid_w_max(rmin, rmax, n_radii=len(radius))
     opd, w0, g0, _ = jdi.calc_optics(
-        nwave, qc, qc, rgin, rgin, ndz, radius, dr, qext, qscat,
-        cos_qscat, 2, rmin, nradii
+        nwave, qc, rgin, ndz, radius, dr, qext, qscat,
+        cos_qscat, 2, rmin, rmax, self.rhop, wave_in, self.species + ['mixed'],
+        True, mixed_opacity_type='multi_modal'
     )
 
     # ==== Create opacities in picaso format

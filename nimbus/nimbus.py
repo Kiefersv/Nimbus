@@ -70,7 +70,7 @@ class Nimbus:
         self.tstart = 1e-4  # start time of simulation [s]
         self.tend = 1e15  # end time of simulation [s]
         self.tsteps = 20  # number of intermediated evaluations (log-spaced)
-        self.ode_rtol = 1e-6  # relative error of solve_ivp
+        self.ode_rtol = 1e-3  # relative error of solve_ivp
         self.ode_atol = 1e-25  # absolute error of solve_ivp
         self.ode_minimum_mmr = 1e-30  # lowest MMR considered [g/g]
         self.static_rg = True # True: itarate with const rg / False: calc rg on the fly
