@@ -5,7 +5,8 @@ import os
 import numpy as np
 import pandas as pd
 
-def picaso_formater(self, tag='last_run', path_to_opacities=None, sig=2, mie_type='full'):
+def picaso_formater(self, tag='last_run', path_to_opacities=None, sig=2, mie_type='full',
+                    nradii=100):
     """
     Create pandas dataframe of opacities that can be read into PICASO. This function is
     a simplified version of VIRGA code. Please cite Batalha et al. (2026) if you use it.
@@ -22,6 +23,8 @@ def picaso_formater(self, tag='last_run', path_to_opacities=None, sig=2, mie_typ
         Can be 'full' for normal calculations, 'grid' for grid interpolation, or 'ai' for
         an Ai model. Grids you need to produce yourself using MieAi, and only certain
         species are available within Ai models.
+    nradii : int, optional
+        Number of radius bins, 100 or more is recommended.
 
     Return
     ------
@@ -82,7 +85,7 @@ def picaso_formater(self, tag='last_run', path_to_opacities=None, sig=2, mie_typ
     # ==== radius grid
     rmin = 1e-8
     rmax = 0.1
-    radius = np.logspace(np.log10(rmin),np.log10(rmax), 100)
+    radius = np.logspace(np.log10(rmin),np.log10(rmax), nradii)
     rat = radius[1]/radius[0]
     rup = 2*rat / (rat+1) * radius
     dr = np.zeros(rup.shape)

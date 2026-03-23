@@ -125,10 +125,10 @@ def test_spectra():
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
     obj.compute(typ='iterate', max_iterations=3)
-    df_cloud = obj.picaso_formater(mie_type='full')
-    assert np.isclose(np.sum(df_cloud['opd']), 92.54884353362597)
-    assert np.isclose(np.sum(df_cloud['g0']), 1991.6434445912907)
-    assert np.isclose(np.sum(df_cloud['w0']), 334.5600819069206)
+    df_cloud = obj.picaso_formater(mie_type='full', nradii=10)
+    assert np.isclose(np.sum(df_cloud['opd']), 355.3303087192117)
+    assert np.isclose(np.sum(df_cloud['g0']), 707.2811252692154)
+    assert np.isclose(np.sum(df_cloud['w0']), 485.11647436733466)
     assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
 
 
