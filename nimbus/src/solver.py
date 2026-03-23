@@ -50,7 +50,9 @@ def set_up_solver(self):
             time [s]
         x : ndarray
             Mass mixing ratios of the form:
-            [xv(p1), ..., xv(pN), xc(p1), ..., xc(pN), xn(p1), ..., xn(pN)]
+            [xv1(p1), ..., xv1(pN), xc1(p1), ..., xc1(pN),
+             xv2(p1), ..., xv2(pN), xc2(p1), ..., xc2(pN),
+             xn(p1), ..., xn(pN)]
 
         Return
         ------

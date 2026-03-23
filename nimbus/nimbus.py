@@ -15,7 +15,6 @@ class Nimbus:
     from .src.atmosphere import set_up_top_of_atmosphere_influx
     from .src.atmosphere import calc_atmos_struct
     from .src.solver import set_up_solver
-    from .src.spectra import set_up_spectra_calculation
 
     # ==== import the main compuational function
     from .src.compute import compute
@@ -27,7 +26,6 @@ class Nimbus:
     from .src.data_storage import load_previous_run
 
     # ==== import plotting routines
-    from .src.spectra import plot_spectrum
     from .src.spectra import picaso_formater
 
     def __init__(self, working_dir='.', create_analytic_plots=False, verbose=False,

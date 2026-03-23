@@ -105,3 +105,30 @@ def test_datastorage():
     assert np.isclose(np.sum(vp), 2.880546279845562e+23)
     vp = ds.gibbs_free_energy('SiO2', 1000)
     assert np.isclose(np.sum(vp), -9854695640143.047)
+
+
+def test_spectra():
+    """ This function is currently only used for local testing as it relys on
+    the MieAi implementation """
+    """ Integration testing """
+    # ==== Example values
+    temperature = np.asarray([775, 951, 1073, 1111, 1540, 2654])  # [K]
+    pressure = np.asarray([1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3])  # [bar]
+    kzz = np.ones_like(pressure) * 1e9  # [cm2/s]
+    gravity = 10**2.49  # [cm/s2]
+    mmw = 2.34  # [amu]
+    species = 'MgSiO3'
+    deepmmr = 1e-3  # [g/g]
+
+    # ==== set up nimbus itteratively
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+    obj.set_up_solver()
+    obj.compute(typ='iterate', max_iterations=3)
+    df_cloud = obj.picaso_formater(mie_type='full')
+    assert np.isclose(np.sum(df_cloud['opd']), 92.54884353362597)
+    assert np.isclose(np.sum(df_cloud['g0']), 1991.6434445912907)
+    assert np.isclose(np.sum(df_cloud['w0']), 334.5600819069206)
+    assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
+
+
