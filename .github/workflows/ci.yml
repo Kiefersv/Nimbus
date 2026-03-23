@@ -29,7 +29,7 @@ jobs:
         shell: bash -l {0}
         run: |
           python -m pip install --upgrade numpy scipy xarray pytest-cov matplotlib
-          python -m pip install --upgrade pandas astropy netcdf4 h5netcdf
+          python -m pip install --upgrade pandas astropy netcdf4 h5netcdf miepython
           python -m pip install -e .
           git clone https://github.com/d-attaway/mieai.git
           python -m pip install -e ./mieai
