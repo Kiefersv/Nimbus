@@ -2,6 +2,6 @@
 #from .src.iterator import compute_iterator
 #from .src.atmosphere import Atmosphere
 from .nimbus import Nimbus
-from .src.species_database import DataStorage
+from .src.species_database import DataBase
 
 __author__ = 'Sven Kiefer'

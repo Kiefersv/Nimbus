@@ -50,9 +50,9 @@ def picaso_formater(self, tag='last_run', path_to_opacities=None, sig=2, mie_typ
     ds = self.results[tag]
 
     # ==== Get cloud structure
-    qc = np.asarray(ds['cloud_mmr'].values[:, -1]).T
-    ndz = np.asarray(-ds['cloud_number_density'].values[-1] * self.dz).T
-    rg = np.asarray(ds['cloud_radius'].values[-1]).T
+    qc = np.asarray(ds['cloud_mmr'].values).T
+    ndz = np.asarray(-ds['cloud_number_density'].values * self.dz).T
+    rg = np.asarray(ds['cloud_radius'].values).T
     ndz[~self.mask_psupsat] = 0  # all values below cloud deck are zero
 
     # === wavelength grid (fixed to picaso 193 format)

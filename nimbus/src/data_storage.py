@@ -32,6 +32,7 @@ def save_run(self, sol, save_file=None, tag=None):
             'species': self.species,
         }
         co = ['species', 'iteration', 'pressure']
+        co2 = ['species', 'pressure']
 
         # ==== initialise variables
         gas_mmr = np.zeros((self.nspec, len(self.all_runs), self.sz))
@@ -60,16 +61,26 @@ def save_run(self, sol, save_file=None, tag=None):
                 gas_mmr[s, r] = xrun[s*2]
                 solid_mmr[s, r] = xrun[s*2 + 1]
         data = {
-            'gas_mmr': (co, gas_mmr),
-            'cloud_mmr': (co, solid_mmr),
-            'nucleation_rate': (co, nuc_rate),
-            'growth_rate': (co, acc_rate),
-            'cloud_number_density': (co[1:], ncl),
-            'gas_number_density': (co, gas_mmr),
-            'cloud_radius': (co[1:], rg),
-            'temperature': (co[2:], self.temp),
-            'rhoatmo': (co[2:], self.rhoatmo),
-            'Kzz': (co[2:], self.kzz),
+            'gas_mmr': (co2, gas_mmr[:, -1]),
+            'cloud_mmr': (co2, solid_mmr[:, -1]),
+            'nucleation_rate': (co2, nuc_rate[:, -1]),
+            'growth_rate': (co2, acc_rate[:, -1]),
+            'cloud_number_density': (co2[1:], ncl[-1]),
+            'gas_number_density': (co2, gas_mmr[:, -1]),
+            'cloud_radius': (co2[-1], rg[-1]),
+            'temperature': (co2[-1], self.temp),
+            'rhoatmo': (co2[-1], self.rhoatmo),
+            'Kzz': (co2[-1], self.kzz),
+            'all_gas_mmr': (co, gas_mmr),
+            'all_cloud_mmr': (co, solid_mmr),
+            'all_nucleation_rate': (co, nuc_rate),
+            'all_growth_rate': (co, acc_rate),
+            'all_cloud_number_density': (co[1:], ncl),
+            'all_gas_number_density': (co, gas_mmr),
+            'all_cloud_radius': (co[1:], rg),
+            'all_temperature': (co[2:], self.temp),
+            'all_rhoatmo': (co[2:], self.rhoatmo),
+            'all_Kzz': (co[2:], self.kzz),
         }
     else:
         # ==== set up dataset stuff
@@ -79,6 +90,7 @@ def save_run(self, sol, save_file=None, tag=None):
             'species': self.species,
         }
         co = ['species', 'time', 'pressure']
+        co2 = ['species', 'pressure']
 
         # ==== initialise variables
         gas_mmr = np.zeros((self.nspec, self.tsteps, self.sz))
@@ -107,17 +119,28 @@ def save_run(self, sol, save_file=None, tag=None):
                 gas_mmr[s, t] = xrun[s*2]
                 solid_mmr[s, t] = xrun[s*2 + 1]
         data = {
-            'gas_mmr': (co, gas_mmr),
-            'total_cloud_mmr': (co[1:], total_mmr),
-            'cloud_mmr': (co, solid_mmr),
-            'nucleation_rate': (co, nuc_rate),
-            'growth_rate': (co, acc_rate),
-            'cloud_number_density': (co[1:], ncl),
-            'gas_number_density': (co, gas_mmr),
-            'cloud_radius': (co[1:], rg),
-            'temperature': (co[2:], self.temp),
-            'rhoatmo': (co[2:], self.rhoatmo),
-            'Kzz': (co[2:], self.kzz),
+            'gas_mmr': (co2, gas_mmr[:, -1]),
+            'total_cloud_mmr': (co2[1:], total_mmr[-1]),
+            'cloud_mmr': (co2, solid_mmr[:, -1]),
+            'nucleation_rate': (co2, nuc_rate[:, -1]),
+            'growth_rate': (co2, acc_rate[:, -1]),
+            'cloud_number_density': (co2[1:], ncl[-1]),
+            'gas_number_density': (co2, gas_mmr[:, -1]),
+            'cloud_radius': (co2[-1], rg[-1]),
+            'temperature': (co2[1:], self.temp),
+            'rhoatmo': (co2[1:], self.rhoatmo),
+            'Kzz': (co2[1:], self.kzz),
+            'all_gas_mmr': (co, gas_mmr),
+            'all_total_cloud_mmr': (co[1:], total_mmr),
+            'all_cloud_mmr': (co, solid_mmr),
+            'all_nucleation_rate': (co, nuc_rate),
+            'all_growth_rate': (co, acc_rate),
+            'all_cloud_number_density': (co[1:], ncl),
+            'all_gas_number_density': (co, gas_mmr),
+            'all_cloud_radius': (co[1:], rg),
+            'all_temperature': (co[2:], self.temp),
+            'all_rhoatmo': (co[2:], self.rhoatmo),
+            'all_Kzz': (co[2:], self.kzz),
         }
 
     # ==== How data is stored
@@ -126,7 +149,6 @@ def save_run(self, sol, save_file=None, tag=None):
         coords=coordinates,
         attrs={
             'mmw': self.mmw,
-            'y': sol.y[:, -1],
             'total_iterations': self.loop_nr,
             'tstart': self.tstart,
             'tend': self.tend,
@@ -159,7 +181,6 @@ def save_run(self, sol, save_file=None, tag=None):
             print('       -> File name: ' + save_file)
 
     return ds
-
 
 
 def load_previous_run(self, file_name, tag=None):

@@ -7,7 +7,7 @@ import csv
 import numpy as np
 import xarray as xr
 
-class DataStorage:
+class DataBase:
     """
     Storage of physical properties. Information on the stored variables:
     -> Cloud particle material:

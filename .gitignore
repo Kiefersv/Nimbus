@@ -4,3 +4,4 @@
 examples/*.png
 build/
 claus/util/*.so
+docs/working/*

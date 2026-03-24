@@ -4,7 +4,7 @@ import numpy as np
 from scipy.optimize import root_scalar
 
 from .atmosphere_physics import define_atmosphere_physics
-from .species_database import DataStorage
+from .species_database import DataBase
 
 def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
                       deep_mmr, fsed=1, metalicity=1, ignore_as_nucleator=[]):
@@ -68,7 +68,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     define_atmosphere_physics(self)
 
     # ==== currently hardcoded for SiO, later this will be input
-    ds = DataStorage()  # open the data storage
+    ds = DataBase()  # open the data storage
     self.ds = ds  # remember the class
     # ==== Assign material information
     # density of cloud material [g/cm3]

@@ -13,7 +13,7 @@ Nimbus is an open-source, light-weight, micro-physical cloud model at your servi
 
 Credit
 ------
-Nimbus is based on Kiefer et al. in prep.
+If you use Nimbus, please cite `Kiefer et al. (2026) <https://arxiv.org/pdf/2603.13167>`_. If you use the opacity generating functions (e.g. picaso_formater), please cite `Batalha et al. (2026) <https://iopscience.iop.org/article/10.3847/1538-3881/ae29e5>`_.
 
 ..
     And the following people have contributed:
@@ -25,6 +25,7 @@ Nimbus is based on Kiefer et al. in prep.
 
    Install_And_Quick_Start.ipynb
    Physics_of_Nimbus.ipynb
-   Usage.ipynb
+   Tutorial.ipynb
+   API.ipynb
 
 
