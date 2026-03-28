@@ -2,7 +2,7 @@
 # pylint: disable=C0301
 
 import numpy as np
-
+from time import time
 from .atmosphere_physics import mass_to_radius
 
 def set_initial_condidtions(self):
@@ -18,11 +18,15 @@ def set_initial_condidtions(self):
     for s, deep in enumerate(self.deep_gas_mmr):
         # if self.deep_gas_mmr[s] > 0:
         # calculate vapour mmr
-        pvap = self.ds.vapor_pressures(self.species[s], self.temp, self.mh)
+        pvap = self.db.vapor_pressures(self.species[s], self.temp, self.mh)
         x0[s*2] = np.minimum(pvap * self.mw[s] / self.pres / self.mmw, deep)
         # # assign deep mmr
         x0[s*2, ~self.mask_psupsat] = deep
 
+    # ==== set flag to true
+    self.isset_initialisation = True
+
+    # ==== return initial conditions
     return x0.flatten()
 
 def set_up_solver(self):
@@ -68,6 +72,12 @@ def set_up_solver(self):
         # total mass
         xtot = np.sum(xw[1::2], axis=0)
         rhotot = np.sum(xw[1::2]*self.rhop[:, np.newaxis], axis=0)/xtot
+
+        # ==== Check timeout condition
+        if self.timeout is not None:
+            if time() - self.start_time > self.timeout:
+                self.complete = False
+                return dx.flatten()
 
         # ==== calcualte physical parameters ============================================
         if self.static_rg:  # use static rg
@@ -117,8 +127,7 @@ def set_up_solver(self):
             prog = np.log10(t)/np.log10(self.tend) * 100
             print('\r[INFO] Loop ' + str(self.loop_nr) + '' + self.it_str
                   + ' || Current loop progress ' + f"{prog:05.2f}%", end='')
-        # dx[2] = 0
-        # dx[3] = 0
+
         # ==== Return time derivative
         return dx.flatten()
 

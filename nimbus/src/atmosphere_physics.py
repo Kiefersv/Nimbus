@@ -33,8 +33,8 @@ def define_atmosphere_physics(self):
             return np.zeros((len(temp),))
 
         # ==== Physical parameters
-        pvap = self.ds.vapor_pressures(self.species[s], self.temp, self.mh)
-        sig = self.ds.surface_tension(self.species[s], self.temp)
+        pvap = self.db.vapor_pressures(self.species[s], self.temp, self.mh)
+        sig = self.db.surface_tension(self.species[s], self.temp)
 
         # ==== Hard coded values
         alpha = 1.0  # sticking coefficient []
@@ -157,7 +157,7 @@ def define_atmosphere_physics(self):
 
         # ==== Physical parameters
         p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
-        pvap = self.ds.vapor_pressures(self.species[s], self.temp, self.mh)
+        pvap = self.db.vapor_pressures(self.species[s], self.temp, self.mh)
         rvv = np.sqrt(self.rgas * self.temp / (2 * np.pi * self.mw[s]))  # rel vel of vapour [cm/s]
 
         # ==== Gaseous diffusion constant

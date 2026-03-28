@@ -68,17 +68,17 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     define_atmosphere_physics(self)
 
     # ==== currently hardcoded for SiO, later this will be input
-    ds = DataBase()  # open the data storage
-    self.ds = ds  # remember the class
+    db = DataBase()  # open the data storage
+    self.db = db  # remember the class
     # ==== Assign material information
     # density of cloud material [g/cm3]
-    self.rhop = np.asarray([ds.solid_density(spec) for spec in self.species])
+    self.rhop = np.asarray([db.solid_density(spec) for spec in self.species])
     # cloud material molecular weight [amu]
-    self.mw = np.asarray([ds.molecular_weight(spec) for spec in self.species])
+    self.mw = np.asarray([db.molecular_weight(spec) for spec in self.species])
     # monomer mass [g]
-    self.m1 = np.asarray([ds.monomer_mass(spec) for spec in self.species])
+    self.m1 = np.asarray([db.monomer_mass(spec) for spec in self.species])
     # specific gas constant
-    self.rgas_spec_cloud = np.asarray([ds.specific_gas_constant(spec) for spec in self.species])
+    self.rgas_spec_cloud = np.asarray([db.specific_gas_constant(spec) for spec in self.species])
 
     # ==== calculate pressure grid
     # grid coordiantes
@@ -105,8 +105,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
         if self.deep_gas_mmr[s] > 0:
             ndeep = self.deep_gas_mmr[s] * self.rhoatmo / self.m1[s]  # deep particle number density
             pdeep = ndeep * self.kb * self.temp  # deep partial pressure
-            pvap = self.ds.vapor_pressures(spec, self.temp, self.mh)
-            mask = pvap / pdeep < 1
+            pvap = self.db.vapor_pressures(spec, self.temp, self.mh)
             self.mask_psupsat *= pvap / pdeep < 1  # mask where vapour can condense
 
     # ==== Calculate initial radius

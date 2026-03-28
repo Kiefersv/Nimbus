@@ -47,7 +47,7 @@ def plot_full_structure(self, y, title=''):
 
     for s, spec in enumerate(self.species):
         ax[1].plot(rund(xrun[s*2]), logp, color=cm.tab10(s/10))
-        pvap = self.ds.vapor_pressures(self.species[s], self.temp, self.mh)
+        pvap = self.db.vapor_pressures(self.species[s], self.temp, self.mh)
         vaps = (pvap * self.mw[s] / self.pres / self.mmw)
         ax[1].plot(rund(vaps), logp, color=cm.tab10(s/10), linestyle='-.')
 

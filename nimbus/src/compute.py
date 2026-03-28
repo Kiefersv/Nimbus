@@ -11,7 +11,7 @@ from .data_storage import save_run
 from .atmosphere_physics import mass_to_radius
 
 def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
-            save_file=None, tag=None):
+            save_file=None, tag=None, timeout=None):
     """
     Compute the cloud structure.
 
@@ -34,6 +34,9 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
         Save the results under the given name as xarray dataset.
     tag : str, optional
         Save the run internally under the given tag.
+    timeout : float, optional
+        Time after which the solver will stop to proceed. If none is given, solver will
+        continue until it is done
 
     Return
     ------
@@ -42,6 +45,8 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
     """
 
     # ==== Preparations =================================================================
+    if not self.mute:
+        print('[INFO] Computation function call')
     # ==== set up settings specific for the evaluation typ
     self.it_str = ''
     if typ == 'convergence':
@@ -50,13 +55,13 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
         if max_iterations is None:
             max_iterations = 50  # default number of max_iterations
             if not self.mute:
-                print('[INFO] Max itterations set to 50')
+                print('       -> Max itterations set to 50')
     elif typ == 'iterate':
         self.static_rg = True  # keep radius constant in each itteration
         if max_iterations is None:
             max_iterations = 10  # default number of itterations
             if not self.mute:
-                print('[INFO] Number of itterations set to 10')
+                print('       -> Number of itterations set to 10')
         self.it_str = '/' + str(max_iterations)
     elif typ == 'full':
         self.static_rg = False  # allow for a variable radius
@@ -64,6 +69,13 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
     else:
         raise ValueError("[ERROR] Compute type unkown. Please select one of the "
                          "following: 'convergence', 'itterate', 'full'.")
+
+    # ==== set timeout if given
+    if timeout is not None:
+        self.timeout = timeout
+        self.start_time = time()
+        if not self.mute:
+            print('       -> Timeout set to {} seconds.'.format(timeout))
 
     # additionally check itterations
     if max_iterations < 1:
@@ -90,7 +102,8 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
         self.isset_solver = True
 
     # initial conditions
-    yin = set_initial_condidtions(self)  # load initial conditions
+    if not self.isset_initialisation:
+        yin = set_initial_condidtions(self)  # load initial conditions
     # # plot initial conditions
     # if self.do_plots:
     #     plot_initial_conditions(self, yin)
@@ -210,6 +223,8 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
         if not deg_warn_flag:
             print('[WARN] Not enough data points, degree of radius fit '
                   'chagned to: ' + str(deg_fit))
+        if not self.complete:
+            print('\r[WARN] Computation timed out.')
     # ==== save data internally
     ds = save_run(self, sol, save_file=save_file, tag=tag)
 

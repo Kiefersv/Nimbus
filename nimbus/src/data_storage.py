@@ -3,6 +3,7 @@ import xarray as xr
 import numpy as np
 
 from .atmosphere_physics import mass_to_radius
+from .atmosphere import set_up_atmosphere
 
 def save_run(self, sol, save_file=None, tag=None):
     """
@@ -143,12 +144,23 @@ def save_run(self, sol, save_file=None, tag=None):
             'all_Kzz': (co[2:], self.kzz),
         }
 
+    # ==== set attributies
+    if self.timeout is not None:
+        timeout = self.timeout
+    else:
+        timeout = "None"
+
     # ==== How data is stored
     ds = xr.Dataset(
         data_vars=data,
         coords=coordinates,
         attrs={
+            'species': self.species,
             'mmw': self.mmw,
+            'metalicity': self.mh,
+            'deep_mmr': self.deep_gas_mmr,
+            'fsed_init': self.fsed,
+            'ignore_as_nucleator': self.ian,
             'total_iterations': self.loop_nr,
             'tstart': self.tstart,
             'tend': self.tend,
@@ -161,6 +173,9 @@ def save_run(self, sol, save_file=None, tag=None):
             'cs_mol': self.cs_mol,
             'eps_k': self.eps_k,
             'rg_fit_deg': self.rg_fit_deg,
+            'timeout': timeout,
+            'Did the run finish?': str(self.complete),
+            'y_last': sol.y[:, -1],
         },
     )
 
@@ -182,6 +197,41 @@ def save_run(self, sol, save_file=None, tag=None):
 
     return ds
 
+def set_up_from_previous_run(self, tag=None, file_name=None):
+    """
+    Set initial conditions to last time step of a previous run and set up atmosphere
+    identical to this run.
+
+    Parameters
+    ----------
+    self : Nimbus object
+    tag : str, optional
+        Name to store data in Nimbus.
+    file_name : str
+        Name of the file to load from working directory.
+
+    """
+
+    # ==== Load previous run
+    if tag is not None:
+        ds = self.results[tag]
+    elif file_name is not None:
+        ds = xr.open_dataset(file_name)
+    else:
+        raise ValueError("[ERROR] Either tag or file_name must be specified to set up "
+                         "from previous run.")
+
+    # ==== set up atmosphere from stored properties
+    set_up_atmosphere(
+        ds['temperature'], ds['pressure']*1e6, ds['Kzz'], ds.attrs['mmw'],
+        ds.attrs['gravity'], ds.attrs['species'], ds.attrs['deep_gas_mmr'],
+        ds.attrs['fsed_init'], ds.attrs['metalicity'],
+        ds.attrs['ignore_as_nucleator']
+    )
+
+    # ==== set initial conditions to last step of previous run
+    self.yin = ds.attrs['y_last']
+    self.isset_initialisation = True  # set initialisation flag
 
 def load_previous_run(self, file_name, tag=None):
     """

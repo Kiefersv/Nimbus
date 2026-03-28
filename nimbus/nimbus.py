@@ -51,22 +51,9 @@ class Nimbus:
         self.verbose = verbose  # print diagonsic infos on the cost of computation time
         self.mute = mute  # overwrites verbose and do_plots and makes Nimbus run quietly
 
-        # ==== initialisation checks
-        self.isset_atmosphere = False  # checks if an atmosphere was initialised
-        self.isset_solver = False  # checks if solver is set up
-        self.isset_transmission_spectrum = False  # checks if all info for ts are given
-        self.isset_emission_spectrum = False  # checks if all info for es are given
-
-        # ==== working variables
-        self.fex = None  # right hand side of time evolution (solved with solve_ivp)
-        self.jac = None  # Jacobian matrix
-        self.x0 = None  # initial mass mixing ratios
-        self.tf = None  # top flux function (see setup function for details)
-        self.evaltimes = None  # evaluation timesteps
-
         # ==== Default solver settings (can be changed with set_solver_settings())
         self.tstart = 1e-4  # start time of simulation [s]
-        self.tend = 1e15  # end time of simulation [s]
+        self.tend = 1e13  # end time of simulation [s]
         self.tsteps = 20  # number of intermediated evaluations (log-spaced)
         self.ode_rtol = 1e-3  # relative error of solve_ivp
         self.ode_atol = 1e-25  # absolute error of solve_ivp
@@ -79,8 +66,6 @@ class Nimbus:
         self.eps_k = 59.7  # Depth of the Lennard-Jones potential [??]
         self.r1 = 2.001e-8 # monomer radius [cm]
         self.rho_ccn = 2.18  # density of nucleation seads [g/cm3]
-
-        # ==== Misc settings
         self.rg_fit_deg = 8  # degree of the polynomial to fit the ittarative radius
 
         # ==== storage variables
@@ -90,9 +75,60 @@ class Nimbus:
         self.itterations = 0  # remember number of itterations performed
 
         # ==== Fudge factors to play around with simulation
-        # IMPORTANT: The default values here correspond to a non-fudged run
+        # NOTE: The default values here correspond to a non-fudged run
         self.nuc_rate_fudge = 1  # factor to reduce or increase nucleation rate
         self.sticking_coefficient = 1  # of collisional accreatin reaction rates
+
+        # ==== initialisation checks
+        self.isset_atmosphere = False  # checks if an atmosphere was initialised
+        self.isset_solver = False  # checks if solver is set up
+        self.isset_initialisation = False  # checks if initial condistions are set up
+        self.isset_transmission_spectrum = False  # checks if all info for ts are given
+        self.isset_emission_spectrum = False  # checks if all info for es are given
+
+        # ==== working variables
+        self.fex = None  # right hand side of time evolution (solved with solve_ivp)
+        self.jac = None  # Jacobian matrix
+        self.x0 = None  # initial mass mixing ratios
+        self.tf = None  # top flux function (see setup function for details)
+        self.ds = None  # Internal DataBase object
+        self.evaltimes = None  # evaluation timesteps
+        self.timeout = None  # time after which the solver is stopped
+        self.start_time = None  # time when compute was started
+        self.complete = True  # only set false if computation had to be stopped
+        self.yin_store = None  # initial condition sotrage
+
+        # ==== Atmospheric parameters
+        self.temp = None  # temperature profile [K]
+        self.pres = None  # pressure profile, convert from bar to [dyn/cm2]
+        self.kzz = None  # mixing coefficient [cm2/s]
+        self.mmw = None  # mean molecular weight [amu]
+        self.gravity = None  # gravity [cm/s2]
+        self.fsed = None  # (initial) settling parameter [None]
+        self.mh = None  # metalicity relative to solar (not log!) []
+        self.ian = None  # these species will not nucleate
+        self.rhop = None # density of cloud material [g/cm3]
+        self.mw = None  # cloud material molecular weight [amu]
+        self.m1 = None  # monomer mass [g]
+        self.rg = None  # cloud particle radius [cm]
+        self.rgas_spec_cloud = None  # specific gas constant
+        self.logp = None  # pressure in log10([dyn/cm2])
+        self.logp_mid = None  # mid pressure levels in log10([dyn/cm2)]
+        self.dlogp = None  # pressure grid bin size in log10([dyn/cm2)]
+        self.dlogp_mid = None  # mid pressure grid bin size in log10([dyn/cm2)]
+        self.kzz_mid = None  # mid Kzz levels in log10([cm2/s)]
+        self.m_ccn = None  # CCN mass, derived from r_ccn and rho_ccn [g]
+        self.mask_psupsat = None  # mask of computational domain
+        self.natmo = None  # total gas-phase number density [1/cm3]
+        self.rhoatmo = None  # atmospheric density [g/cm]
+        self.vth = None  # thermal velocity [cm/s]
+        self.lmfp = None  # mean free path length [cm]
+        self.h = None  # scale height [cm]
+        self.ct = None  # sound speed [cm/s]
+        self.dz = None  # altitude difference between alyers [cm]
+        self.rhoatmo_mid = None  # atmospheric density at mid-pressure [g/cm3]
+        self.temp_mid = None  # temperature at mid-pressure [K]
+        self.dz_mid = None  # altitude bin zise at mid pressure [cm]
 
         # ==== Welcom message
         if not self.mute:
