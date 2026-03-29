@@ -125,7 +125,7 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
 
     # print info
     if not self.mute:
-        print('\r[INFO] Computation started ...', end='')
+        print('\r[INFO] Computation started')
 
     # ==== 1) Itterate over static rg
     # This loop iterates of cloud particle size. In each loop, rg is held constant

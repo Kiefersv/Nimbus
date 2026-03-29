@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 def picaso_formater(self, tag='last_run', path_to_opacities=None, sig=2, mie_type='full',
-                    nradii=100):
+                    nradii=100, mieai_object=None):
     """
     Create pandas dataframe of opacities that can be read into PICASO. This function is
     a simplified version of VIRGA code. Please cite Batalha et al. (2026) if you use it.
@@ -25,6 +25,9 @@ def picaso_formater(self, tag='last_run', path_to_opacities=None, sig=2, mie_typ
         species are available within Ai models.
     nradii : int, optional
         Number of radius bins, 100 or more is recommended.
+    mieai_object : MieAi class, optional
+        Giving a mieai class rather than creating the default one. Allows for more
+        felxibility and mutliprocessing.
 
     Return
     ------
@@ -37,8 +40,11 @@ def picaso_formater(self, tag='last_run', path_to_opacities=None, sig=2, mie_typ
     # ===================================================================================
 
     # ==== import mieai only here so Nimbus can be run without it
-    from mieai import Mieai
-    ma = Mieai(use_ai=False)  # set up mieai class
+    if mieai_object is not None:
+        ma = mieai_object
+    else:
+        from mieai import Mieai
+        ma = Mieai(use_ai=False)  # set up mieai class
 
     # ==== Set optional inputs
     if path_to_opacities is None:
