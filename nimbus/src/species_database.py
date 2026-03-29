@@ -34,6 +34,10 @@ for s, spec in enumerate(raw_data[:, 0]):
         'pvap_F': raw_data[s, 14],
     }
 
+gibbs_janaf = xr.open_dataset(
+    os.path.dirname(__file__) + '/../data/Gibbs/ggchem.nc'
+) * 1e10
+
 class DataBase:
     """
     Storage of physical properties. Information on the stored variables:
@@ -66,9 +70,7 @@ class DataBase:
         # self.gibbs_janaf = xr.open_dataset(
         #     os.path.dirname(__file__) + '/../data/Gibbs/janaf.nc'
         # ) * kjpmol_to_ergpmol
-        self.gibbs_janaf = xr.open_dataset(
-            os.path.dirname(__file__) + '/../data/Gibbs/ggchem.nc'
-        ) * self.kjpmol_to_ergpmol
+        self.gibbs_janaf = gibbs_janaf
 
 
     # =======================================================================================
