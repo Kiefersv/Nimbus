@@ -7,6 +7,33 @@ import csv
 import numpy as np
 import xarray as xr
 
+data_file = os.path.dirname(__file__) + '/../data/chem/cloud_material.csv'
+raw_data = np.array(list(csv.reader(open(data_file))))
+# initialise data dict
+default_cloud_material_data = {}
+# loop over all species to initialise
+for s, spec in enumerate(raw_data[:, 0]):
+    # skip header
+    if s < 1:
+        continue
+    # get all data
+    default_cloud_material_data[spec] = {
+        'data_complete': raw_data[s, 1],
+        'surface_tension_A': raw_data[s, 2],
+        'surface_tension_B': raw_data[s, 3],
+        'solid_density': float(raw_data[s, 4]),
+        'monomer_radius': float(raw_data[s, 5]),
+        'molecular_weight': float(raw_data[s, 6]),
+        'pvap_base': raw_data[s, 7],
+        'pvap_prefactor': raw_data[s, 8],
+        'pvap_A': raw_data[s, 9],
+        'pvap_B': raw_data[s, 10],
+        'pvap_C': raw_data[s, 11],
+        'pvap_D': raw_data[s, 12],
+        'pvap_E': raw_data[s, 13],
+        'pvap_F': raw_data[s, 14],
+    }
+
 class DataBase:
     """
     Storage of physical properties. Information on the stored variables:
@@ -33,33 +60,7 @@ class DataBase:
         # ==== Read in of parametrised cloud properties and basic values ================
         # open the cloud material data file and read it
         if data_file is None:
-            data_file = os.path.dirname(__file__) + '/../data/chem/cloud_material.csv'
-        raw_data = np.array(list(csv.reader(open(data_file))))
-        # initialise data dict
-        self.cloud_material_data = {}
-        # loop over all species to initialise
-        for s, spec in enumerate(raw_data[:, 0]):
-            # skip header
-            if s < 1:
-                continue
-            # get all data
-            self.cloud_material_data[spec] = {
-                'data_complete': raw_data[s, 1],
-                'surface_tension_A': raw_data[s, 2],
-                'surface_tension_B': raw_data[s, 3],
-                'solid_density': float(raw_data[s, 4]),
-                'monomer_radius': float(raw_data[s, 5]),
-                'molecular_weight': float(raw_data[s, 6]),
-                'pvap_base': raw_data[s, 7],
-                'pvap_prefactor': raw_data[s, 8],
-                'pvap_A': raw_data[s, 9],
-                'pvap_B': raw_data[s, 10],
-                'pvap_C': raw_data[s, 11],
-                'pvap_D': raw_data[s, 12],
-                'pvap_E': raw_data[s, 13],
-                'pvap_F': raw_data[s, 14],
-            }
-
+            self.cloud_material_data = default_cloud_material_data
         # ==== Read in of Gibbs free energies ===============================================
         # kjpmol_to_ergpmol = 1e10
         # self.gibbs_janaf = xr.open_dataset(
