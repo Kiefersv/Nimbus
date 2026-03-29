@@ -76,7 +76,11 @@ def set_up_solver(self):
         # ==== Check timeout condition
         if self.timeout is not None:
             if time() - self.start_time > self.timeout:
+                # remember that run did not complete
                 self.complete = False
+                # remember time when it failed
+                if self.tfailed is None:
+                    self.tfailed = t
                 return dx.flatten()
 
         # ==== calcualte physical parameters ============================================

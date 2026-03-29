@@ -104,6 +104,8 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
     # initial conditions
     if not self.isset_initialisation:
         yin = set_initial_condidtions(self)  # load initial conditions
+    else:
+        yin = self.yin_store
     # # plot initial conditions
     # if self.do_plots:
     #     plot_initial_conditions(self, yin)
@@ -125,7 +127,7 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
     if not self.mute:
         print('\r[INFO] Computation started ...', end='')
 
-    # ==== Itterate over static rg
+    # ==== 1) Itterate over static rg
     # This loop iterates of cloud particle size. In each loop, rg is held constant
     # and updated at the end of the loop.
     if self.static_rg:
@@ -197,7 +199,7 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             # ==== incremment itterations and start new loop
             t += 1
 
-    # ==== Calculate rg on the fly
+    # ==== 2) Calculate rg on the fly
     else:
         # ==== preparations
         self.rg_history = self.rg  # remember input radius
@@ -214,6 +216,11 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
         if self.do_plots:
             plot_full_structure(self, sol.y, str(0))
 
+        # ==== Check if run compelted or not
+        if len(self.evaltimes) > len(sol.y[0, :]):
+            self.tfailed = self.evaltimes[len(sol.y[0, :])-1]
+            self.complete = False
+
     # ==== Finish up ====================================================================
     if not self.mute:
         # ==== print final informations
@@ -224,7 +231,9 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             print('[WARN] Not enough data points, degree of radius fit '
                   'chagned to: ' + str(deg_fit))
         if not self.complete:
-            print('\r[WARN] Computation timed out.')
+            v = round(np.log10(self.tfailed),2)
+            print(f'\r[WARN] Computation timed out at 10^({v}) s simulation time.')
+
     # ==== save data internally
     ds = save_run(self, sol, save_file=save_file, tag=tag)
 

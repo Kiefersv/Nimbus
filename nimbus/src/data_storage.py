@@ -84,9 +84,12 @@ def save_run(self, sol, save_file=None, tag=None):
             'all_Kzz': (co[2:], self.kzz),
         }
     else:
+        # ==== check how many times were successfully calculated
+        tstep_done = len(sol.y[0, :])
+
         # ==== set up dataset stuff
         coordinates={
-            'time': self.evaltimes,
+            'time': self.evaltimes[:tstep_done],
             'pressure': self.pres * 1e-6,
             'species': self.species,
         }
@@ -94,15 +97,15 @@ def save_run(self, sol, save_file=None, tag=None):
         co2 = ['species', 'pressure']
 
         # ==== initialise variables
-        gas_mmr = np.zeros((self.nspec, self.tsteps, self.sz))
-        solid_mmr = np.zeros((self.nspec, self.tsteps, self.sz))
-        nuc_rate = np.zeros((self.nspec, self.tsteps, self.sz))
-        acc_rate = np.zeros((self.nspec, self.tsteps, self.sz))
-        n1 = np.zeros((self.nspec, self.tsteps, self.sz))
-        total_mmr = np.zeros((self.tsteps, self.sz))
-        ncl = np.zeros((self.tsteps, self.sz))
-        rg = np.zeros((self.tsteps, self.sz))
-        for t, _ in enumerate(self.evaltimes):
+        gas_mmr = np.zeros((self.nspec, tstep_done, self.sz))
+        solid_mmr = np.zeros((self.nspec, tstep_done, self.sz))
+        nuc_rate = np.zeros((self.nspec, tstep_done, self.sz))
+        acc_rate = np.zeros((self.nspec, tstep_done, self.sz))
+        n1 = np.zeros((self.nspec, tstep_done, self.sz))
+        total_mmr = np.zeros((tstep_done, self.sz))
+        ncl = np.zeros((tstep_done, self.sz))
+        rg = np.zeros((tstep_done, self.sz))
+        for t in range(tstep_done):
             xrun = sol.y[:, t].reshape((self.nspec*2 + 1, self.sz))
             # calculate the physics
             xrun[xrun < self.ode_minimum_mmr] = self.ode_minimum_mmr
@@ -149,6 +152,10 @@ def save_run(self, sol, save_file=None, tag=None):
         timeout = self.timeout
     else:
         timeout = "None"
+    if self.tfailed is not None:
+        tfailed = self.tfailed
+    else:
+        tfailed = "None"
 
     # ==== How data is stored
     ds = xr.Dataset(
@@ -157,6 +164,7 @@ def save_run(self, sol, save_file=None, tag=None):
         attrs={
             'species': self.species,
             'mmw': self.mmw,
+            'gravity': self.gravity,
             'metalicity': self.mh,
             'deep_mmr': self.deep_gas_mmr,
             'fsed_init': self.fsed,
@@ -165,6 +173,7 @@ def save_run(self, sol, save_file=None, tag=None):
             'tstart': self.tstart,
             'tend': self.tend,
             'tsteps': self.tsteps,
+            'tfailed': tfailed,
             'ode_rtol': self.ode_rtol,
             'ode_atol': self.ode_atol,
             'ode_minimum_mmr': self.ode_minimum_mmr,
@@ -197,7 +206,7 @@ def save_run(self, sol, save_file=None, tag=None):
 
     return ds
 
-def set_up_from_previous_run(self, tag=None, file_name=None):
+def set_up_from_previous_run(self, file_name=None, tag=None, ds_prev=None):
     """
     Set initial conditions to last time step of a previous run and set up atmosphere
     identical to this run.
@@ -209,7 +218,8 @@ def set_up_from_previous_run(self, tag=None, file_name=None):
         Name to store data in Nimbus.
     file_name : str
         Name of the file to load from working directory.
-
+    ds_prev : xarray.Dataset
+        Xarray dataset from previous run
     """
 
     # ==== Load previous run
@@ -217,20 +227,21 @@ def set_up_from_previous_run(self, tag=None, file_name=None):
         ds = self.results[tag]
     elif file_name is not None:
         ds = xr.open_dataset(file_name)
+    elif ds_prev is not None:
+        ds = ds_prev
     else:
         raise ValueError("[ERROR] Either tag or file_name must be specified to set up "
                          "from previous run.")
 
     # ==== set up atmosphere from stored properties
     set_up_atmosphere(
-        ds['temperature'], ds['pressure']*1e6, ds['Kzz'], ds.attrs['mmw'],
-        ds.attrs['gravity'], ds.attrs['species'], ds.attrs['deep_gas_mmr'],
-        ds.attrs['fsed_init'], ds.attrs['metalicity'],
-        ds.attrs['ignore_as_nucleator']
+        self, ds['temperature'].values, ds['pressure'].values*1e6, ds['Kzz'].values,
+        ds.attrs['mmw'], ds.attrs['gravity'], ds.attrs['species'], ds.attrs['deep_mmr'],
+        ds.attrs['fsed_init'], ds.attrs['metalicity'], ds.attrs['ignore_as_nucleator']
     )
 
     # ==== set initial conditions to last step of previous run
-    self.yin = ds.attrs['y_last']
+    self.yin_store = ds.attrs['y_last']
     self.isset_initialisation = True  # set initialisation flag
 
 def load_previous_run(self, file_name, tag=None):

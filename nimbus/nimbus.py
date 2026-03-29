@@ -24,6 +24,7 @@ class Nimbus:
 
     # ==== import data handling functions
     from .src.data_storage import load_previous_run
+    from .src.data_storage import set_up_from_previous_run
 
     # ==== import plotting routines
     from .src.spectra import picaso_formater
@@ -53,7 +54,7 @@ class Nimbus:
 
         # ==== Default solver settings (can be changed with set_solver_settings())
         self.tstart = 1e-4  # start time of simulation [s]
-        self.tend = 1e13  # end time of simulation [s]
+        self.tend = 1e12  # end time of simulation [s]
         self.tsteps = 20  # number of intermediated evaluations (log-spaced)
         self.ode_rtol = 1e-3  # relative error of solve_ivp
         self.ode_atol = 1e-25  # absolute error of solve_ivp
@@ -88,15 +89,16 @@ class Nimbus:
 
         # ==== working variables
         self.fex = None  # right hand side of time evolution (solved with solve_ivp)
-        self.jac = None  # Jacobian matrix
-        self.x0 = None  # initial mass mixing ratios
+        self.jac = None  # Jacobian matrix [currently not used]
+        self.x0 = None  # initial mass mixing ratios [g/g]
         self.tf = None  # top flux function (see setup function for details)
         self.ds = None  # Internal DataBase object
         self.evaltimes = None  # evaluation timesteps
-        self.timeout = None  # time after which the solver is stopped
-        self.start_time = None  # time when compute was started
+        self.timeout = None  # time after which the solver is stopped [s]
+        self.tfailed = None  # set to eval time when computation failed [s]
+        self.start_time = None  # time when compute was started [s]
         self.complete = True  # only set false if computation had to be stopped
-        self.yin_store = None  # initial condition sotrage
+        self.yin_store = None  # initial condition storage
 
         # ==== Atmospheric parameters
         self.temp = None  # temperature profile [K]
