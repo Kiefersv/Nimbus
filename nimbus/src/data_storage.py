@@ -206,7 +206,7 @@ def save_run(self, sol, save_file=None, tag=None):
 
     return ds
 
-def set_up_from_previous_run(self, file_name=None, tag=None, ds_prev=None):
+def set_up_from_previous_run(self, tag=None, file_name=None, load_from_tag=None, ds_prev=None):
     """
     Set initial conditions to last time step of a previous run and set up atmosphere
     identical to this run.
@@ -218,12 +218,18 @@ def set_up_from_previous_run(self, file_name=None, tag=None, ds_prev=None):
         Name to store data in Nimbus.
     file_name : str
         Name of the file to load from working directory.
+    load_from_tag : str
+        Load the corresponding dataset from ds.results
     ds_prev : xarray.Dataset
         Xarray dataset from previous run
     """
 
+    # ==== if no tag is given use file name
+    if tag is None:
+        tag = 'last_run'
+
     # ==== Load previous run
-    if tag is not None:
+    if load_from_tag is not None:
         ds = self.results[tag]
     elif file_name is not None:
         ds = xr.open_dataset(file_name)
@@ -232,6 +238,8 @@ def set_up_from_previous_run(self, file_name=None, tag=None, ds_prev=None):
     else:
         raise ValueError("[ERROR] Either tag or file_name must be specified to set up "
                          "from previous run.")
+    # load results into Nimbus
+    self.results[tag] = ds
 
     # ==== set up atmosphere from stored properties
     set_up_atmosphere(
@@ -244,7 +252,7 @@ def set_up_from_previous_run(self, file_name=None, tag=None, ds_prev=None):
     self.yin_store = ds.attrs['y_last']
     self.isset_initialisation = True  # set initialisation flag
 
-def load_previous_run(self, file_name, tag=None):
+def load_previous_run(self, tag=None, file_name=None, ds_prev=None):
     """
     Load previously saved Nimbus runs.
 
@@ -252,25 +260,35 @@ def load_previous_run(self, file_name, tag=None):
     ----------
     self : Nimbus class
         current nimbus object.
-    file_name : str
-        Name of the file to load from working directory.
     tag : str, optional
         Name to store data in Nimbus.
+    file_name : str
+        Name of the file to load from working directory.
+    ds_prev : xarray.Dataset
+        Xarray dataset from previous run
     """
 
-    # load file
-    ds = xr.open_dataset(file_name)
-
-    # if no tag is given use file name
+    # ==== if no tag is given use file name
     if tag is None:
-        tag = file_name.split('.')[0]
-
-    # load results into Nimbus
-    self.results[tag] = ds
+        tag = 'last_run'
 
     # ==== Print info
     print('[INFO] Loaded previous run with tag: ' + tag)
-    print('       -> File name: ' + file_name)
+
+    # ==== Load previous run
+    if file_name is not None:
+        ds = xr.open_dataset(file_name)
+        print('       -> File name: ' + file_name)
+    elif ds_prev is not None:
+        ds = ds_prev
+        print('       -> loaded from xarray.Dataset')
+    else:
+        raise ValueError("[ERROR] Either file_name must be specified to set up "
+                         "from previous run or ds_prev must be given.")
+
+
+    # load results into Nimbus
+    self.results[tag] = ds
 
     # return results
     return ds
