@@ -73,7 +73,7 @@ def set_up_solver(self):
         xtot = np.sum(xw[1::2], axis=0)
         rhotot = np.sum(xw[1::2]*self.rhop[:, np.newaxis], axis=0)/xtot
 
-        # ==== Check timeout condition
+        # ==== Check timeout condition ==================================================
         if self.timeout is not None:
             if time() - self.start_time > self.timeout:
                 # remember that run did not complete

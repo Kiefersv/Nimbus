@@ -24,7 +24,7 @@ def plot_full_structure(self, y, title=''):
 
     # ==== General plotting set up
     fig, ax = plt.subplots(1, 6, figsize=(10, 3))
-    logp = np.log10(self.pres[self.mask_psupsat])
+    logp = np.log10(self.pres[self.mask_psupsat]*1e-6)
     def rund(val):
         return np.log10(val[self.mask_psupsat])
 
@@ -60,7 +60,7 @@ def plot_full_structure(self, y, title=''):
         ax[4].plot(rund(acc_rate), logp, color=cm.tab10(s/10))
         ax[5].plot(rund(nuc_rate), logp, color=cm.tab10(s/10))
 
-    ax[2].plot(rund(xtot), logp, color='k', label='total')
+    ax[2].plot(rund(xtot), logp, color='k', label='total', linestyle='--')
     ax[3].plot(rund(ncl / ngas), logp, label='cloud', color='k', linestyle='-.')
 
     for a, aa in enumerate(ax):

@@ -51,7 +51,7 @@ def test_nimbus():
     assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 18.467750747986038)
 
     # ==== load previous run
-    ds = obj.load_previous_run('test.nc')
+    ds = obj.load_previous_run(file_name='test.nc')
     assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), 0.00017411877560450766)
     assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), 0.0020261545373924435)
     assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 8.533026717397001e-05)

@@ -56,7 +56,7 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             max_iterations = 50  # default number of max_iterations
             if not self.mute:
                 print('       -> Max itterations set to 50')
-    elif typ == 'iterate':
+    elif typ in ['iterate', 'iter']:
         self.static_rg = True  # keep radius constant in each itteration
         if max_iterations is None:
             max_iterations = 10  # default number of itterations
@@ -68,7 +68,7 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
         max_iterations = 1  # this value is not used
     else:
         raise ValueError("[ERROR] Compute type unkown. Please select one of the "
-                         "following: 'convergence', 'itterate', 'full'.")
+                         "following: 'convergence', 'iterate', 'full'.")
 
     # ==== set timeout if given
     if timeout is not None:
