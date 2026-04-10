@@ -1,19 +1,21 @@
 """ Integration and Unit tests """
 
 import os
+import unittest
 import numpy as np
 from nimbus import Nimbus, DataBase
 
+# ==== Example values
+temperature = np.asarray([775, 951, 1073, 1111, 1540, 2654])  # [K]
+pressure = np.asarray([1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3])  # [bar]
+kzz = np.ones_like(pressure) * 1e9  # [cm2/s]
+gravity = 10**2.49  # [cm/s2]
+mmw = 2.34  # [amu]
+species = 'SiO'
+deepmmr = 1e-3  # [g/g]
+
 def test_nimbus():
     """ Integration testing """
-    # ==== Example values
-    temperature = np.asarray([775, 951, 1073, 1111, 1540, 2654])  # [K]
-    pressure = np.asarray([1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3])  # [bar]
-    kzz = np.ones_like(pressure) * 1e9  # [cm2/s]
-    gravity = 10**2.49  # [cm/s2]
-    mmw = 2.34  # [amu]
-    species = 'SiO'
-    deepmmr = 1e-3  # [g/g]
 
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
@@ -56,6 +58,14 @@ def test_nimbus():
     assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), 0.0020261545373924435)
     assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 8.533026717397001e-05)
     assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 18.467750747986038)
+
+    # ==== load previous run
+    obj2 = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
+                 verbose=True, create_analytic_plots=True)
+    obj2.set_up_from_previous_run(file_name='test.nc')
+    assert np.isclose(np.sum(obj2.pres), 1111.11)
+    assert np.isclose(np.sum(obj2.temp), 8104)
+    assert obj2.isset_initialisation
     os.remove('test.nc')
 
     # ==== set up nimbus with multiple materials
@@ -109,6 +119,8 @@ def test_datastorage():
     assert np.isclose(np.sum(vp), 24544251)
     vp = ds.vapor_pressures('H2S', temp)
     assert np.isclose(np.sum(vp), 407030596)
+    vp = ds.vapor_pressures('Ni', temp+2000)
+    assert np.isclose(np.sum(vp), 51228)
     vp = ds.vapor_pressures('S2', temp)
     assert np.isclose(np.sum(vp), 6)
     vp = ds.vapor_pressures('S8', temp)
@@ -119,6 +131,8 @@ def test_datastorage():
     assert np.isclose(np.sum(vp), 2.880546279845562e+23)
     vp = ds.gibbs_free_energy('SiO2', 1000)
     assert np.isclose(np.sum(vp), -9854695640143.047)
+    vp = ds.monomer_radius('SiO2')
+    assert np.isclose(np.sum(vp), 2.079e-08)
 
 
 def test_spectra():
@@ -144,5 +158,30 @@ def test_spectra():
     assert np.isclose(np.sum(df_cloud['g0']), 707.2811252692154)
     assert np.isclose(np.sum(df_cloud['w0']), 485.1164743673346)
     assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
+
+
+def test_asserts():
+    # set up testcase class:
+    testcase = unittest.TestCase()
+    # set up nimbus
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
+                 verbose=True, create_analytic_plots=True)
+
+    # ==== errors if atmospehre is not setup
+    with testcase.assertRaises(ValueError):
+        obj.set_up_solver()
+    # # now set up atmosphere
+    # obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+
+    # ==== assertion errors when not at least one input is given
+    with testcase.assertRaises(ValueError):
+        obj.load_previous_run()
+        obj.set_up_from_previous_run()
+
+    # ==== value errors in database
+    ds = DataBase()
+    temp = np.asarray([500])
+    with testcase.assertRaises(ValueError):
+        ds.surface_tension('MgO', temp)
 
 

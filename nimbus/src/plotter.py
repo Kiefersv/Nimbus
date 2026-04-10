@@ -79,21 +79,3 @@ def plot_full_structure(self, y, title=''):
     ax[5].set_xlim(-15)
     plt.subplots_adjust(wspace=0, bottom=0.15, left=0.07, right=0.98, top=0.98)
     plt.show()
-
-
-def plot_initial_conditions(self, x0):
-    """
-    Simple plotting routine to analyse the initial conditions.
-
-    :param self: Nimbus clss
-    :param x0: initial mass mixing ratios
-    """
-    plt.figure()
-    plt.loglog(x0[:self.sz], self.pres, label='xv')
-    plt.loglog(x0[self.sz:2*self.sz], self.pres, label='xc')
-    plt.loglog(x0[self.sz*2:3*self.sz], self.pres, label='xn')
-    plt.ylim(self.pres[-1], self.pres[0])
-    plt.legend()
-    plt.ylabel('pres [dyne/cm2]')
-    plt.xlabel('MMR [g/g]')
-    plt.savefig(self.working_dir + '/ap_initial_profiles.png')

@@ -5,7 +5,7 @@ from time import time
 import numpy as np
 from scipy.integrate import solve_ivp
 
-from .plotter import plot_initial_conditions, plot_full_structure
+from .plotter import plot_full_structure
 from .solver import set_initial_condidtions, set_up_solver
 from .data_storage import save_run
 from .atmosphere_physics import mass_to_radius
@@ -106,9 +106,6 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
         yin = set_initial_condidtions(self)  # load initial conditions
     else:
         yin = self.yin_store
-    # # plot initial conditions
-    # if self.do_plots:
-    #     plot_initial_conditions(self, yin)
 
     # Variables to save intermediate results
     self.rg_history = []
