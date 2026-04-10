@@ -89,16 +89,25 @@ def test_nimbus():
     assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 18.467750747986038)
 
     # ==== load previous run
-    ds = obj.load_previous_run(file_name='test.nc')
-    assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), 0.00017411877560450766)
-    assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), 0.0020261545373924435)
-    assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 8.533026717397001e-05)
-    assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 18.467750747986038)
+    ds2 = obj.load_previous_run(ds_prev=ds)
+    assert np.isclose(np.sum(np.asarray([ds2['cloud_mmr'][0]]).T), 0.00017411877560450766)
+    assert np.isclose(np.sum(np.asarray([ds2['gas_mmr'][0]]).T), 0.0020261545373924435)
+    assert np.isclose(np.sum(np.asarray([ds2['cloud_radius']]).T), 8.533026717397001e-05)
+    assert np.isclose(np.sum(np.asarray([ds2['cloud_number_density']]).T), 18.467750747986038)
+    ds3 = obj.load_previous_run(file_name='test.nc')
+    assert np.isclose(np.sum(np.asarray([ds3['cloud_mmr'][0]]).T), 0.00017411877560450766)
+    assert np.isclose(np.sum(np.asarray([ds3['gas_mmr'][0]]).T), 0.0020261545373924435)
+    assert np.isclose(np.sum(np.asarray([ds3['cloud_radius']]).T), 8.533026717397001e-05)
+    assert np.isclose(np.sum(np.asarray([ds3['cloud_number_density']]).T), 18.467750747986038)
 
     # ==== load previous run
     obj2 = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
                  verbose=True, create_analytic_plots=True)
     obj2.set_up_from_previous_run(file_name='test.nc')
+    assert np.isclose(np.sum(obj2.pres), 1111.11)
+    assert np.isclose(np.sum(obj2.temp), 8104)
+    assert obj2.isset_initialisation
+    obj2.set_up_from_previous_run(ds_prev=ds)
     assert np.isclose(np.sum(obj2.pres), 1111.11)
     assert np.isclose(np.sum(obj2.temp), 8104)
     assert obj2.isset_initialisation
@@ -210,6 +219,7 @@ def test_asserts():
     # ==== assertion errors when not at least one input is given
     with testcase.assertRaises(ValueError):
         obj.load_previous_run()
+    with testcase.assertRaises(ValueError):
         obj.set_up_from_previous_run()
 
     # ==== value errors in database
@@ -217,4 +227,5 @@ def test_asserts():
     temp = np.asarray([500])
     with testcase.assertRaises(ValueError):
         ds.surface_tension('MgO', temp)
+    with testcase.assertRaises(ValueError):
         ds.vapor_pressures('MgO', temp)
