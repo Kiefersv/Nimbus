@@ -28,19 +28,23 @@ def test_nimbus():
     assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 0.00017738970097126437)
     assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 28.1665833969462)
 
-    # ==== set up nimbus itteratively
+    # ==== set up nimbus full
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(typ='full')
-    print(np.sum(np.asarray([ds['cloud_mmr'][0]]).T))
-    print(np.sum(np.asarray([ds['gas_mmr'][0]]).T))
-    print(np.sum(np.asarray([ds['cloud_radius']]).T))
-    print(np.sum(np.asarray([ds['cloud_number_density']]).T))
     assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), 0.00017415323472720008)
     assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), 0.0020261550284562564)
     assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 1.0313424623047931e-05)
     assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 18.47278993747007)
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+    obj.set_up_solver()
+    ds = obj.compute(typ='full', timeout=0.001)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), 6.000119511527929e-30)
+    assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), 0.002034254173417671)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 6.000038568131e-07)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 1.3924126774404749e-18)
 
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
@@ -170,8 +174,6 @@ def test_asserts():
     # ==== errors if atmospehre is not setup
     with testcase.assertRaises(ValueError):
         obj.set_up_solver()
-    # # now set up atmosphere
-    # obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
 
     # ==== assertion errors when not at least one input is given
     with testcase.assertRaises(ValueError):
@@ -183,5 +185,3 @@ def test_asserts():
     temp = np.asarray([500])
     with testcase.assertRaises(ValueError):
         ds.surface_tension('MgO', temp)
-
-
