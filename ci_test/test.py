@@ -28,8 +28,26 @@ def test_nimbus():
     assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 0.00017738970097126437)
     assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 28.1665833969462)
 
-    # ==== set up nimbus full
+    # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+    obj.set_up_solver()
+    ds = obj.compute(typ='iterate', max_iterations=None)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), 0.00017402989930422082)
+    assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), 0.0020261382645410508)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 8.523008406595292e-05)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 18.34792414117775)
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+    obj.set_up_solver()
+    ds = obj.compute(typ='iterate', max_iterations=0)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), 0.0010772818551208216)
+    assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), 0.0020345673147105186)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 0.00012867080982528894)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 161.89495004188024)
+
+    # ==== set up nimbus full
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True)
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(typ='full')
@@ -37,6 +55,8 @@ def test_nimbus():
     assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), 0.0020261550284562564)
     assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 1.0313424623047931e-05)
     assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 18.47278993747007)
+
+    # ==== timout test
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
@@ -45,6 +65,18 @@ def test_nimbus():
     assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), 0.002034254173417671)
     assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 6.000038568131e-07)
     assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 1.3924126774404749e-18)
+
+    # ==== influx added
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+    inj = lambda a, b, c: 1e-11
+    obj.set_up_top_of_atmosphere_influx(inj)
+    obj.set_up_solver()
+    ds = obj.compute(typ='full')
+    assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), 0.002554693560567451)
+    assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), 0.002034855323150379)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 7.880688247351824e-07)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 7602539.859462642)
 
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
@@ -185,3 +217,4 @@ def test_asserts():
     temp = np.asarray([500])
     with testcase.assertRaises(ValueError):
         ds.surface_tension('MgO', temp)
+        ds.vapor_pressures('MgO', temp)
