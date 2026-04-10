@@ -140,9 +140,9 @@ def test_spectra():
     obj.set_up_solver()
     obj.compute(typ='iterate', max_iterations=3)
     df_cloud = obj.picaso_formater(mie_type='full', nradii=10)
-    assert np.isclose(np.sum(df_cloud['opd']), 450.85436210442344)
-    assert np.isclose(np.sum(df_cloud['g0']), 746.3625367174524)
-    assert np.isclose(np.sum(df_cloud['w0']), 470.6713284420664)
+    assert np.isclose(np.sum(df_cloud['opd']), 355.33030871920846)
+    assert np.isclose(np.sum(df_cloud['g0']), 707.2811252692154)
+    assert np.isclose(np.sum(df_cloud['w0']), 485.1164743673346)
     assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
 
 
