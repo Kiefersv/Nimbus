@@ -82,6 +82,8 @@ def define_atmosphere_physics(self):
         # ==== fudge with nucleation rate (No fudge: self.nuc_rate_fudge = 1)
         f_nuc_hom *= self.nuc_rate_fudge
 
+        f_nuc_hom = np.maximum(f_nuc_hom, 0)
+
         return f_nuc_hom
 
     # def _nuc_rate_sindel(n1, temp):
@@ -173,14 +175,14 @@ def define_atmosphere_physics(self):
         # low knudsen number limit
         dmdt_low = 4*np.pi * rg * n1 * ncl * diff_const * (1 - pvap/p1)
         # interpolate
-        val_low = np.maximum(dmdt_low, 1e-30)
-        val_high = np.maximum(dmdt_high, 1e-30)
+        val_low = np.maximum(dmdt_low, 1e-200)
+        val_high = np.maximum(dmdt_high, 1e-200)
         fx = 0.5 * (1.0 - np.tanh(2.0*np.log10(val_low/val_high)))
-        fx = np.maximum(np.minimum(fx, 1.0), 0)
+        fx = np.maximum(np.minimum(fx, 1.0), 1e-200)
         fx = np.maximum(fx, 0)
         dmdt = val_low * fx + val_high * (1.0 - fx)
-        dmdt = np.maximum(dmdt, 1e-30)
         dmdt = np.nan_to_num(dmdt)
+        dmdt = np.maximum(dmdt, 0)
         return dmdt
 
     # def _acc_rate_sw(rg, temp, n1, ncl):

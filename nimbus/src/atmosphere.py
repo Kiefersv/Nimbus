@@ -18,7 +18,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     temperature : np.array
         Temperature in Kelvin.
     pressure : np.array
-        Pressure in dyn/cm2.
+        Pressure in bar.
     kzz : np.array
         Diffusion coefficient in cm2/s.
     mmw : np.array
@@ -175,7 +175,7 @@ def calc_atmos_struct(self):
     # derivatives to be used later
     self.dz = - self.rgas * self.temp / self.mmw / self.gravity * self.dlogp
 
-    # ==== mid point values (see above for explenation of values)
+    # ==== mid-point values (see above for explenation of values)
     self.rhoatmo_mid = np.interp(self.logp_mid, self.logp, self.rhoatmo)
     self.temp_mid = np.interp(self.logp_mid, self.logp, self.temp)
     self.dz_mid = - self.rgas * self.temp_mid / self.mmw / self.gravity * self.dlogp_mid

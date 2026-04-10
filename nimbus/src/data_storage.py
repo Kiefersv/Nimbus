@@ -243,7 +243,7 @@ def set_up_from_previous_run(self, tag=None, file_name=None, load_from_tag=None,
 
     # ==== set up atmosphere from stored properties
     set_up_atmosphere(
-        self, ds['temperature'].values, ds['pressure'].values*1e6, ds['Kzz'].values,
+        self, ds['temperature'].values, ds['pressure'].values, ds['Kzz'].values,
         ds.attrs['mmw'], ds.attrs['gravity'], ds.attrs['species'], ds.attrs['deep_mmr'],
         ds.attrs['fsed_init'], ds.attrs['metalicity'], ds.attrs['ignore_as_nucleator']
     )

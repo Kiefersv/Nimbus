@@ -28,6 +28,7 @@ class Nimbus:
 
     # ==== import plotting routines
     from .src.spectra import picaso_formater
+    from .src.spectra import virga_opacities
 
     def __init__(self, working_dir='.', create_analytic_plots=False, verbose=False,
                  mute=False):

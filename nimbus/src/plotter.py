@@ -74,9 +74,9 @@ def plot_full_structure(self, y, title=''):
     ax[2].set_xlabel('log(cloud mmr)')
     ax[3].set_xlabel('log(nr/ngas)')
     ax[4].set_xlabel('log(G [cm3/s])')
-    ax[4].set_xlim(-10)
+    ax[4].set_xlim(-15)
     ax[5].set_xlabel('log(J [cm3/s])')
-    ax[5].set_xlim(-10)
+    ax[5].set_xlim(-15)
     plt.subplots_adjust(wspace=0, bottom=0.15, left=0.07, right=0.98, top=0.98)
     plt.show()
 

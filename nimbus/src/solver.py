@@ -93,33 +93,37 @@ def set_up_solver(self):
         vsed = self.vsed(rg, rhotot)  # settling velocity [cm/s]
         self.calc_atmos_struct()   # Update atmosphere
 
-        # ==== Rate calculations
+        # ==== Rate calculations ========================================================
         for s, _ in enumerate(self.species):
             n1 = xw[s*2] * self.rhoatmo / self.m1[s]  # gas-phase number density [1/cm3]
-            acc_rate = self.acc_rate(rg, self.temp, n1, ncl, s)  # accretion rate [1/cm3/s]
-            nuc_rate = self.nuc_rate(n1, self.temp, s)  # nucleation rate [1/cm3/s]
+            acc_r = self.acc_rate(rg, self.temp, n1, ncl, s)  # accretion rate [1/cm3/s]
+            nuc_r = self.nuc_rate(n1, self.temp, s)  # nucleation rate [1/cm3/s]
 
-            # ==== source terms =============================================================
-            dx[s*2] += - acc_rate * self.m1[s] / self.rhoatmo - nuc_rate * self.m_ccn / self.rhoatmo
-            dx[s*2+1] += acc_rate * self.m1[s] / self.rhoatmo + nuc_rate * self.m_ccn / self.rhoatmo
-            dx[-1] += nuc_rate * self.m_ccn / self.rhoatmo
+            # ==== source terms
+            acc = acc_r * self.m1[s] / self.rhoatmo
+            nuc = nuc_r * self.m_ccn / self.rhoatmo
+            dx[s*2] += - acc - nuc
+            dx[s*2+1] += acc + nuc
+            dx[-1] += nuc
 
         # ==== Diffusion terms ==========================================================
-        # !!! Note: Rounding errors prevents the definition of prefactors !!!
+        f1 = self.rhoatmo[0] / self.dz_mid[0] / self.rhoatmo[0]
+        f2 = self.kzz_mid * self.rhoatmo_mid / self.dz_mid
+        f3 = self.dz[1:-1] * self.rhoatmo[1:-1]
         for s in range(self.nspec*2 + 1):
-            dx[s, 0] += self.kzz[0] * self.rhoatmo[0] * np.diff(xw[s, :2])[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
+            dx[s, 0] += self.kzz[0] * f1 * np.diff(xw[s, :2])[0] / self.dz[0]
             dx[s, -1] += 0
-            dx[s, 1:-1] += np.diff(self.kzz_mid * self.rhoatmo_mid * np.diff(xw[s]) / self.dz_mid) / self.dz[1:-1] / self.rhoatmo[1:-1]
+            dx[s, 1:-1] += np.diff(f2 * np.diff(xw[s])) / f3
 
         # ==== Advection terms ==========================================================
-        # !!! Note: Rounding errors prevents the definition of prefactors !!!
+        f4 = self.rhoatmo * vsed
         for s, _ in enumerate(self.species):
-            dx[s * 2 + 1, 0] += self.rhoatmo[0] * xw[s * 2 + 1, 0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
-            dx[s * 2 + 1, 1:-1] += np.diff((self.rhoatmo * vsed * xw[s * 2 + 1])[:-1]) / self.dz[1:-1] / self.rhoatmo[1:-1]
-        dx[-1, 0] += self.rhoatmo[0] * xw[-1, 0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
-        dx[-1, 1:-1] += np.diff((self.rhoatmo * vsed * xw[-1])[:-1]) / self.dz[1:-1] / self.rhoatmo[1:-1]
+            dx[s * 2 + 1, 0] += f1 * vsed[0] * xw[s * 2 + 1, 0]
+            dx[s * 2 + 1, 1:-1] += np.diff((f4 * xw[s * 2 + 1])[:-1]) / f3
+        dx[-1, 0] += f1 * vsed[0] * xw[-1, 0]
+        dx[-1, 1:-1] += np.diff((f4 * xw[-1])[:-1]) / f3
 
-        # ===== additional top of atmosphere influx ====================================
+        # ===== additional top of atmosphere influx =====================================
         if self.tf is not None:
             dx += self.tf(self.pres, self.temp, t)
 
@@ -129,10 +133,15 @@ def set_up_solver(self):
         # print progress information
         if self.verbose and not self.mute:
             prog = np.log10(t)/np.log10(self.tend) * 100
-            print('\r[INFO] Loop ' + str(self.loop_nr) + '' + self.it_str
-                  + ' || Current loop progress ' + f"{prog:05.2f}%", end='')
+            if self.static_rg:
+                print('\r[INFO] Loop ' + str(self.loop_nr) + '' + self.it_str
+                      + ' || Current loop progress '
+                      + f"{prog:05.2f}% [log10(t) = {round(np.log10(t),1)}]", end='')
+            else:
+                print('\r[INFO] Current progress '
+                      + f"{prog:05.2f}% [log10(t) = {round(np.log10(t),1)}]", end='')
 
-        # ==== Return time derivative
+        # ==== Return time derivative ===================================================
         return dx.flatten()
 
     # ==== Set the functions

@@ -5,8 +5,8 @@ import os
 import numpy as np
 import pandas as pd
 
-def picaso_formater(self, tag='last_run', path_to_opacities=None, sig=2, mie_type='full',
-                    nradii=100, mieai_object=None):
+def picaso_formater(self, tag=None, ds_prev=None, path_to_opacities=None, sig=2,
+                    mie_type='full', nradii=100, mieai_object=None):
     """
     Create pandas dataframe of opacities that can be read into PICASO. This function is
     a simplified version of VIRGA code. Please cite Batalha et al. (2026) if you use it.
@@ -14,7 +14,11 @@ def picaso_formater(self, tag='last_run', path_to_opacities=None, sig=2, mie_typ
     Parameters
     ----------
     tag : str, optional
-        Tag of the model to be calculated. Default is the last run.
+        Tag of the model to be calculated. Default is the last run. If neither tag nor
+        ds_prev are given, the 'last_run' is loaded.
+    ds_prev : xarray.Dataset, optional
+        Dataset of previous run. If neither tag nor ds_prev are given, the 'last_run'
+        is loaded.
     path_to_opacities : str, optional
         Path to the folder containing opacity files. If none, default files are used.
     sig : float
@@ -53,7 +57,12 @@ def picaso_formater(self, tag='last_run', path_to_opacities=None, sig=2, mie_typ
         self.dir_opac = path_to_opacities + '/'
 
     # ==== get data from tag
-    ds = self.results[tag]
+    if tag is not None:
+        ds = self.results[tag]
+    elif ds_prev is not None:
+        ds = ds_prev
+    else:
+        ds = self.results['last_run']
 
     # ==== Get cloud structure
     qc = np.asarray(ds['cloud_mmr'].values).T
@@ -190,3 +199,56 @@ def picaso_formater(self, tag='last_run', path_to_opacities=None, sig=2, mie_typ
     df['wavenumber'] = np.concatenate([1 / wave_in / 1e-4] * len(self.logp_mid))
 
     return df
+
+def virga_opacities(self, tag=None, ds_prev=None, path_to_opacities=None, sig=2):
+    """
+    This routine uses Virga functions to calculate opacities. It does not support more
+    than 1 cloud material.
+    """
+
+    # ==== Import Virga only here to allow nimbus to be run without it installed
+    import virga.justdoit as jdi
+
+    # ==== get data from tag
+    if tag is not None:
+        ds = self.results[tag]
+    elif ds_prev is not None:
+        ds = ds_prev
+    else:
+        ds = self.results['last_run']
+
+    # ==== Set optional inputs
+    if path_to_opacities is None:
+        # if no path is given, assume that the opacities are within the data folder
+        dir_opac = os.path.dirname(__file__) + '/../data/opacities/'
+    else:
+        dir_opac = path_to_opacities + '/'
+
+    # ==== check that only 1 species is in the dataset
+    if len(ds.attrs['species']) > 1:
+        raise ValueError("Virga does not support more than one cloud species. Please "
+                         "use the picaso_formater function instead.")
+
+    # ==== Get cloud particle opaciteis from precalculated file
+    qext, qscat, cqscat, nwave, radius, wave_in = jdi.get_mie(ds.attrs['species'][0], dir_opac)
+
+    # ==== Use Virga routines to calculate opacities
+    radii, _, dr = jdi.get_r_grid_w_max(np.min(radius), np.max(radius), len(radius))
+    opd, w0, g0, _ = jdi.calc_optics(
+    #     nwave, ds['cloud_mmr'].T, ds['cloud_radius'].T, ds['cloud_number_density'].T, radii,
+    #     dr, qext, qscat, cqscat, sig, np.min(radius), np.max(radius), wavelength=None, gas_name=None, mixed=False
+    # )
+        nwave, ds['cloud_mmr'].values.T, ds['cloud_mmr'].values.T, ds['cloud_radius'].values[:, np.newaxis], ds['cloud_radius'].values[:, np.newaxis],
+        ds['cloud_number_density'].values[:, np.newaxis] * (-self.dz), radii, dr, qext[:, :, np.newaxis], qscat[:, :, np.newaxis], cqscat[:, :, np.newaxis], sig, np.min(radius), len(radius)
+    )
+
+    # ==== Use Picaso Formater to produce pandas file
+    df = pd.DataFrame(
+        dict(opd=opd[:-1].flatten(),
+             w0=w0[:-1].flatten(),
+             g0=g0[:-1].flatten()))
+    df['pressure'] = np.concatenate([[i] * len(wave_in[:, 0]) for i in 10 ** self.logp_mid * 1e-6])
+    df['wavenumber'] = np.concatenate([1 / wave_in[:, 0] / 1e-4] * len(self.logp_mid))
+
+    # ==== Return all opacity information
+    return opd, w0, g0, df
