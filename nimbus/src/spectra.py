@@ -195,7 +195,7 @@ def picaso_formater(self, tag=None, ds_prev=None, path_to_opacities=None, sig=2,
         dict(opd=opd[:-1].flatten(),
              w0=w0[:-1].flatten(),
              g0=g0[:-1].flatten()))
-    df['pressure'] = np.concatenate([[i] * len(wave_in) for i in 10 ** self.logp_mid * 1e-6])
+    df['pressure'] = np.concatenate([[i] * len(wave_in) for i in np.exp(self.logp_mid) * 1e-6])
     df['wavenumber'] = np.concatenate([1 / wave_in / 1e-4] * len(self.logp_mid))
 
     return df
@@ -247,7 +247,7 @@ def virga_opacities(self, tag=None, ds_prev=None, path_to_opacities=None, sig=2)
         dict(opd=opd[:-1].flatten(),
              w0=w0[:-1].flatten(),
              g0=g0[:-1].flatten()))
-    df['pressure'] = np.concatenate([[i] * len(wave_in[:, 0]) for i in 10 ** self.logp_mid * 1e-6])
+    df['pressure'] = np.concatenate([[i] * len(wave_in[:, 0]) for i in np.exp(self.logp_mid) * 1e-6])
     df['wavenumber'] = np.concatenate([1 / wave_in[:, 0] / 1e-4] * len(self.logp_mid))
 
     # ==== Return all opacity information
