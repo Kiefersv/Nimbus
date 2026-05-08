@@ -54,9 +54,10 @@ class Nimbus:
         self.mute = mute  # overwrites verbose and do_plots and makes Nimbus run quietly
 
         # ==== Default solver settings (can be changed with set_solver_settings())
+        self.solver_type = 'LSODA'  # type of solver from solve_ivp
         self.tstart = 1e-4  # start time of simulation [s]
         self.tend = 1e12  # end time of simulation [s]
-        self.tsteps = 20  # number of intermediated evaluations (log-spaced)
+        self.tsteps = 200  # number of intermediated evaluations (log-spaced)
         self.ode_rtol = 1e-3  # relative error of solve_ivp
         self.ode_atol = 1e-25  # absolute error of solve_ivp
         self.ode_minimum_mmr = 1e-30  # lowest MMR considered [g/g]

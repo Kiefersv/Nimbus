@@ -157,6 +157,22 @@ def save_run(self, sol, save_file=None, tag=None):
     else:
         tfailed = "None"
 
+    # ==== remember solver settings
+    sets = np.asarray([
+        self.tstart,
+        self.tend,
+        self.tsteps,
+        self.ode_rtol,
+        self.ode_atol,
+        self.ode_minimum_mmr,
+        self.r_ccn,
+        self.cs_mol,
+        self.eps_k,
+        self.r1,
+        self.rho_ccn,
+        self.rg_fit_deg,
+    ])
+
     # ==== How data is stored
     ds = xr.Dataset(
         data_vars=data,
@@ -185,6 +201,8 @@ def save_run(self, sol, save_file=None, tag=None):
             'timeout': timeout,
             'Did the run finish?': str(self.complete),
             'y_last': sol.y[:, -1],
+            'settings': sets,
+            'solver_type': self.solver_type
         },
     )
 
@@ -252,6 +270,22 @@ def set_up_from_previous_run(self, tag=None, file_name=None, load_from_tag=None,
     self.yin_store = ds.attrs['y_last']
     self.isset_initialisation = True  # set initialisation flag
 
+    # ==== set settings
+    self.solver_type = ds.attrs['solver_type']
+    self.static_rg = ds.attrs['static_rg'] == 'True'
+    self.tstart = ds.attrs['settings'][0]
+    self.tend = ds.attrs['settings'][1]
+    self.tsteps = int(ds.attrs['settings'][2])
+    self.ode_rtol = ds.attrs['settings'][3]
+    self.ode_atol = ds.attrs['settings'][4]
+    self.ode_minimum_mmr = ds.attrs['settings'][5]
+    self.r_ccn = ds.attrs['settings'][6]
+    self.cs_mol = ds.attrs['settings'][7]
+    self.eps_k = ds.attrs['settings'][8]
+    self.r1 = ds.attrs['settings'][9]
+    self.rho_ccn = ds.attrs['settings'][10]
+    self.rg_fit_deg = int(ds.attrs['settings'][11])
+
 def load_previous_run(self, tag=None, file_name=None, ds_prev=None):
     """
     Load previously saved Nimbus runs.
@@ -285,7 +319,6 @@ def load_previous_run(self, tag=None, file_name=None, ds_prev=None):
     else:
         raise ValueError("[ERROR] Either file_name must be specified to set up "
                          "from previous run or ds_prev must be given.")
-
 
     # load results into Nimbus
     self.results[tag] = ds

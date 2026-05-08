@@ -82,7 +82,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
 
     # ==== calculate pressure grid
     # grid coordiantes
-    self.logp = np.log(self.pres)  # pressure grid
+    self.logp = np.log(self.pres)  # pressure grid in natural logarithm
     self.logp_mid = (self.logp[1:] + self.logp[:-1]) / 2  # midpoints
     # pressure grid bin size
     self.dlogp = np.zeros_like(self.logp)

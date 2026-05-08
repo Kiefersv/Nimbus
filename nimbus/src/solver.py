@@ -68,8 +68,11 @@ def set_up_solver(self):
         xw = x.reshape((self.nspec*2 + 1, self.sz))  # reshape array
         # prevent underflow of values
         xw[xw < self.ode_minimum_mmr] = self.ode_minimum_mmr
+        # prevent overflow of values
+        xw[xw > 1] = 1
+        # define output array
         dx = np.zeros((self.nspec*2 + 1, self.sz))
-        # total mass
+        # total mass & density
         xtot = np.sum(xw[1::2], axis=0)
         rhotot = np.sum(xw[1::2]*self.rhop[:, np.newaxis], axis=0)/xtot
 

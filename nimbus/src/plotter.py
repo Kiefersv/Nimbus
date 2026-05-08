@@ -65,7 +65,7 @@ def plot_full_structure(self, y, title=''):
 
     for a, aa in enumerate(ax):
         aa.set_ylim(logp[-1], logp[0])
-        aa.legend()
+        # aa.legend()
         if a != 0:
             aa.tick_params(labelleft=False)
     ax[0].set_ylabel('log(p [bar])')
