@@ -134,7 +134,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
             print('       -> ' + self.species[s] + f' deep MMR: {self.deep_gas_mmr[s]:.2e} g/g')
 
 
-def set_up_top_of_atmosphere_influx(self, influx_function):
+def set_up_influx(self, influx_function):
     """
     Set up the top of atmosphere source function.
 

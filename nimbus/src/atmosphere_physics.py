@@ -141,7 +141,7 @@ def define_atmosphere_physics(self):
         fx = np.maximum(fx, 0)
         dmdt = val_low * fx + val_high * (1.0 - fx)
         dmdt = np.nan_to_num(dmdt)
-        dmdt = np.maximum(dmdt, 0)
+        # dmdt = np.maximum(dmdt, 0)
         return dmdt
 
     # ===================================================================================

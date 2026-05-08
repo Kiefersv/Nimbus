@@ -1,4 +1,4 @@
-.. figure:: https://raw.githubusercontent.com/Kiefersv/Nimbus/refs/heads/main/social/temp_logo.png
+.. figure:: https://raw.githubusercontent.com/Kiefersv/Nimbus/refs/heads/main/social/nimbus_logo.png
    :alt: Nimbus logo
    :align: center
 
