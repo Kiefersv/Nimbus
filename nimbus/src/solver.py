@@ -65,7 +65,7 @@ def set_up_solver(self):
         """
 
         # ==== Read in the input ========================================================
-        xw = x.reshape((self.nspec*2 + 1, self.sz))  # reshape array
+        xw = x.reshape((self.nspec*2 + 1, self.sz)).copy()  # reshape array
         # prevent underflow of values
         xw[xw < self.ode_minimum_mmr] = self.ode_minimum_mmr
         # prevent overflow of values
@@ -126,13 +126,21 @@ def set_up_solver(self):
         dx[-1, 0] += f1 * vsed[0] * xw[-1, 0]
         dx[-1, 1:-1] += np.diff((f4 * xw[-1])[:-1]) / f3
 
-        # ===== additional top of atmosphere influx =====================================
+        # ===== additional influx =======================================================
         if self.tf is not None:
             dx += self.tf(self.pres, self.temp, t)
 
         # ==== Finalsing output =========================================================
+        # imediatly evaporate all cloud particles
+        for s, _ in enumerate(self.species):
+            dx[s*2, ~self.mask_psupsat] += dx[s*2 + 1, ~self.mask_psupsat]
         # set all values below the vapour pressure to zero (speeds up calculation)
-        dx[:, ~self.mask_psupsat] = 0
+        dx[1::2, ~self.mask_psupsat] = 0  # set MMR change below cloud to 0
+        dx[-1, ~self.mask_psupsat] = 0  # set number density below cloud to 0
+        dx[:, -1] = 0  # the lowest cell represents the deep interior and is not touched
+
+        # dx[:, ~self.mask_psupsat] = 0  # set all number density below cloud to 0
+
         # print progress information
         if self.verbose and not self.mute:
             prog = np.log10(t)/np.log10(self.tend) * 100
