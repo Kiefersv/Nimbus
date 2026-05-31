@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 def picaso_formater(self, tag=None, ds_prev=None, path_to_opacities=None, sig=2,
-                    mie_type='full', nradii=100, mieai_object=None):
+                    mie_type='full', nradii=100, mieai_object=None, time_stamps=None):
     """
     Create pandas dataframe of opacities that can be read into PICASO. This function is
     a simplified version of VIRGA code. Please cite Batalha et al. (2026) if you use it.
@@ -32,6 +32,9 @@ def picaso_formater(self, tag=None, ds_prev=None, path_to_opacities=None, sig=2,
     mieai_object : MieAi class, optional
         Giving a mieai class rather than creating the default one. Allows for more
         felxibility and mutliprocessing.
+    time_stamps : list, optional
+        If none, only final solution is returned, otherwise, a snapshot of each given
+        time is returned.
 
     Return
     ------
@@ -64,12 +67,6 @@ def picaso_formater(self, tag=None, ds_prev=None, path_to_opacities=None, sig=2,
     else:
         ds = self.results['last_run']
 
-    # ==== Get cloud structure
-    qc = np.asarray(ds['cloud_mmr'].values).T
-    ndz = np.asarray(-ds['cloud_number_density'].values * self.dz).T
-    rg = np.asarray(ds['cloud_radius'].values).T
-    ndz[~self.mask_psupsat] = 0  # all values below cloud deck are zero
-
     # === wavelength grid (fixed to picaso 193 format)
     wave_in = np.asarray([
         0.268,   0.287,   0.312,   0.337,   0.362,   0.387,   0.408,   0.426,   0.445,
@@ -97,6 +94,23 @@ def picaso_formater(self, tag=None, ds_prev=None, path_to_opacities=None, sig=2,
     ])
     nw = len(wave_in)
 
+    # ==== check if timestamps are given
+    if time_stamps is None:
+        time_it = [None]
+    else:
+        time_it = np.asarray(time_stamps)
+    nt = len(time_it)  # number of time steps
+
+    # ==== Get cloud structure
+    qc = np.asarray(ds['cloud_mmr'].values).T
+    ndz = np.asarray(-ds['cloud_number_density'].values * self.dz).T
+    rg = np.asarray(ds['cloud_radius'].values).T
+    ndz[~self.mask_psupsat] = 0  # all values below cloud deck are zero
+    # pressure of the output
+    p_out = [[i] * len(wave_in) for i in np.exp(self.logp_mid) * 1e-6]
+    # wavelength of the output
+    w_out = [1 / wave_in / 1e-4] * len(self.logp_mid)
+
     # ==== radius grid
     rmin = 1e-8
     rmax = 0.1
@@ -120,84 +134,105 @@ def picaso_formater(self, tag=None, ds_prev=None, path_to_opacities=None, sig=2,
     w0 = np.zeros((nz, nw))  # single scattering albedo
     g0 = np.zeros((nz, nw))  # asymmetry parameter
     vmr_test = np.zeros((2, nrad, ngas))  # check if vmr changes between pressures
+    df = []  # output list
 
     # ===================================================================================
-    # Mixed opacity precalculation
+    # Data readout
     # ===================================================================================
 
-    # ==== calculate volume fractions from mass mixing ratio
-    vol = qc / self.rhop[np.newaxis,]
-    vf = vol / np.sum(vol, axis=1)[:, np.newaxis]
-    vf[vf < 1e-50] = 1e-50
+    # ==== iterate over all timestamps (or only the last one)
+    for t, ti in enumerate(time_it):
 
-    # ==== loop over all height layers
-    for iz in range(nz):
-        if ndz[iz] <= 0:
-            continue
+        # ==== get data of current timestamp
+        if ti is not None:
+            ds_t = ds.interp(time=ti)
+            qc = np.asarray(ds_t['all_cloud_mmr'].values).T
+            ndz = np.asarray(-ds_t['all_cloud_number_density'].values * self.dz).T
+            rg = np.asarray(ds_t['all_cloud_radius'].values).T
+            ndz[~self.mask_psupsat] = 0  # all values below cloud deck are zero
 
-        # calculate size distributions of each material
-        arg1 = dr / (np.sqrt(2. * np.pi) * radius * np.log(sig))
-        arg2 = -np.log(radius / rg[iz]) ** 2 / (2 * np.log(sig) ** 2)
-        dist = arg1 * np.exp(arg2) / np.sum(arg1 * np.exp(arg2))
-        ndr_mixed = ndz[iz] * dist
+        # ===============================================================================
+        # Mixed opacity precalculation
+        # ===============================================================================
 
-        # set volume mixing ratios
-        vmr = {}
-        for g, gas in enumerate(self.species):
-            vmr[gas] = np.ones((nrad,)) * vf[iz, g]
-            vmr_test[0, :, g] = vmr[gas]
+        # ==== calculate volume fractions from mass mixing ratio
+        vol = qc / self.rhop[np.newaxis,]
+        vf = vol / np.sum(vol, axis=1)[:, np.newaxis]
+        vf[vf < 1e-50] = 1e-50
 
-        # check if vmrs have changed, and only then re-calculate opaciteis
-        if np.any(np.abs((vmr_test[0] - vmr_test[1]) / vmr_test[0]) > 1e-4):
-            if mie_type == 'full':
-                qet, qst, cqt = ma.efficiencies(wave_in, radius * 1e4, vmr)
-            elif mie_type == 'grid':
-                qet, qst, cqt = ma.grid_efficiencies(wave_in, radius * 1e4, vmr)
-            cqt = qet * cqt
-            # remeber the vmrs for the next run
-            vmr_test[1] = vmr_test[0]
+        # ==== loop over all height layers
+        for iz in range(nz):
+            if ndz[iz] <= 0:
+                continue
 
-        # total geometric cross-section
-        pir2ndz = np.pi * radius ** 2 * ndr_mixed
+            # calculate size distributions of each material
+            arg1 = dr / (np.sqrt(2. * np.pi) * radius * np.log(sig))
+            arg2 = -np.log(radius / rg[iz]) ** 2 / (2 * np.log(sig) ** 2)
+            dist = arg1 * np.exp(arg2) / np.sum(arg1 * np.exp(arg2))
+            ndr_mixed = ndz[iz] * dist
 
-        # opacity of mixed particles
-        scat_gas[iz] = np.sum(qst.T * pir2ndz[np.newaxis], axis=1)
-        ext_gas[iz] = np.sum(qet.T * pir2ndz[np.newaxis], axis=1)
-        cqs_gas[iz] = np.sum(cqt.T * pir2ndz[np.newaxis], axis=1)
+            # set volume mixing ratios
+            vmr = {}
+            for g, gas in enumerate(self.species):
+                vmr[gas] = np.ones((nrad,)) * vf[iz, g]
+                vmr_test[0, :, g] = vmr[gas]
 
-    # ===================================================================================
-    #  Prepare output
-    # ===================================================================================
+            # check if vmrs have changed, and only then re-calculate opaciteis
+            if np.any(np.abs((vmr_test[0] - vmr_test[1]) / vmr_test[0]) > 1e-4):
+                if mie_type == 'full':
+                    qet, qst, cqt = ma.efficiencies(wave_in, radius * 1e4, vmr)
+                elif mie_type == 'grid':
+                    qet, qst, cqt = ma.grid_efficiencies(wave_in, radius * 1e4, vmr)
+                cqt = qet * cqt
+                # remeber the vmrs for the next run
+                vmr_test[1] = vmr_test[0]
 
-    # ==== Sublayering to prevent sharp boundaries
-    for iz in range(nz - 1, -1, -1):
-        if np.sum(ext_gas[iz, :]) > 0:
-            ibot = iz
-            break
-        if iz == 0:
-            ibot = 0
-    if ibot >= nz - 3:
-        print("Not doing sublayer as cloud deck at the bottom of pressure grid")
-    else:
-        for arr in [scat_gas, ext_gas, cqs_gas]:
-            arr[ibot + 1, :] = arr[ibot, :] * 0.1
-            arr[ibot + 2, :] = arr[ibot, :] * 0.05
-            arr[ibot + 3, :] = arr[ibot, :] * 0.01
+            # total geometric cross-section
+            pir2ndz = np.pi * radius ** 2 * ndr_mixed
 
-    # ==== Sum over gases and compute spectral optical depth profile etc
-    mask = scat_gas > 0
-    opd[mask] = ext_gas[mask]
-    w0[mask] = scat_gas[mask] / ext_gas[mask]
-    g0[mask] = cqs_gas[mask] / scat_gas[mask]
+            # opacity of mixed particles
+            scat_gas[iz] = np.sum(qst.T * pir2ndz[np.newaxis], axis=1)
+            ext_gas[iz] = np.sum(qet.T * pir2ndz[np.newaxis], axis=1)
+            cqs_gas[iz] = np.sum(cqt.T * pir2ndz[np.newaxis], axis=1)
 
-    # ==== Create opacities in picaso format
-    df = pd.DataFrame(
-        dict(opd=opd[:-1].flatten(),
-             w0=w0[:-1].flatten(),
-             g0=g0[:-1].flatten()))
-    df['pressure'] = np.concatenate([[i] * len(wave_in) for i in np.exp(self.logp_mid) * 1e-6])
-    df['wavenumber'] = np.concatenate([1 / wave_in / 1e-4] * len(self.logp_mid))
+        # ===============================================================================
+        #  Prepare output
+        # ===============================================================================
 
+        # ==== Sublayering to prevent sharp boundaries
+        for iz in range(nz - 1, -1, -1):
+            if np.sum(ext_gas[iz, :]) > 0:
+                ibot = iz
+                break
+            if iz == 0:
+                ibot = 0
+        if ibot >= nz - 3:
+            print("Not doing sublayer as cloud deck at the bottom of pressure grid")
+        else:
+            for arr in [scat_gas, ext_gas, cqs_gas]:
+                arr[ibot + 1, :] = arr[ibot, :] * 0.1
+                arr[ibot + 2, :] = arr[ibot, :] * 0.05
+                arr[ibot + 3, :] = arr[ibot, :] * 0.01
+
+        # ==== Sum over gases and compute spectral optical depth profile etc
+        mask = scat_gas > 0
+        opd[mask] = ext_gas[mask]
+        w0[mask] = scat_gas[mask] / ext_gas[mask]
+        g0[mask] = cqs_gas[mask] / scat_gas[mask]
+
+        # ==== Create opacities in picaso format
+        df_t = pd.DataFrame(
+            dict(opd=opd[:-1].flatten(),
+                 w0=w0[:-1].flatten(),
+                 g0=g0[:-1].flatten()))
+        df_t['pressure'] = np.concatenate(p_out)
+        df_t['wavenumber'] = np.concatenate(w_out)
+        df.append(df_t)
+
+    # if no timestamps are given, return only one dataframe
+    if time_stamps is None:
+        return df[0]
+    # otherwise return a list of dataframes
     return df
 
 def virga_opacities(self, tag=None, ds_prev=None, path_to_opacities=None, sig=2):

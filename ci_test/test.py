@@ -41,10 +41,10 @@ def test_nimbus():
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(typ='iterate', max_iterations=0)
-    assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), 0.0010772818551208216)
-    assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), 0.0020345673147105186)
-    assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 0.00012867080982528894)
-    assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 161.89495004188024)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), 0.001077236442472701)
+    assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), 0.0020345253801391525)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 0.00012866981340561084)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 161.89411630627433)
 
     # ==== set up nimbus full
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True)
@@ -70,13 +70,13 @@ def test_nimbus():
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     inj = lambda a, b, c: 1e-11
-    obj.set_up_top_of_atmosphere_influx(inj)
+    obj.set_up_influx(inj)
     obj.set_up_solver()
     ds = obj.compute(typ='full')
-    assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), 0.002554693560567451)
-    assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), 0.002034855323150379)
-    assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 7.880688247351824e-07)
-    assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 7602539.859462642)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), 0.00443104705703731)
+    assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), 0.0035135514523184)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 8.895937606094161e-07)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 7345286.225350222)
 
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
@@ -119,12 +119,10 @@ def test_nimbus():
                           ['SiO', 'MgSiO3'], [1e-3, 1e-4])
     obj.set_up_solver()
     ds = obj.compute(typ='full')
-    assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), 0.00028856177206542375)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), 0.0002886522814531284)
     assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), 0.002023051669376635)
-    assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 6.0064927387298e-06)
-    assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 181.7379885768039)
-
-
+    assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), 6.04904073260377e-06)
+    assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), 177.85783666763513)
 
 def test_solversetters():
     "Unit testing of Nimbus"
@@ -179,7 +177,6 @@ def test_datastorage():
     vp = ds.monomer_radius('SiO2')
     assert np.isclose(np.sum(vp), 2.079e-08)
 
-
 def test_spectra():
     """ This function is currently only used for local testing as it relys on
     the MieAi implementation """
@@ -203,6 +200,22 @@ def test_spectra():
     assert np.isclose(np.sum(df_cloud['g0']), 707.2811252692154)
     assert np.isclose(np.sum(df_cloud['w0']), 485.1164743673346)
     assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
+
+    # ==== set up nimbus fully to test timestamps
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+    obj.set_up_solver()
+    obj.compute(typ='full')
+    df_cloud = obj.picaso_formater(mie_type='full', nradii=10, time_stamps=[1e-2, 1e9])
+    sols = [
+        [1.1938588077651941e-25, 1677.5748310820318, 195.96456606238883, 6849905.947614839],
+        [519.1979679535198, 775.609738893844, 471.94371678775826, 6849905.947614839],
+    ]
+    for d, df in enumerate(df_cloud):
+        assert np.isclose(np.sum(df['opd']), sols[d][0])
+        assert np.isclose(np.sum(df['g0']), sols[d][1])
+        assert np.isclose(np.sum(df['w0']), sols[d][2])
+        assert np.isclose(np.sum(df['wavenumber']), sols[d][3])
 
 
 def test_asserts():

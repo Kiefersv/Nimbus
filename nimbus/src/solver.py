@@ -74,7 +74,7 @@ def set_up_solver(self):
         dx = np.zeros((self.nspec*2 + 1, self.sz))
         # total mass & density
         xtot = np.sum(xw[1::2], axis=0)
-        rhotot = np.sum(xw[1::2]*self.rhop[:, np.newaxis], axis=0)/xtot
+        rhotot = xtot/np.sum(xw[1::2]/self.rhop[:, np.newaxis], axis=0)
 
         # ==== Check timeout condition ==================================================
         if self.timeout is not None:
@@ -139,6 +139,8 @@ def set_up_solver(self):
         dx[-1, ~self.mask_psupsat] = 0  # set number density below cloud to 0
         dx[:, -1] = 0  # the lowest cell represents the deep interior and is not touched
 
+        # old version, newer is not 100% there it but the lines above are already an
+        # upgrade
         # dx[:, ~self.mask_psupsat] = 0  # set all number density below cloud to 0
 
         # print progress information
