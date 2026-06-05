@@ -40,6 +40,7 @@ def save_run(self, sol, save_file=None, tag=None):
         solid_mmr = np.zeros((self.nspec, len(self.all_runs), self.sz))
         nuc_rate = np.zeros((self.nspec, len(self.all_runs), self.sz))
         acc_rate = np.zeros((self.nspec, len(self.all_runs), self.sz))
+        saturation = np.zeros((self.nspec, len(self.all_runs), self.sz))
         n1 = np.zeros((self.nspec, len(self.all_runs), self.sz))
         total_mmr = np.zeros((len(self.all_runs), self.sz))
         ncl = np.zeros((len(self.all_runs), self.sz))
@@ -61,6 +62,9 @@ def save_run(self, sol, save_file=None, tag=None):
                 nuc_rate[s, r] = self.nuc_rate(n1[s, r], self.temp, s)
                 gas_mmr[s, r] = xrun[s*2]
                 solid_mmr[s, r] = xrun[s*2 + 1]
+                pvap = self.db.vapor_pressures(self.species[s], self.temp, self.mh)
+                saturation[s, r] = (pvap * self.mw[s] / self.pres / self.mmw)
+
         data = {
             'gas_mmr': (co2, gas_mmr[:, -1]),
             'cloud_mmr': (co2, solid_mmr[:, -1]),
@@ -72,6 +76,7 @@ def save_run(self, sol, save_file=None, tag=None):
             'temperature': (co2[-1], self.temp),
             'rhoatmo': (co2[-1], self.rhoatmo),
             'Kzz': (co2[-1], self.kzz),
+            'saturation_mmr': (co2, saturation[:, -1]),
             'all_gas_mmr': (co, gas_mmr),
             'all_cloud_mmr': (co, solid_mmr),
             'all_nucleation_rate': (co, nuc_rate),
@@ -82,6 +87,7 @@ def save_run(self, sol, save_file=None, tag=None):
             'all_temperature': (co[2:], self.temp),
             'all_rhoatmo': (co[2:], self.rhoatmo),
             'all_Kzz': (co[2:], self.kzz),
+            'all_saturation_mmr': (co, saturation),
         }
     else:
         # ==== check how many times were successfully calculated
@@ -101,6 +107,7 @@ def save_run(self, sol, save_file=None, tag=None):
         solid_mmr = np.zeros((self.nspec, tstep_done, self.sz))
         nuc_rate = np.zeros((self.nspec, tstep_done, self.sz))
         acc_rate = np.zeros((self.nspec, tstep_done, self.sz))
+        saturation = np.zeros((self.nspec, tstep_done, self.sz))
         n1 = np.zeros((self.nspec, tstep_done, self.sz))
         total_mmr = np.zeros((tstep_done, self.sz))
         ncl = np.zeros((tstep_done, self.sz))
@@ -122,6 +129,8 @@ def save_run(self, sol, save_file=None, tag=None):
                 nuc_rate[s, t] = self.nuc_rate(n1[s, t], self.temp, s)  # nucleation rate [1/cm3/s]
                 gas_mmr[s, t] = xrun[s*2]
                 solid_mmr[s, t] = xrun[s*2 + 1]
+                pvap = self.db.vapor_pressures(self.species[s], self.temp, self.mh)
+                saturation[s, t] = (pvap * self.mw[s] / self.pres / self.mmw)
         data = {
             'gas_mmr': (co2, gas_mmr[:, -1]),
             'total_cloud_mmr': (co2[1:], total_mmr[-1]),
@@ -134,6 +143,7 @@ def save_run(self, sol, save_file=None, tag=None):
             'temperature': (co2[1:], self.temp),
             'rhoatmo': (co2[1:], self.rhoatmo),
             'Kzz': (co2[1:], self.kzz),
+            'saturation_mmr': (co2, saturation[:, -1]),
             'all_gas_mmr': (co, gas_mmr),
             'all_total_cloud_mmr': (co[1:], total_mmr),
             'all_cloud_mmr': (co, solid_mmr),
@@ -145,6 +155,7 @@ def save_run(self, sol, save_file=None, tag=None):
             'all_temperature': (co[2:], self.temp),
             'all_rhoatmo': (co[2:], self.rhoatmo),
             'all_Kzz': (co[2:], self.kzz),
+            'all_saturation_mmr': (co, saturation),
         }
 
     # ==== set attributies

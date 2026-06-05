@@ -217,7 +217,6 @@ def test_spectra():
         assert np.isclose(np.sum(df['w0']), sols[d][2])
         assert np.isclose(np.sum(df['wavenumber']), sols[d][3])
 
-
 def test_asserts():
     # set up testcase class:
     testcase = unittest.TestCase()
