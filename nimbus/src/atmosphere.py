@@ -19,7 +19,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
         Temperature in Kelvin.
     pressure : np.array
         Pressure in bar.
-    kzz : np.array
+    kzz : np.array or function kzz(p, t)
         Diffusion coefficient in cm2/s.
     mmw : np.array
         Mean molecular weight in amu.
@@ -57,7 +57,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     # ==== Setting input parameters
     self.temp = temperature  # temperature profile [K]
     self.pres = pressure*1e6  # pressure profile, convert from bar to [dyn/cm2]
-    self.kzz = kzz  # mixing coefficient [cm2/s]
+    self.kzz = aoftf(kzz)  # mixing coefficient [cm2/s]
     self.mmw = mmw  # mean molecular weight [amu]
     self.gravity = gravity  # gravity [cm/s2]
     self.fsed = fsed  # (initial) settling parameter [None]
@@ -94,7 +94,11 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
 
     # ==== Derive physical properties
     self.m_ccn = 4 / 3 * np.pi * self.r_ccn ** 3 * self.rho_ccn  # ccn mass [g]
-    self.kzz_mid = np.interp(self.logp_mid, self.logp, self.kzz)
+    def kzz_mid(t, p):
+        """ Kzz at log midpoint value """
+        _kzz = self.kzz(t, p)
+        return (_kzz[1:] + _kzz[:-1])/2
+    self.kzz_mid = kzz_mid
 
     # ==== pre-compute constant values
     self.calc_atmos_struct()
@@ -114,7 +118,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
         # minimisation function
         def vsed_f(rg):
             v_c = self.vsed(rg, self.rho_ccn)[i]  # settling veloctity
-            vk = self.fsed * self.kzz[i] / self.h[i]  # fsed velocity
+            vk = self.fsed * self.kzz(0, self.pres)[i] / self.h[i]  # fsed velocity
             return vk - v_c
         # call of minimisation function with optimised initial condiaitons
         self.rg[i] = np.maximum(root_scalar(vsed_f, x0=self.r1 * 1e2).root, self.r_ccn)
@@ -127,7 +131,8 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
         print('[INFO] Atmosphere set up with:')
         print(f'       -> pressure range: {np.max(pressure):.2e} - {np.min(pressure):.2e} bar')
         print(f'       -> temperature range: {np.max(self.temp):.2e} - {np.min(self.temp):.2e} K')
-        print(f'       -> Kzz range: {np.max(kzz):.2e} - {np.min(kzz):.2e} cm2/s')
+        kval = self.kzz(0, self.pres)
+        print(f'       -> Kzz range at t=0: {np.max(kval):.2e} - {np.min(kval):.2e} cm2/s')
         print(f'       -> Mean molecular weight: {mmw:.2e} amu')
         print(f'       -> Gravity: {gravity:.2e} cm/s2')
         for s in range(self.nspec):
@@ -179,3 +184,44 @@ def calc_atmos_struct(self):
     self.rhoatmo_mid = np.interp(self.logp_mid, self.logp, self.rhoatmo)
     self.temp_mid = np.interp(self.logp_mid, self.logp, self.temp)
     self.dz_mid = - self.rgas * self.temp_mid / self.mmw / self.gravity * self.dlogp_mid
+
+def aoftf(value):
+    """
+    AoFtF = array_or_function_to_function
+    Nimbus is fully time-dependent and can therefore either take a static or
+    time-dependent atmospheric structure. Internally, all these variables are handled
+    as functions. Here, an input is checked if it is a function or array. In the latter
+    case it is transformed into a function.
+
+    Parameters
+    ----------
+    value : np.ndarray or function
+
+    Return
+    ------
+    function
+    """
+    if callable(value):
+        return value
+    elif isinstance(value, np.ndarray):
+        def aaf(p, t):
+            """
+            assigns each array layer but as a function
+
+            Parameters
+            ----------
+            p : np.ndarray
+                Pressure in cgs. This is a required dummy variable.
+            t : np.ndarray
+                Timestep in seconds. This is a required dummy variable.
+
+            Return
+            ------
+            value : np.ndarray(len(p))
+                mixing constant for each pressure
+            """
+            return value
+        return aaf
+    else:
+        raise ValueError('Atmospheric structure inputs must be either a function '
+                         'or array.')

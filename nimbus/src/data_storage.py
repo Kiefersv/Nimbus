@@ -45,6 +45,7 @@ def save_run(self, sol, save_file=None, tag=None):
         total_mmr = np.zeros((len(self.all_runs), self.sz))
         ncl = np.zeros((len(self.all_runs), self.sz))
         rg = np.zeros((len(self.all_runs), self.sz))
+        all_kzz = np.zeros((len(self.all_runs), self.sz))
         for r, run in enumerate(self.all_runs):
             xrun = run.y[:, -1].reshape((self.nspec*2 + 1, self.sz))
             # calculate the physics
@@ -53,6 +54,7 @@ def save_run(self, sol, save_file=None, tag=None):
             xn = xrun[-1]  # cloud number density mmr
             ncl[r] = xn * self.rhoatmo / self.m_ccn  # cloud particle number density [1/cm3]
             rg[r] = self.rg_history[r]
+            all_kzz[r] = self.kzz(self.tend, self.pres)
             for s, _ in enumerate(self.species):
                 # gas-phase number density [1/cm3]
                 n1[s, r] = xrun[s*2] * self.rhoatmo / self.m1[s]
@@ -75,7 +77,7 @@ def save_run(self, sol, save_file=None, tag=None):
             'cloud_radius': (co2[-1], rg[-1]),
             'temperature': (co2[-1], self.temp),
             'rhoatmo': (co2[-1], self.rhoatmo),
-            'Kzz': (co2[-1], self.kzz),
+            'Kzz': (co2[-1], all_kzz[-1]),
             'saturation_mmr': (co2, saturation[:, -1]),
             'all_gas_mmr': (co, gas_mmr),
             'all_cloud_mmr': (co, solid_mmr),
@@ -86,7 +88,7 @@ def save_run(self, sol, save_file=None, tag=None):
             'all_cloud_radius': (co[1:], rg),
             'all_temperature': (co[2:], self.temp),
             'all_rhoatmo': (co[2:], self.rhoatmo),
-            'all_Kzz': (co[2:], self.kzz),
+            'all_Kzz': (co[1:], all_kzz),
             'all_saturation_mmr': (co, saturation),
         }
     else:
@@ -112,6 +114,7 @@ def save_run(self, sol, save_file=None, tag=None):
         total_mmr = np.zeros((tstep_done, self.sz))
         ncl = np.zeros((tstep_done, self.sz))
         rg = np.zeros((tstep_done, self.sz))
+        all_kzz = np.zeros((tstep_done, self.sz))
         for t in range(tstep_done):
             xrun = sol.y[:, t].reshape((self.nspec*2 + 1, self.sz))
             # calculate the physics
@@ -122,6 +125,7 @@ def save_run(self, sol, save_file=None, tag=None):
             xn = xrun[-1]  # cloud number density mmr
             ncl[t] = xn * self.rhoatmo / self.m_ccn  # cloud particle number density [1/cm3]
             rg[t] = mass_to_radius(self, xrun[-1], xtot, rhotot)
+            all_kzz[t] = self.kzz(self.evaltimes[t], self.pres)
             for s, _ in enumerate(self.species):
                 n1[s, t] = xrun[s*2] * self.rhoatmo / self.m1[s]  # gas-phase number density [1/cm3]
                 # assign the values
@@ -142,7 +146,7 @@ def save_run(self, sol, save_file=None, tag=None):
             'cloud_radius': (co2[-1], rg[-1]),
             'temperature': (co2[1:], self.temp),
             'rhoatmo': (co2[1:], self.rhoatmo),
-            'Kzz': (co2[1:], self.kzz),
+            'Kzz': (co2[1:], all_kzz[-1]),
             'saturation_mmr': (co2, saturation[:, -1]),
             'all_gas_mmr': (co, gas_mmr),
             'all_total_cloud_mmr': (co[1:], total_mmr),
@@ -154,7 +158,7 @@ def save_run(self, sol, save_file=None, tag=None):
             'all_cloud_radius': (co[1:], rg),
             'all_temperature': (co[2:], self.temp),
             'all_rhoatmo': (co[2:], self.rhoatmo),
-            'all_Kzz': (co[2:], self.kzz),
+            'all_Kzz': (co[1:], all_kzz),
             'all_saturation_mmr': (co, saturation),
         }
 

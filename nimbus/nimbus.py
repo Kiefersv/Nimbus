@@ -102,6 +102,13 @@ class Nimbus:
         self.complete = True  # only set false if computation had to be stopped
         self.yin_store = None  # initial condition storage
 
+        # ==== internal physics functions
+        self.nuc_rate = None  # nucleation rate
+        self.acc_rate = None  # accretion rate
+        self.evp_rate = None  # evaporation rates
+        self.coag_rate = None  # coagulation and coalescence rate
+        self.vsed = None  # terminal settling velocity
+
         # ==== Atmospheric parameters
         self.temp = None  # temperature profile [K]
         self.pres = None  # pressure profile, convert from bar to [dyn/cm2]
@@ -134,7 +141,7 @@ class Nimbus:
         self.temp_mid = None  # temperature at mid-pressure [K]
         self.dz_mid = None  # altitude bin zise at mid pressure [cm]
 
-        # ==== Welcom message
+        # ==== Welcome message
         if not self.mute:
             print('===========================================================')
             print('                   Welcome to Nimbus                       ')

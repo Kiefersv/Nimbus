@@ -86,7 +86,7 @@ def set_up_solver(self):
                     self.tfailed = t
                 return dx.flatten()
 
-        # ==== calcualte physical parameters ============================================
+        # ==== calculate physical parameters ============================================
         if self.static_rg:  # use static rg
             rg = self.rg  # cloud particle radius [cm]
         else: # calculate rg on the fly
@@ -101,20 +101,22 @@ def set_up_solver(self):
             n1 = xw[s*2] * self.rhoatmo / self.m1[s]  # gas-phase number density [1/cm3]
             acc_r = self.acc_rate(rg, self.temp, n1, ncl, s)  # accretion rate [1/cm3/s]
             nuc_r = self.nuc_rate(n1, self.temp, s)  # nucleation rate [1/cm3/s]
+            co_r = self.coag_rate(rg, ncl, vsed)  # coagulation and coalescence [1/cm3/s]
 
             # ==== source terms
             acc = acc_r * self.m1[s] / self.rhoatmo
             nuc = nuc_r * self.m_ccn / self.rhoatmo
+            coag = co_r * self.m_ccn / self.rhoatmo
             dx[s*2] += - acc - nuc
             dx[s*2+1] += acc + nuc
-            dx[-1] += nuc
+            dx[-1] += nuc  # TODO: add coagulation term
 
         # ==== Diffusion terms ==========================================================
         f1 = self.rhoatmo[0] / self.dz_mid[0] / self.rhoatmo[0]
-        f2 = self.kzz_mid * self.rhoatmo_mid / self.dz_mid
+        f2 = self.kzz_mid(t, self.pres) * self.rhoatmo_mid / self.dz_mid
         f3 = self.dz[1:-1] * self.rhoatmo[1:-1]
         for s in range(self.nspec*2 + 1):
-            dx[s, 0] += self.kzz[0] * f1 * np.diff(xw[s, :2])[0] / self.dz[0]
+            dx[s, 0] += self.kzz(t, self.pres)[0] * f1 * np.diff(xw[s, :2])[0] / self.dz[0]
             dx[s, -1] += 0
             dx[s, 1:-1] += np.diff(f2 * np.diff(xw[s])) / f3
 
