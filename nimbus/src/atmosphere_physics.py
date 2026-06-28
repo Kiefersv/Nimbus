@@ -286,46 +286,67 @@ def define_atmosphere_physics(self):
     #     return vfall_r
 
     # # ===================================================================================
-    # #  Coagoulation rate
+    # #  Coagulation and Coalescence Rate
     # # ===================================================================================
-    # # Not implemented yet
-    # def _coag_mini_cloud(rg):
+    # Note: all nucleation rate functions must be of the form f(rg) and
+    # have the following header:
+    # """
+    # :param rg: cloud particle size [cm]
+    # :param ncl: cloud particle number density [1/cm3]
+    # :param vsed: settling velocity [cm/s]
     #
-    #     # atmospheric viscosity (dyne s/cm^2) from VIRGA
-    #     # EQN B2 in A & M 2001, originally from Rosner+2000
-    #     # Rosner, D. E. 2000, Transport Processes in Chemically Reacting Flow Systems
-    #     # (Dover: Mineola)
-    #     visc = (5. / 16. * np.sqrt(np.pi * self.kb * self.temp * (self.mmw / self.avog)) /
-    #             self.cs_mol / (1.22 * (self.temp / self.ps_k) ** (-0.16)))
-    #
-    #     # Knudsen number
-    #     Kn = self.lmfp/rg
-    #
-    #     # cloud particle mass
-    #     m_c = np.maximum(4/3 * np.pi *rg**3 * self.rhop, self.m_ccn)
-    #
-    #     # Cunningham slip factor (Kim et al. 2005)
-    #     Kn_b = min(Kn, 100.0)
-    #     beta = 1.0 + Kn_b*(1.165 + 0.483 * np.exp(-0.997/Kn_b))
-    #
-    #     # Particle diffusion rate
-    #     D_r = (self.kb*self.temp*beta)/(6.0*np.pi*visc*rg)
-    #
-    #     # Thermal velocity limit rate
-    #     V_r = np.sqrt((8.0*self.kb*self.temp)/(np.pi*m_c))
-    #
-    #     # Moran (2022) method using diffusive Knudsen number
-    #     Knd = (8.0*D_r)/(np.pi*V_r*rg)
-    #     phi = 1.0/np.sqrt(1.0 + np.pi**2/8.0 * Knd**2)
-    #     f_coag = (-4.0*self.kb*self.temp*beta)/(3.0*visc) * phi
-    #
-    #     return f_coag
+    # :return: accretion rate [1/cm3]
+    # """
+    def _coag_mini_cloud(rg, ncl, vsed):
+
+        # atmospheric viscosity (dyne s/cm^2) from VIRGA
+        # EQN B2 in A & M 2001, originally from Rosner+2000
+        # Rosner, D. E. 2000, Transport Processes in Chemically Reacting Flow Systems
+        # (Dover: Mineola)
+        visc = (5. / 16. * np.sqrt(np.pi * self.kb * self.temp * (self.mmw / self.avog)) /
+                self.cs_mol / (1.22 * (self.temp / self.ps_k) ** (-0.16)))
+
+        # Knudsen number
+        Kn = self.lmfp/rg
+
+        # cloud particle mass
+        m_c = np.maximum(4/3 * np.pi *rg**3 * self.rhop, self.m_ccn)
+
+        # Cunningham slip factor (Kim et al. 2005)
+        Kn_b = min(Kn, 100.0)
+        beta = 1.0 + Kn_b*(1.165 + 0.483 * np.exp(-0.997/Kn_b))
+
+        # Particle diffusion rate
+        D_r = (self.kb*self.temp*beta)/(6.0*np.pi*visc*rg)
+
+        # Thermal velocity limit rate
+        V_r = np.sqrt((8.0*self.kb*self.temp)/(np.pi*m_c))
+
+        # Moran (2022) method using diffusive Knudsen number
+        Knd = (8.0*D_r)/(np.pi*V_r*rg)
+        phi = 1.0/np.sqrt(1.0 + np.pi**2/8.0 * Knd**2)
+        f_coag = (-4.0*self.kb*self.temp*beta)/(3.0*visc) * phi
+
+        # coalessence
+        # estimate of differential velocity
+        d_vf = 0.5 * vsed
+
+        if Kn >= 1.0:
+          E = 1.0
+        else:
+          Stk = (vsed * d_vf)/(self.gravity * rg)
+          E = max(0.0,1.0 - 0.42*Stk**(-0.75))
+
+        f_coal = -2.0*np.pi*rg**2*d_vf*E
+
+        return (f_coal + f_coag) * ncl**2
 
     # ===================================================================================
     #  Set functions
     # ===================================================================================
     self.nuc_rate = _nuc_rate_mini_cloud  # nucleation rate
     self.acc_rate = _acc_rate_mini_cloud  # accreation rate
+    self.coag_rate = _coag_mini_cloud  # coagulation rate
     self.vsed = _vsed_exolyn  # terminal settling velocity
 
 
