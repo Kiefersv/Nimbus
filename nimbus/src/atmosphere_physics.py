@@ -51,19 +51,27 @@ def define_atmosphere_physics(self):
 
         # ==== Physical parameters
         p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
-        sat = p1 / pvap  # log of saturation []
-        ln_ss = np.log(sat)  # log of supersaturation []
-        f0 = 4.0 * np.pi * self.r1 ** 2  # colisional corsssection [cm2]
-        kbt = self.kb * temp  # shorthand notation
-        theta_inf = (f0 * sig) / kbt  # theta inf [?]
+        sat = p1 / pvap  # saturation []
+        f_nuc_hom = np.zeros_like(temp, dtype=float)
 
-        # ==== Prevent unphysical sat values (will be removed at the end)
-        ln_ss[ln_ss <= 1e-30] = 1e-30
+        valid = (
+            np.isfinite(n1) & np.isfinite(temp) & np.isfinite(pvap) &
+            np.isfinite(sig) & np.isfinite(p1) & np.isfinite(sat) &
+            (n1 > 0) & (pvap > 0) & (sig > 0) & (sat > 1)
+        )
+        if not np.any(valid):
+            return f_nuc_hom
+
+        ln_ss = np.log(sat[valid])  # log of supersaturation []
+        f0 = 4.0 * np.pi * self.r1 ** 2  # colisional corsssection [cm2]
+        kbt = self.kb * temp[valid]  # shorthand notation
+        theta_inf = (f0 * sig[valid]) / kbt  # theta inf [?]
 
         # ==== Calcualte cirtical cluster size
         n_inf = (((2.0 / 3.0) * theta_inf) / ln_ss) ** 3
-        n_star = 1.0 + (n_inf/8.0) * (1.0 + np.sqrt(1.0 + 2.0 * (nf/n_inf)**(1/3))
-                                      -2.0 * (nf/n_inf)**(1/3))**3
+        q_inf = (nf / n_inf) ** (1 / 3)
+        n_star = 1.0 + (n_inf/8.0) * (1.0 + np.sqrt(1.0 + 2.0 * q_inf)
+                                      -2.0 * q_inf)**3
         n_star = np.maximum(1.00001, n_star)  # make sure Nstar-1 is not below 0
         n_star_1 = n_star - 1.0  # shorthand notation
 
@@ -77,21 +85,19 @@ def define_atmosphere_physics(self):
 
         # ==== growth rate
         tau_gr = ((f0 * n_star**(2.0/3.0)) * alpha
-                  * np.sqrt(kbt / (2.0 * np.pi * self.mw[s] / self.avog)) * n1)
+                  * np.sqrt(kbt / (2.0 * np.pi * self.mw[s] / self.avog)) * n1[valid])
 
         # ==== everything together gives the nucleaiton rate
         exponent = np.maximum(-300.0, n_star_1 * ln_ss - dg_rt)
-        f_nuc_hom = n1 * tau_gr * zel * np.exp(exponent)
-
-        # ==== Remove nans and other problems
-        # Note: We only check here the legality of the saturation input to
-        # allow for a vecotrised input
-        f_nuc_hom[sat <= 1] = 0
+        f_nuc_valid = n1[valid] * tau_gr * zel * np.exp(exponent)
 
         # ==== fudge with nucleation rate (No fudge: self.nuc_rate_fudge = 1)
-        f_nuc_hom *= self.nuc_rate_fudge
-        # nucleation can only be positive
-        f_nuc_hom = np.maximum(f_nuc_hom, 0)
+        f_nuc_valid *= self.nuc_rate_fudge
+
+        f_nuc_hom[valid] = np.maximum(
+            np.nan_to_num(f_nuc_valid, nan=0.0, neginf=0.0),
+            0,
+        )
 
         return f_nuc_hom
 
@@ -236,7 +242,7 @@ def define_atmosphere_physics(self):
         # Rosner, D. E. 2000, Transport Processes in Chemically Reacting Flow Systems
         # (Dover: Mineola)
         visc = (5. / 16. * np.sqrt(np.pi * self.kb * self.temp * (self.mmw / self.avog)) /
-                self.cs_mol / (1.22 * (self.temp / self.ps_k) ** (-0.16)))
+                self.cs_mol / (1.22 * (self.temp / self.eps_k) ** (-0.16)))
 
         # Knudsen number
         Kn = self.lmfp/rg
@@ -245,7 +251,7 @@ def define_atmosphere_physics(self):
         m_c = np.maximum(4/3 * np.pi *rg**3 * self.rhop, self.m_ccn)
 
         # Cunningham slip factor (Kim et al. 2005)
-        Kn_b = min(Kn, 100.0)
+        Kn_b = np.minimum(Kn, 100.0)
         beta = 1.0 + Kn_b*(1.165 + 0.483 * np.exp(-0.997/Kn_b))
 
         # Particle diffusion rate
@@ -263,11 +269,9 @@ def define_atmosphere_physics(self):
         # estimate of differential velocity
         d_vf = 0.5 * vsed
 
-        if Kn >= 1.0:
-          E = 1.0
-        else:
-          Stk = (vsed * d_vf)/(self.gravity * rg)
-          E = max(0.0,1.0 - 0.42*Stk**(-0.75))
+        Stk = (vsed * d_vf)/(self.gravity * rg)
+        E_continuum = np.maximum(0.0, 1.0 - 0.42*Stk**(-0.75))
+        E = np.where(Kn >= 1.0, 1.0, E_continuum)
 
         f_coal = -2.0*np.pi*rg**2*d_vf*E
 
