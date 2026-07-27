@@ -32,8 +32,8 @@ jobs:
           python -m pip install --upgrade pandas astropy netcdf4 h5netcdf miepython
           python -m pip install --upgrade h5py
           python -m pip install -e .
-          git clone https://github.com/d-attaway/mieai.git
-          python -m pip install -e ./mieai
+          git clone https://github.com/d-attaway/MieNet.git
+          python -m pip install -e ./mienet
       - name: Run Tests
         shell: bash -l {0}
         run: |
