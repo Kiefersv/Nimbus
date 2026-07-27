@@ -155,56 +155,6 @@ def define_atmosphere_physics(self):
         return dmdt
 
     # ===================================================================================
-    #  Evaporation rates
-    # ===================================================================================
-    # Note: all nucleation rate functions must be of the form f(rg, temp, n1, ncl) and
-    # have the follwing header:
-    # """
-    # :param rg: cloud particle size [cm]
-    # :param temp: temperature [K]
-    # :param n1: number density of cloud forming material [1/cm3]
-    # :param ncl: cloud particle number density [1/cm3]
-    #
-    # :return: accretion rate [1/cm3]
-    # """
-
-    def _evp_rate_simple(rg, temp, n1, ncl, s):
-        """
-        Accretion rate following Lee (2023):
-        Citation: https://doi.org/10.1093/mnras/stad2037
-        Link: https://github.com/ELeeAstro/mini_cloud
-        """
-
-        # ==== Physical parameters
-        p1 = n1 * self.kb * temp  # partial pressure [dyne/cm2]
-        pvap = self.db.vapor_pressures(self.species[s], self.temp, self.mh)
-        rvv = np.sqrt(self.rgas * self.temp / (2 * np.pi * self.mw[s]))  # rel vel of vapour [cm/s]
-
-        # ==== Gaseous diffusion constant
-        d0 = 2 * self.r1
-        diff_const = (5.0 / (16.0 * self.avog * d0 ** 2 * self.rhoatmo) *
-                      np.sqrt((self.rgas * self.temp * self.mmw) / (2.0 * np.pi) *
-                              (self.mw[s] + self.mmw) / self.mw[s]))
-
-        # ==== Accreation rate in two limits
-        # high knudsen number limit
-        dmdt_high = 4 * np.pi * rg ** 2 * n1 * ncl * rvv * (1 - pvap / p1)
-        dmdt_high *= self.sticking_coefficient
-        # low knudsen number limit
-        dmdt_low = 4 * np.pi * rg * n1 * ncl * diff_const * (1 - pvap / p1)
-        # interpolate
-        val_low = np.minimum(dmdt_low, -1e-200)
-        val_high = np.minimum(dmdt_high, -1e-200)
-        fx = 0.5 * (1.0 - np.tanh(2.0 * np.log10(val_low / val_high)))
-        fx = np.maximum(np.minimum(fx, 1.0), 1e-200)
-        fx = np.maximum(fx, 0)
-        dmdt = val_low * fx + val_high * (1.0 - fx)
-        dmdt = np.nan_to_num(dmdt)
-        dmdt = np.minimum(dmdt, 0)
-
-        return dmdt
-
-    # ===================================================================================
     #  Settling velocity
     # ===================================================================================
     # Note: all settling velocity functions must be of the form f()
@@ -286,7 +236,6 @@ def define_atmosphere_physics(self):
     # ===================================================================================
     self.nuc_rate = _nuc_rate_mini_cloud  # nucleation rate
     self.acc_rate = _acc_rate_mini_cloud  # accretion rate
-    self.evp_rate = _evp_rate_simple  # evaporation rates
     self.coag_rate = _coag_mini_cloud  # coagulation and coalescence rate
     self.vsed = _vsed_exolyn  # terminal settling velocity
 

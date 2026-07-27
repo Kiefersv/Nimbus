@@ -194,7 +194,6 @@ def test_spectra():
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
-    obj.set_up_solver()
     obj.compute(typ='iterate', max_iterations=3)
     df_cloud = obj.picaso_formater(mie_type='full', nradii=10)
     assert np.isclose(np.sum(df_cloud['opd']), 319.19585100687664)
