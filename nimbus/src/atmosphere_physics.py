@@ -77,7 +77,8 @@ def define_atmosphere_physics(self):
         # ==== Remove nans and other problems
         # Note: We only check here the legality of the saturation input to
         # allow for a vecotrised input
-        f_nuc_hom[sat <= 1] = 0
+        f_nuc_hom[sat <= 1] = 1e-20
+        f_nuc_hom[f_nuc_hom < 1e-20] = 1e-20
 
         # ==== fudge with nucleation rate (No fudge: self.nuc_rate_fudge = 1)
         f_nuc_hom *= self.nuc_rate_fudge
@@ -326,6 +327,7 @@ def define_atmosphere_physics(self):
         Knd = (8.0*D_r)/(np.pi*V_r*rg)
         phi = 1.0/np.sqrt(1.0 + np.pi**2/8.0 * Knd**2)
         f_coag = (-4.0*self.kb*self.temp*beta)/(3.0*visc) * phi
+        f_coag *= self.coag_efficiency
 
         # coalessence
         # estimate of differential velocity
@@ -336,6 +338,7 @@ def define_atmosphere_physics(self):
         E[E < 1.0] = np.maximum(0.0, 1.0 - 0.42*(Stk[E<0])**(-0.75))
 
         f_coal = -2.0*np.pi*rg**2*d_vf*E
+        f_coal *= self.coal_efficiency
 
         return (f_coal + f_coag) * ncl**2
 

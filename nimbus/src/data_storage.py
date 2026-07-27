@@ -244,6 +244,7 @@ def set_up_from_previous_run(self, file_name=None, tag=None, ds_prev=None):
     self.yin_store = ds.attrs['y_last']
     self.isset_initialisation = True  # set initialisation flag
 
+
 def load_previous_run(self, file_name, tag=None):
     """
     Load previously saved Nimbus runs.

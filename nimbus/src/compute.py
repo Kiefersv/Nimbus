@@ -98,7 +98,7 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
         if not self.mute:
             print('[WARN] Solver set up automatically. '
                   'Use set_up_solver() for more control.')
-        set_up_solver()
+        self.set_up_solver()
         self.isset_solver = True
 
     # initial conditions

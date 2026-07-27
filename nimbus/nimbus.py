@@ -79,6 +79,8 @@ class Nimbus:
         # NOTE: The default values here correspond to a non-fudged run
         self.nuc_rate_fudge = 1  # factor to reduce or increase nucleation rate
         self.sticking_coefficient = 1  # of collisional accreatin reaction rates
+        self.coal_efficiency = 1  # gravitational coalessence efficiency
+        self.coag_efficiency = 1  # coagulation efficiency
 
         # ==== initialisation checks
         self.isset_atmosphere = False  # checks if an atmosphere was initialised
