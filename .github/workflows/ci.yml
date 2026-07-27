@@ -33,7 +33,7 @@ jobs:
           python -m pip install --upgrade h5py
           python -m pip install -e .
           git clone https://github.com/d-attaway/MieNet.git
-          python -m pip install -e ./mienet
+          python -m pip install -e ./MieNet
       - name: Run Tests
         shell: bash -l {0}
         run: |
