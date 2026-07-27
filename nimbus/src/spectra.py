@@ -50,8 +50,8 @@ def picaso_formater(self, tag=None, ds_prev=None, path_to_opacities=None, sig=2,
     if mieai_object is not None:
         ma = mieai_object
     else:
-        from mieai import Mieai
-        ma = Mieai(use_ai=False)  # set up mieai class
+        from mieai import MieNet
+        ma = MieNet(use_ai=False)  # set up mieai class
 
     # ==== Set optional inputs
     if path_to_opacities is None:
