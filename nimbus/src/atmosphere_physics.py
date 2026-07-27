@@ -86,7 +86,8 @@ def define_atmosphere_physics(self):
         # ==== Remove nans and other problems
         # Note: We only check here the legality of the saturation input to
         # allow for a vecotrised input
-        f_nuc_hom[sat <= 1] = 0
+        f_nuc_hom[sat <= 1] = self.minimum_nuc_rate
+        f_nuc_hom[f_nuc_hom < self.minimum_nuc_rate] = self.minimum_nuc_rate
 
         # ==== fudge with nucleation rate (No fudge: self.nuc_rate_fudge = 1)
         f_nuc_hom *= self.nuc_rate_fudge
@@ -220,56 +221,55 @@ def define_atmosphere_physics(self):
     # # ===================================================================================
     # #  Coagulation and Coalescence Rate
     # # ===================================================================================
-    # Note: all nucleation rate functions must be of the form f(rg) and
+    # Note: all nucleation rate functions must be of the form f(rg, ncl, vsed, rhotot) and
     # have the following header:
     # """
     # :param rg: cloud particle size [cm]
     # :param ncl: cloud particle number density [1/cm3]
     # :param vsed: settling velocity [cm/s]
+    # :param rhotot: total solid cloud particle density [g/cm3]
     #
     # :return: accretion rate [1/cm3]
     # """
-    def _coag_mini_cloud(rg, ncl, vsed):
+    def _coag_mini_cloud(rg, ncl, vsed, rhotot):
 
+        # ==== Atmospheric parameters
         # atmospheric viscosity (dyne s/cm^2) from VIRGA
         # EQN B2 in A & M 2001, originally from Rosner+2000
         # Rosner, D. E. 2000, Transport Processes in Chemically Reacting Flow Systems
         # (Dover: Mineola)
         visc = (5. / 16. * np.sqrt(np.pi * self.kb * self.temp * (self.mmw / self.avog)) /
-                self.cs_mol / (1.22 * (self.temp / self.ps_k) ** (-0.16)))
-
+                self.cs_mol / (1.22 * (self.temp / self.eps_k) ** (-0.16)))
         # Knudsen number
         Kn = self.lmfp/rg
-
         # cloud particle mass
-        m_c = np.maximum(4/3 * np.pi *rg**3 * self.rhop, self.m_ccn)
-
+        m_c = np.maximum(4/3 * np.pi * rg**3 * rhotot, self.m_ccn)
         # Cunningham slip factor (Kim et al. 2005)
-        Kn_b = min(Kn, 100.0)
+        Kn_b = np.minimum(Kn, 100.0)
         beta = 1.0 + Kn_b*(1.165 + 0.483 * np.exp(-0.997/Kn_b))
-
         # Particle diffusion rate
         D_r = (self.kb*self.temp*beta)/(6.0*np.pi*visc*rg)
-
         # Thermal velocity limit rate
         V_r = np.sqrt((8.0*self.kb*self.temp)/(np.pi*m_c))
-
         # Moran (2022) method using diffusive Knudsen number
         Knd = (8.0*D_r)/(np.pi*V_r*rg)
         phi = 1.0/np.sqrt(1.0 + np.pi**2/8.0 * Knd**2)
-        f_coag = (-4.0*self.kb*self.temp*beta)/(3.0*visc) * phi
-
-        # coalessence
         # estimate of differential velocity
         d_vf = 0.5 * vsed
+        # calcualte E factor
+        E = np.ones_like(rg)
+        Stk = (vsed * d_vf)/(self.gravity * rg)
+        E[E < 1.0] = np.maximum(0.0, 1.0 - 0.42*(Stk[E<0])**(-0.75))
 
-        if Kn >= 1.0:
-          E = 1.0
-        else:
-          Stk = (vsed * d_vf)/(self.gravity * rg)
-          E = max(0.0,1.0 - 0.42*Stk**(-0.75))
+        # ==== Coagulation rate
+        f_coag = (-4.0*self.kb*self.temp*beta)/(3.0*visc) * phi
 
+        # ==== Coalescence rate
         f_coal = -2.0*np.pi*rg**2*d_vf*E
+
+        # ==== fudge factors (default is 1)
+        f_coag *= self.coag_efficiency
+        f_coal *= self.coal_efficiency
 
         return (f_coal + f_coag) * ncl**2
 

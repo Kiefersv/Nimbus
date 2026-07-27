@@ -101,7 +101,7 @@ def set_up_solver(self):
             n1 = xw[s*2] * self.rhoatmo / self.m1[s]  # gas-phase number density [1/cm3]
             acc_r = self.acc_rate(rg, self.temp, n1, ncl, s)  # accretion rate [1/cm3/s]
             nuc_r = self.nuc_rate(n1, self.temp, s)  # nucleation rate [1/cm3/s]
-            co_r = self.coag_rate(rg, ncl, vsed)  # coagulation and coalescence [1/cm3/s]
+            co_r = self.coag_rate(rg, ncl, vsed, rhotot)  # coagulation and coalescence [1/cm3/s]
 
             # ==== source terms
             acc = acc_r * self.m1[s] / self.rhoatmo
@@ -109,7 +109,7 @@ def set_up_solver(self):
             coag = co_r * self.m_ccn / self.rhoatmo
             dx[s*2] += - acc - nuc
             dx[s*2+1] += acc + nuc
-            dx[-1] += nuc  # TODO: add coagulation term
+            dx[-1] += nuc + coag
 
         # ==== Diffusion terms ==========================================================
         f1 = self.rhoatmo[0] / self.dz_mid[0] / self.rhoatmo[0]

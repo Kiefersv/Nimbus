@@ -61,6 +61,7 @@ class Nimbus:
         self.ode_rtol = 1e-3  # relative error of solve_ivp
         self.ode_atol = 1e-25  # absolute error of solve_ivp
         self.ode_minimum_mmr = 1e-30  # lowest MMR considered [g/g]
+        self.minimum_nuc_rate = 1e-20  # lowest J value [1/cm3/s]
         self.static_rg = True # True: itarate with const rg / False: calc rg on the fly
 
         # ==== Default cloud physics parameters
@@ -81,6 +82,8 @@ class Nimbus:
         # NOTE: The default values here correspond to a non-fudged run
         self.nuc_rate_fudge = 1  # factor to reduce or increase nucleation rate
         self.sticking_coefficient = 1  # of collisional accreatin reaction rates
+        self.coal_efficiency = 1  # gravitational coalessence efficiency
+        self.coag_efficiency = 1  # coagulation efficiency
 
         # ==== initialisation checks
         self.isset_atmosphere = False  # checks if an atmosphere was initialised
