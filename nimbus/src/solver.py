@@ -151,10 +151,10 @@ def set_up_solver(self):
             if self.static_rg:
                 print('\r[INFO] Loop ' + str(self.loop_nr) + '' + self.it_str
                       + ' || Current loop progress '
-                      + f"{prog:05.2f}% [log10(t) = {round(np.log10(t),1)}]", end='')
+                      + f"{prog:05.2f}% [log10(t) = {round(np.log10(t),1)}]    ", end='')
             else:
                 print('\r[INFO] Current progress '
-                      + f"{prog:05.2f}% [log10(t) = {round(np.log10(t),1)}]", end='')
+                      + f"{prog:05.2f}% [log10(t) = {round(np.log10(t),1)}]    ", end='')
 
         # ==== Return time derivative ===================================================
         return dx.flatten()

@@ -28,7 +28,7 @@ class Nimbus:
 
     # ==== import plotting routines
     from .src.spectra import picaso_formater
-    from .src.spectra import virga_opacities
+    from .src.spectra import optical_properties
 
     def __init__(self, working_dir='.', create_analytic_plots=False, verbose=False,
                  mute=False):
@@ -67,7 +67,7 @@ class Nimbus:
         # ==== Default cloud physics parameters
         self.r_ccn = 1e-7  # default for minimum cloudparticle radius [cm]
         self.cs_mol = 2e-15  # default for molecular cross section [cm2]
-        self.eps_k = 59.7  # Depth of the Lennard-Jones potential [??]
+        self.eps_k = 59.7  # Depth of the Lennard-Jones potential [erg/mol]
         self.r1 = 2.001e-8 # monomer radius [cm]
         self.rho_ccn = 2.18  # density of nucleation seads [g/cm3]
         self.rg_fit_deg = 8  # degree of the polynomial to fit the ittarative radius
