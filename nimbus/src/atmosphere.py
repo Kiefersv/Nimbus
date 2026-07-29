@@ -148,7 +148,9 @@ def set_up_influx(self, influx_function):
     self : Nimbus class
         Nimbus object that is set up
     influx_function : Function
-        def top_function(pressure, temperature, time):
+        def top_function(nimbus, pressure, temperature, time):
+            nimbus : Nimbus class
+                Current nimbus class
             pressure : np.ndarray[N]
                 pressure structure
             temperature : np.ndarray[N]

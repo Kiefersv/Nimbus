@@ -19,10 +19,6 @@ def test_nimbus():
 
     # ==== Generic testing function:
     def check(ds, sol):
-        print(np.sum(np.asarray([ds['cloud_mmr'][0]]).T))
-        print(np.sum(np.asarray([ds['gas_mmr'][0]]).T))
-        print(np.sum(np.asarray([ds['cloud_radius']]).T))
-        print(np.sum(np.asarray([ds['cloud_number_density']]).T))
         assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), sol[0])
         assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), sol[1])
         assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), sol[2])
@@ -72,7 +68,7 @@ def test_nimbus():
     # ==== influx added
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
-    inj = lambda a, b, c: 1e-11
+    inj = lambda x, a, b, c: 1e-11
     obj.set_up_influx(inj)
     obj.set_up_solver()
     ds = obj.compute(typ='full')
@@ -124,30 +120,6 @@ def test_nimbus():
     ds = obj.compute(typ='full')
     check(ds, [0.00020227752438271322, 0.0020233274149122917, 8.276826302545698e-06,
                74.42661745020483])
-
-def test_solversetters():
-    "Unit testing of Nimbus"
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-
-    obj.set_solver_settings(initial_time_for_solver=1, end_time_for_solver=2,
-        evaluation_steps_for_solver=3, degree_of_radius_polinomial=4, rtol=5, atol=6,
-        ode_minimum_mmr=7)
-    assert obj.tstart == 1
-    assert obj.tend == 2
-    assert obj.tsteps == 3
-    assert obj.rg_fit_deg == 4
-    assert obj.ode_rtol == 5
-    assert obj.ode_atol == 6
-    assert obj.ode_minimum_mmr == 7
-
-    obj.set_cloud_settings(minimum_cloud_particle_radius=1, molecular_cross_section=2)
-    assert obj.r_ccn == 1
-    assert obj.cs_mol == 2
-
-    obj.set_fudge_settings(nucleation_rate_fudge=1, accreation_rate_fudge=1,
-                           sticking_coefficient=1)
-    assert obj.nuc_rate_fudge == 1
-    assert obj.sticking_coefficient == 1
 
 def test_datastorage():
     """ Unit testing of DataStorage """

@@ -98,7 +98,7 @@ def define_atmosphere_physics(self):
         f_nuc_hom[f_nuc_hom < self.minimum_nuc_rate] = self.minimum_nuc_rate
 
         # ==== fudge with nucleation rate (No fudge: self.nuc_rate_fudge = 1)
-        f_nuc_valid *= self.nuc_rate_fudge
+        f_nuc_valid *= self.nucleation_efficiency
 
         f_nuc_hom[valid] = np.maximum(np.nan_to_num(f_nuc_valid, nan=0.0, neginf=0.0), 0)
 
@@ -151,6 +151,9 @@ def define_atmosphere_physics(self):
         dmdt = val_low * fx + val_high * (1.0 - fx)
         dmdt = np.nan_to_num(dmdt)
         dmdt = np.maximum(dmdt, 0)
+
+        # ==== fudge with growth rate (No fudge: self.nuc_rate_fudge = 1)
+        dmdt *= self.growth_efficiency
 
         return dmdt
 

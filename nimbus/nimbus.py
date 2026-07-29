@@ -19,9 +19,6 @@ class Nimbus:
     # ==== import the main compuational function
     from .src.compute import compute
 
-    # ==== import solver settings
-    from .src.settings import set_cloud_settings, set_solver_settings, set_fudge_settings
-
     # ==== import data handling functions
     from .src.data_storage import load_previous_run
     from .src.data_storage import set_up_from_previous_run
@@ -80,7 +77,8 @@ class Nimbus:
 
         # ==== Fudge factors to play around with simulation
         # NOTE: The default values here correspond to a non-fudged run
-        self.nuc_rate_fudge = 1  # factor to reduce or increase nucleation rate
+        self.nucleation_efficiency = 1  # factor to reduce or increase nucleation rate
+        self.growth_efficiency = 1  # factor to reduce or increase nucleation rate
         self.sticking_coefficient = 1  # of collisional accreatin reaction rates
         self.coal_efficiency = 1  # gravitational coalessence efficiency
         self.coag_efficiency = 1  # coagulation efficiency

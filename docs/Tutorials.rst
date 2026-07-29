@@ -18,4 +18,6 @@ These tutorials go over all the functionalities of Nimbus and how to use them.
 
    Postprocessed Clouds </tutorial_files/tutorial_basic.ipynb>
    Opacities and Spectra </tutorial_files/tutorial_spectra.ipynb>
+   Material Influx </tutorial_files/tutorial_influx.ipynb>
+   Setting Physics and Numerics </tutorial_files/tutorial_fudge.ipynb>
    Output of Nimbus </tutorial_files/tutorial_output.ipynb>

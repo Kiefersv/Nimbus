@@ -130,7 +130,7 @@ def set_up_solver(self):
 
         # ===== additional influx =======================================================
         if self.tf is not None:
-            dx += self.tf(self.pres, self.temp, t)
+            dx += self.tf(self, self.pres, self.temp, t)
 
         # ==== Finalsing output =========================================================
         # imediatly evaporate all cloud particles
