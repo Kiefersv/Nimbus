@@ -16,7 +16,7 @@ class Nimbus:
     from .src.atmosphere import calc_atmos_struct
     from .src.solver import set_up_solver
 
-    # ==== import the main compuational function
+    # ==== import the main computational function
     from .src.compute import compute
 
     # ==== import data handling functions
