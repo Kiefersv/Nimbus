@@ -222,8 +222,8 @@ class DataBase:
                 pvap[temp > 1800.0] = np.exp(9.86 - 37120.0 / temp[temp > 1800.0]) * 1e6
                 pvap[temp < 1800.0] = np.exp(15.71 - 47664.0 / temp[temp < 1800.0]) * 1e6
 
-            elif species == 'Ni':
-                pvap[:] = 10.0**(11.98183-16808.435/(temp - 188.71))
+            # elif species == 'Ni':
+            #     pvap[:] = 10.0**(11.98183-16808.435/(temp - 188.71))
 
             elif species == 'H2O':
                 temp_c = temp - 273.16
