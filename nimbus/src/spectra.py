@@ -201,7 +201,6 @@ def optical_properties(self, tag=None, ds_prev=None, path_to_opacities=None, sig
     qc = np.asarray(ds['cloud_mmr'].values).T
     ndz = np.asarray(-ds['cloud_number_density'].values * self.dz).T
     rg = np.asarray(ds['cloud_radius'].values).T
-    ndz[~self.mask_psupsat] = 0  # all values below cloud deck are zero
 
     # ==== radius grid
     rmin = 1e-8
@@ -240,7 +239,6 @@ def optical_properties(self, tag=None, ds_prev=None, path_to_opacities=None, sig
             qc = np.asarray(ds_t['all_cloud_mmr'].values).T
             ndz = np.asarray(-ds_t['all_cloud_number_density'].values * self.dz).T
             rg = np.asarray(ds_t['all_cloud_radius'].values).T
-            ndz[~self.mask_psupsat] = 0  # all values below cloud deck are zero
 
         # ===============================================================================
         # Mixed opacity precalculation

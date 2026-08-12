@@ -6,12 +6,16 @@ import os
 import csv
 import numpy as np
 import xarray as xr
+from scipy.optimize import root_scalar
 
+# =======================================================================================
+#  Data read in
+# =======================================================================================
+# this step is done here to improve computational runtimes
 data_file = os.path.dirname(__file__) + '/../data/chem/cloud_material.csv'
 raw_data = np.array(list(csv.reader(open(data_file))))
-# initialise data dict
-default_cloud_material_data = {}
 # loop over all species to initialise
+default_cloud_material_data = {}
 for s, spec in enumerate(raw_data[:, 0]):
     # skip header
     if s < 1:
@@ -21,19 +25,20 @@ for s, spec in enumerate(raw_data[:, 0]):
         'data_complete': raw_data[s, 1],
         'surface_tension_A': raw_data[s, 2],
         'surface_tension_B': raw_data[s, 3],
-        'solid_density': float(raw_data[s, 4]),
-        'monomer_radius': float(raw_data[s, 5]),
-        'molecular_weight': float(raw_data[s, 6]),
-        'pvap_base': raw_data[s, 7],
-        'pvap_prefactor': raw_data[s, 8],
-        'pvap_A': raw_data[s, 9],
-        'pvap_B': raw_data[s, 10],
-        'pvap_C': raw_data[s, 11],
-        'pvap_D': raw_data[s, 12],
-        'pvap_E': raw_data[s, 13],
-        'pvap_F': raw_data[s, 14],
+        'solar_mmr': float(raw_data[s, 4]),
+        'solid_density': float(raw_data[s, 5]),
+        'monomer_radius': float(raw_data[s, 6]),
+        'molecular_weight': float(raw_data[s, 7]),
+        'pvap_base': raw_data[s, 8],
+        'pvap_prefactor': raw_data[s, 9],
+        'pvap_A': raw_data[s, 10],
+        'pvap_B': raw_data[s, 11],
+        'pvap_C': raw_data[s, 12],
+        'pvap_D': raw_data[s, 13],
+        'pvap_E': raw_data[s, 14],
+        'pvap_F': raw_data[s, 15],
     }
-
+# read in gibbs free energies (currently unused but available)
 gibbs_janaf = xr.open_dataset(
     os.path.dirname(__file__) + '/../data/Gibbs/ggchem.nc'
 ) * 1e10
@@ -44,6 +49,7 @@ class DataBase:
     -> Cloud particle material:
         -> Surface tension [erg cm^-2] parameters in the form:
            surface_tension_A + surface_tension_B * T
+        -> solar_mmr: Expected mass mixing ratio at solar metalicity
         -> solid_density: Density of the solid material [g/cm3]
         -> monomer_radius: Radius of a single gas-phase molecule [cm]
         -> molecular_weight: Mass of a single gas-phase molecule [g]
@@ -66,12 +72,22 @@ class DataBase:
         if data_file is None:
             self.cloud_material_data = default_cloud_material_data
         # ==== Read in of Gibbs free energies ===============================================
-        # kjpmol_to_ergpmol = 1e10
-        # self.gibbs_janaf = xr.open_dataset(
-        #     os.path.dirname(__file__) + '/../data/Gibbs/janaf.nc'
-        # ) * kjpmol_to_ergpmol
         self.gibbs_janaf = gibbs_janaf
 
+    # =======================================================================================
+    #   Quality of life functions
+    # =======================================================================================
+    def list_species(self):
+        """ Return all available species """
+        return self.cloud_material_data.keys()
+
+    def list_complete_species(self):
+        """ Return all available species """
+        specs = []
+        for i in self.cloud_material_data.keys():
+            if self.cloud_material_data[i]['data_complete'] != 'no':
+                specs.append(i)
+        return specs
 
     # =======================================================================================
     #   Simple physical properties calculation (derived not read in)
@@ -87,23 +103,51 @@ class DataBase:
         mw = self.cloud_material_data[species]['molecular_weight']
         return self.rgas / mw
 
+    def condensation_temperature(self, species, pressure, metallicity, mmw, mmr):
+        """ Return temperature [K] at which species condenses"""
+        # ==== check if pressure is an array
+        if isinstance(pressure, float):
+            pres = [pressure]
+        else:
+            pres = pressure
+
+        # ==== find tvap for each p
+        tvap = np.ones_like(pressure)
+        for p, pre in enumerate(pres):
+            # minimisation function
+            def minf(tt):
+                """ minimisation function """
+                pvap = self.vapor_pressures(species, tt, metallicity)
+                m1 = self.monomer_mass(spec)
+                p1 =  mmr * mmw * pre / self.avog / m1
+                print(species, tt, np.log10(pvap), np.log10(p1))
+                return np.log10(pvap) - np.log10(p1)
+            tvap[p] = root_scalar(minf, bracket=[1e1, 1e5], method='brentq').root
+
+        # ==== return condensation temperature
+        return tvap
+
     # =======================================================================================
     #   Simple getter functions of physical properties
     # =======================================================================================
+    def solar_mmr(self, species, metallicity=1):
+        """ Solar MMR [g/g] """
+        return self.cloud_material_data[species]['solar_mmr'] * metallicity
+
     def monomer_radius(self, species):
-        """ Return r_species [cm]"""
+        """ Return r_species [cm] """
         return self.cloud_material_data[species]['monomer_radius']
 
     def molecular_weight(self, species):
-        """ return mu_species [amu]"""
+        """ return mu_species [amu] """
         return self.cloud_material_data[species]['molecular_weight']
 
     def solid_density(self, species):
-        """ Return rho_species [g/cm3]"""
+        """ Return rho_species [g/cm3] """
         return self.cloud_material_data[species]['solid_density']
 
     def surface_tension(self, species, temp):
-        """ Return sigma_species(temp) [erg/cm2]"""
+        """ Return sigma_species(temp) [erg/cm2] """
         a = self.cloud_material_data[species]['surface_tension_A']
         b = self.cloud_material_data[species]['surface_tension_B']
         # check if data is available
@@ -112,7 +156,7 @@ class DataBase:
         return float(a) + float(b) * temp
 
     def gibbs_free_energy(self, species, temp):
-        """ Return G_species(temp) [erg]"""
+        """ Return G_species(temp) [erg] """
         return self.gibbs_janaf[species].interp({"temp_" + species: temp}).values
 
     # =======================================================================================

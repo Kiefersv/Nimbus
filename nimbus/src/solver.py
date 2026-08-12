@@ -8,20 +8,21 @@ from .atmosphere_physics import mass_to_radius
 def set_initial_condidtions(self):
     """
     The current initial conditions assume no cloud particles in the cloud layers and a
-    saturaded vapour. Below the cloud layer, the deep MMR is assumed. This has proven to
-    be a generally accaptable choice. However, improvments could be made here.
+    saturated vapour. Below the cloud layer, the deep MMR is assumed. This has proven to
+    be a generally acceptable choice. However, improvements could be made here.
     """
     # ==== Initialise array, and set all values to the minimum value
     x0 = np.zeros((self.nspec*2 + 1, self.sz)) + self.ode_minimum_mmr
 
     # ==== loop over the materials
     for s, deep in enumerate(self.deep_gas_mmr):
-        # if self.deep_gas_mmr[s] > 0:
-        # calculate vapour mmr
+        # calculate vapour mmr and set it everywhere
         pvap = self.db.vapor_pressures(self.species[s], self.temp, self.mh)
-        x0[s*2] = np.minimum(pvap * self.mw[s] / self.pres / self.mmw, deep)
-        # # assign deep mmr
-        x0[s*2, ~self.mask_psupsat] = deep
+        mvap = pvap * self.mw[s] / self.pres / self.mmw
+        # we want slight supersaturation
+        mvap *= 1.1
+        # assign vapour limit throughout the atmosphere
+        x0[s*2] = np.minimum(mvap, deep)
 
     # ==== set flag to true
     self.isset_initialisation = True
@@ -133,17 +134,25 @@ def set_up_solver(self):
             dx += self.tf(self, self.pres, self.temp, t)
 
         # ==== Finalsing output =========================================================
-        # imediatly evaporate all cloud particles
-        for s, _ in enumerate(self.species):
-            dx[s*2, ~self.mask_psupsat] += dx[s*2 + 1, ~self.mask_psupsat]
-        # set all values below the vapour pressure to zero (speeds up calculation)
-        dx[1::2, ~self.mask_psupsat] = 0  # set MMR change below cloud to 0
-        dx[-1, ~self.mask_psupsat] = 0  # set number density below cloud to 0
-        dx[:, -1] = 0  # the lowest cell represents the deep interior and is not touched
-
-        # old version, newer is not 100% there it but the lines above are already an
-        # upgrade
-        # dx[:, ~self.mask_psupsat] = 0  # set all number density below cloud to 0
+        # immediately evaporate all cloud particles below the cloud
+        for s, spec in enumerate(self.species):
+            if self.update_sat:
+                # calculate vapour pressure curve
+                pvap = self.db.vapor_pressures(spec, self.temp, self.mh)
+                # calculate partial pressure
+                n1 = xw[s*2] * self.rhoatmo / self.m1[s]  # deep particle number density
+                p1 = n1 * self.kb * self.temp  # deep partial pressure
+                self.mask_sat[s] = p1 / pvap >= 1  # mask where vapour can condense
+                # updated the below cloud mask
+                self.mask_sat[-1] += self.mask_sat[s]
+            # add cloud particles to the gas phase below the cloud limit
+            dx[s*2, ~self.mask_sat[s]] += dx[s*2 + 1, ~self.mask_sat[s]]
+            # set all cloud mmrs values below the vapour pressure to zero
+            dx[s*2 + 1, ~self.mask_sat[s]] = 0
+        # remove cloud particles where ther is no cloud mass
+        dx[-1, ~self.mask_sat[-1]] = 0  # set number density below cloud to 0
+        # the lowest cell represents the deep interior and is not touched
+        dx[:, -1] = 0
 
         # print progress information
         if self.verbose and not self.mute:

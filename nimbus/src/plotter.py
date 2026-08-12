@@ -24,9 +24,9 @@ def plot_full_structure(self, y, title=''):
 
     # ==== General plotting set up
     fig, ax = plt.subplots(1, 6, figsize=(10, 3))
-    logp = np.log10(self.pres[self.mask_psupsat]*1e-6)
+    logp = np.log10(self.pres*1e-6)
     def rund(val):
-        return np.log10(val[self.mask_psupsat])
+        return np.log10(val)
 
     ax[1].plot([], [], color='k', linestyle='-', label='Gas-phase')
     ax[1].plot([], [], color='k', linestyle='-.', label='limit')

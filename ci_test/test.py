@@ -62,7 +62,7 @@ def test_nimbus():
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(typ='full', timeout=0.001)
-    check(ds, [6.0000000000027695e-30, 0.002034249820045167, 6e-07,
+    check(ds, [6.0000000000027695e-30, 0.002037678732657377, 6e-07,
                1.3924126755600967e-18])
 
     # ==== influx added
@@ -169,8 +169,8 @@ def test_spectra():
     obj.compute(typ='iterate', max_iterations=3)
     df_cloud = obj.picaso_formater(mie_type='full', nradii=10)
     assert np.isclose(np.sum(df_cloud['opd']), 319.19585100687664)
-    assert np.isclose(np.sum(df_cloud['g0']), 741.0198057441573)
-    assert np.isclose(np.sum(df_cloud['w0']), 482.0441774716092)
+    assert np.isclose(np.sum(df_cloud['g0']), 860.9888904345)
+    assert np.isclose(np.sum(df_cloud['w0']), 651.2049009781938)
     assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
 
     # ==== set up nimbus fully to test timestamps
@@ -180,8 +180,8 @@ def test_spectra():
     obj.compute(typ='full')
     df_cloud = obj.picaso_formater(mie_type='full', nradii=10, time_stamps=[1e-2, 1e9])
     sols = [
-        [1.2073548471097519e-25, 1677.5748310820318, 195.96456606238877, 6849905.947614839],
-        [421.00651392846675, 807.391702601194, 468.78775297265446, 6849905.947614839],
+        [1.2073548471097519e-25, 2096.9685388525395, 244.955707577986, 6849905.947614839],
+        [421.00651392846675, 1226.7854160146908, 517.7788898911307, 6849905.947614839],
     ]
     for d, df in enumerate(df_cloud):
         assert np.isclose(np.sum(df['opd']), sols[d][0])

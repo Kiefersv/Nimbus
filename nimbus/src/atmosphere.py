@@ -1,13 +1,15 @@
 """ All set-up functionalities of NIMBUS """
 # pylint: disable=R0913,E0402,R0915
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.optimize import root_scalar
 
 from .atmosphere_physics import define_atmosphere_physics
 from .species_database import DataBase
+from .subfunctions import aoftf
 
-def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
-                      deep_mmr, fsed=1, metalicity=1, ignore_as_nucleator=[]):
+def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=None,
+                      deep_mmr=None, fsed=1, metalicity=1, ignore_as_nucleator=[]):
     """
     Set up the atmospheric structure of the simulation.
 
@@ -25,9 +27,9 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
         Mean molecular weight in amu.
     gravity : np.array
         Gravity in cm/s2
-    species: np.array
+    species: np.array, optional
         Cloud particle specie (currently only 1 is supported).
-    deep_mmr: np.array
+    deep_mmr: np.array, optional
         Mass mixing ratio of the cloud specie in the deep atmosphere.
     fsed : np.array, optional
         Initial settling parameter (defines cloud particle size).
@@ -36,6 +38,23 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     ignore_as_nucleator : List[str]
         Species which should not be considered to nucleate
     """
+
+    # ==== Open a database
+    db = DataBase()  # open the data storage
+
+    # ==== Check if species are given, if not, calculate internally ====================
+    if species is None:
+        if not self.mute:
+            print('[WARN] Species are set automatically. This is not recommended. '
+                  'Please use the list of species provided as a starting point to '
+                  'curate your own list.')
+        species = self.find_cloud_species(
+            temperature, pressure, mmw=mmw, metalicity=metalicity, verbose=self.mute
+        )
+        deep_mmr = np.asarray([db.solar_mmr(spec, metalicity) for spec in self.species])
+    else:
+        if deep_mmr is None:
+            raise ValueError("[ERROR] Deep MMR is missing.")
 
     # ==== Initialise all cloud species =================================================
     # Note: Each species gets an index according to the input order. Until the output,
@@ -67,8 +86,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     # ==== Set nucleation rate, accretion rate, and settling velocity
     define_atmosphere_physics(self)
 
-    # ==== currently hardcoded for SiO, later this will be input
-    db = DataBase()  # open the data storage
+    # ==== read in information from species database
     self.db = db  # remember the class
     # ==== Assign material information
     # density of cloud material [g/cm3]
@@ -103,14 +121,18 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species,
     # ==== pre-compute constant values
     self.calc_atmos_struct()
 
-    # ==== find pressure levels which are always supersaturated
-    self.mask_psupsat = self.pres > 0
+    # ==== find pressure levels which are supersaturated
+    self.mask_sat = np.zeros((len(species)+1, self.sz), dtype=bool)  # mask to evaporate nc
+    # immediately evaporate all cloud particles below the cloud
     for s, spec in enumerate(self.species):
-        if self.deep_gas_mmr[s] > 0:
-            ndeep = self.deep_gas_mmr[s] * self.rhoatmo / self.m1[s]  # deep particle number density
-            pdeep = ndeep * self.kb * self.temp  # deep partial pressure
-            pvap = self.db.vapor_pressures(spec, self.temp, self.mh)
-            self.mask_psupsat *= pvap / pdeep < 1  # mask where vapour can condense
+        # calculate vapour pressure curve
+        pvap = self.db.vapor_pressures(spec, self.temp, self.mh)
+        # calculate partial pressure
+        n1 = self.deep_gas_mmr[s] * self.rhoatmo / self.m1[s]  # deep particle number density
+        p1 = n1 * self.kb * self.temp  # deep partial pressure
+        self.mask_sat[s] = p1 / pvap >= 1  # mask where vapour can condense
+        # updated the below cloud mask
+        self.mask_sat[-1] += self.mask_sat[s]
 
     # ==== Calculate initial radius
     self.rg = np.zeros_like(self.pres)
@@ -187,43 +209,111 @@ def calc_atmos_struct(self):
     self.temp_mid = np.interp(self.logp_mid, self.logp, self.temp)
     self.dz_mid = - self.rgas * self.temp_mid / self.mmw / self.gravity * self.dlogp_mid
 
-def aoftf(value):
+def _find_cloud_species(temperature, pressure, species=None, mmw=2.34,
+                        mmr_cloudspecies=1e-2, metallicity=1, verbose=True,
+                        create_analytic_plots=True, plot_save_file=None):
     """
-    AoFtF = array_or_function_to_function
-    Nimbus is fully time-dependent and can therefore either take a static or
-    time-dependent atmospheric structure. Internally, all these variables are handled
-    as functions. Here, an input is checked if it is a function or array. In the latter
-    case it is transformed into a function.
+    This function returns a list of species that should be considered as
+    condensation species.
 
     Parameters
     ----------
-    value : np.ndarray or function
+    temperature : np.ndarray[N]
+        temperature structure of the atmosphere [K]
+    pressure : np.ndarray[N]
+        pressure structure of the atmosphere [dyn/cm2]
+    species : list[str], optional
+        species to consider, if None, all available species are used
+    mmw : float, optional
+        mean molecular weight of the atmosphere
+    mmr_cloudspecies : float or np.ndarray[N], optional
+        cloud species mmr. An upper estimate is useful here.
+    metallicity : float, optional
+        metallicity of the atmosphere
+    verbose : bool, optional
+        If true, prints about the species selected will be produced
+    create_analytic_plots : bool, optional
+        If true, produces a plot showing the condensation temperature curves
+    plot_save_file : str, None
+        If None, plot is shown, if file name given, plot is saved under that name
 
     Return
     ------
-    function
+    species_out : List[str]
+        list of species that should be considered
     """
-    if callable(value):
-        return value
-    elif isinstance(value, np.ndarray):
-        def aaf(p, t):
-            """
-            assigns each array layer but as a function
 
-            Parameters
-            ----------
-            p : np.ndarray
-                Pressure in cgs. This is a required dummy variable.
-            t : np.ndarray
-                Timestep in seconds. This is a required dummy variable.
-
-            Return
-            ------
-            value : np.ndarray(len(p))
-                mixing constant for each pressure
-            """
-            return value
-        return aaf
+    # ==== Initialisation
+    # information
+    if verbose:
+        print(f'[INFO] The following cloud species might form clouds:')
+    # physical constants
+    rgas = 8.3143e7  # universal gas constant [erg/mol/K]
+    avog = 6.02e23  # Avogadro constant [mol]
+    kb = rgas / avog  # boltzmann constant [erg/K]
+    # database of thermodynamic data of the cloud forming species
+    db = DataBase()  # open the data storage
+    rhoatmo = mmw * pressure / temperature / rgas
+    # check all species if not any specific is given
+    if species is None:
+        species = db.list_complete_species()
+    # empty list for output
+    species_out = []
+    # check if specific mmrs are given or just a float
+    if isinstance(mmr_cloudspecies, float):
+        mmr = [mmr_cloudspecies for _ in species]
     else:
-        raise ValueError('Atmospheric structure inputs must be either a function '
-                         'or array.')
+        mmr = mmr_cloudspecies
+
+    # ==== Check species
+    for s, spec in enumerate(species_out):
+        pvap = db.vapor_pressures(spec, temperature, metallicity)
+        pvap = np.maximum(pvap, 1e-200)
+        # partial pressure of cloud forming species
+        m1 = db.monomer_mass(spec)  # mass of monomer
+        p1 =  mmr[s] * rhoatmo / m1 * kb * temperature
+        # saturation ratio
+        s = p1 / pvap
+        # add species if it is above at any point in the atmosphere above 1 (so it
+        # can condense) and below 1 (so it is not already fully condensed throughout
+        # the atmosphere)
+        if (s >= 1).any() and (s <= 1.0).any():
+            species_out.append(spec)
+            if verbose:
+                print(f'       -> {spec}')
+
+    # ==== if analytic plots are anabled, print the structure
+    if create_analytic_plots:
+        # plotting style
+        fig, ax = plt.subplots(1, 1)
+        ax.set_yscale('log')
+        ax.set_ylim(pressure[-1], pressure[0])
+        ax.set_xlabel('Temperature [K]')
+        ax.set_ylabel('Pressure [Bar]')
+        # plot the tp-profile
+        ax.plot(temperature, pressure, color='k')
+        # plot temperature curves for saturation of species
+        for s, spec in enumerate(species):
+            tvap = db.condensation_temperature(spec, pressure, metallicity, mmw, mmr[s])
+            ax.plot(tvap, pressure, label=spec, linestyle='--')
+        ax.legend()
+        # either save or show plot
+        if plot_save_file is not None:
+            fig.savefig(plot_save_file)
+        else:
+            plt.show()
+
+    # ==== return the list of possible species
+    return species_out
+
+def find_cloud_species(temperature, pressure, species=None, mmw=2.34,
+                        mmr_cloudspecies=1e-2, metallicity=1, verbose=True,
+                        create_analytic_plots=True, plot_save_file=None):
+    """
+    Outside wrapper function that converts pressure to cgs.
+    See _find_clod_species() for more details.
+    """
+    return _find_cloud_species(
+        temperature, pressure*1e6, species, mmw, mmr_cloudspecies, metallicity, verbose,
+        create_analytic_plots, plot_save_file
+    )

@@ -11,7 +11,7 @@ from .data_storage import save_run
 from .atmosphere_physics import mass_to_radius
 
 def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
-            save_file=None, tag=None, timeout=None):
+            save_file=None, tag=None, timeout=None, update_saturation_pressure=None):
     """
     Compute the cloud structure.
 
@@ -37,6 +37,8 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
     timeout : float, optional
         Time after which the solver will stop to proceed. If none is given, solver will
         continue until it is done
+    update_saturation_pressure : bool, optional
+        If True, the cloud base pressure of each material is dynamically calculated.
 
     Return
     ------
@@ -47,6 +49,11 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
     # ==== Preparations =================================================================
     if not self.mute:
         print('[INFO] Computation function call')
+
+    # set the saturation pressure calculation if given
+    if update_saturation_pressure is not None:
+        self.update_sat = update_saturation_pressure
+
     # ==== set up settings specific for the evaluation typ
     self.it_str = ''
     if typ == 'convergence':
@@ -93,7 +100,7 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
     self.evaltimes = np.logspace(np.log10(self.tstart), np.log10(self.tend), self.tsteps)
 
 
-    # check if solver is setup, and do set up if necessary
+    # check if solver is set up, and do set up if necessary
     if not self.isset_solver:
         if not self.mute:
             print('[WARN] Solver set up automatically. '
@@ -156,14 +163,14 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             rg = mass_to_radius(self, xrun[-1], xtot, rhotot)
             # find out if there are enough data points for full polynomial degree
             deg_fit = self.rg_fit_deg
-            if sum(self.mask_psupsat) - 1 < self.rg_fit_deg:
+            if sum(self.mask_sat[-1]) - 1 < self.rg_fit_deg:
                 # This results in a preciese fit, but keep minimum of 1 degree
-                deg_fit = np.maximum(1, sum(self.mask_psupsat) - 1)
+                deg_fit = np.maximum(1, sum(self.mask_sat[-1]) - 1)
                 if deg_warn_flag:
                     deg_warn_flag = False
             # create a polnom fit to the cloud particle radius to prevent sudden changes
-            fit = np.polyval(np.polyfit(np.log10(self.pres[self.mask_psupsat]),
-                                        np.log10(rg[self.mask_psupsat]),
+            fit = np.polyval(np.polyfit(np.log10(self.pres[self.mask_sat[-1]]),
+                                        np.log10(rg[self.mask_sat[-1]]),
                                         deg=deg_fit),
                              np.log10(self.pres))
             rg = 10 ** np.maximum(np.minimum(fit, 50), -50)  # prevent extreme values
@@ -171,7 +178,7 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             self.rg = np.maximum(rg, self.r_ccn)
             self.rg_history.append(self.rg)
 
-            # ==== analytic cloud structure plot (a bit messy, not gonna lie)
+            # ==== analytic cloud structure plot
             if self.do_plots:
                 plot_full_structure(self, sol.y, str(t))
 

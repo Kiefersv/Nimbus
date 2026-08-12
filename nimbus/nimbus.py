@@ -14,6 +14,7 @@ class Nimbus:
     from .src.atmosphere import set_up_atmosphere
     from .src.atmosphere import set_up_influx
     from .src.atmosphere import calc_atmos_struct
+    from .src.atmosphere import find_cloud_species
     from .src.solver import set_up_solver
 
     # ==== import the main computational function
@@ -59,7 +60,8 @@ class Nimbus:
         self.ode_atol = 1e-25  # absolute error of solve_ivp
         self.ode_minimum_mmr = 1e-30  # lowest MMR considered [g/g]
         self.minimum_nuc_rate = 1e-20  # lowest J value [1/cm3/s]
-        self.static_rg = True # True: itarate with const rg / False: calc rg on the fly
+        self.static_rg = True  # True: itarate with const rg / False: calc rg on the fly
+        self.update_sat = False  # If False, the cloud base pressure is kept fix
 
         # ==== Default cloud physics parameters
         self.r_ccn = 1e-7  # default for minimum cloudparticle radius [cm]
@@ -130,7 +132,7 @@ class Nimbus:
         self.dlogp_mid = None  # mid pressure grid bin size in log10([dyn/cm2)]
         self.kzz_mid = None  # mid Kzz levels in log10([cm2/s)]
         self.m_ccn = None  # CCN mass, derived from r_ccn and rho_ccn [g]
-        self.mask_psupsat = None  # mask of computational domain
+        self.mask_sat_tot = None  # mask of cloud domain
         self.natmo = None  # total gas-phase number density [1/cm3]
         self.rhoatmo = None  # atmospheric density [g/cm]
         self.vth = None  # thermal velocity [cm/s]
