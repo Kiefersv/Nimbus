@@ -266,12 +266,12 @@ def _find_cloud_species(temperature, pressure, species=None, mmw=2.34,
         mmr = mmr_cloudspecies
 
     # ==== Check species
-    for s, spec in enumerate(species_out):
+    for s, spec in enumerate(species):
         pvap = db.vapor_pressures(spec, temperature, metallicity)
         pvap = np.maximum(pvap, 1e-200)
         # partial pressure of cloud forming species
-        m1 = db.monomer_mass(spec)  # mass of monomer
-        p1 =  mmr[s] * rhoatmo / m1 * kb * temperature
+        mw = db.molecular_weight(spec)  # mass of monomer
+        p1 =  mmr[s] * mmw / mw * pressure
         # saturation ratio
         s = p1 / pvap
         # add species if it is above at any point in the atmosphere above 1 (so it

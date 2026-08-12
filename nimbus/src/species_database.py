@@ -22,7 +22,7 @@ for s, spec in enumerate(raw_data[:, 0]):
         continue
     # get all data
     default_cloud_material_data[spec] = {
-        'data_complete': raw_data[s, 1],
+        'data_complete': raw_data[s, 1].strip(),
         'surface_tension_A': raw_data[s, 2],
         'surface_tension_B': raw_data[s, 3],
         'solar_mmr': float(raw_data[s, 4]),
@@ -117,12 +117,16 @@ class DataBase:
             # minimisation function
             def minf(tt):
                 """ minimisation function """
+                mw = self.molecular_weight(spec)
                 pvap = self.vapor_pressures(species, tt, metallicity)
-                m1 = self.monomer_mass(spec)
-                p1 =  mmr * mmw * pre / self.avog / m1
-                print(species, tt, np.log10(pvap), np.log10(p1))
+                if pvap <= 1e-30:
+                    pvap = 1e-30
+                p1 =  mmr * mmw / mw * pre
                 return np.log10(pvap) - np.log10(p1)
-            tvap[p] = root_scalar(minf, bracket=[1e1, 1e5], method='brentq').root
+            uplim = 1e6
+            if species in ['H2O']:
+                uplim = 1e3
+            tvap[p] = root_scalar(minf, bracket=[1e1, uplim], method='brentq').root
 
         # ==== return condensation temperature
         return tvap

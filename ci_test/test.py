@@ -3,7 +3,7 @@
 import os
 import unittest
 import numpy as np
-from nimbus import Nimbus, DataBase
+from nimbus import Nimbus, DataBase, find_cloud_species
 
 # ==== Example values
 temperature = np.asarray([775, 951, 1073, 1111, 1540, 2654])  # [K]
@@ -149,6 +149,8 @@ def test_datastorage():
     assert np.isclose(np.sum(vp), -9854695640143.047)
     vp = ds.monomer_radius('SiO2')
     assert np.isclose(np.sum(vp), 2.079e-08)
+    vp = ds.solar_mmr('SiO2')
+    assert np.isclose(np.sum(vp), 6.03e-05)
 
 def test_spectra():
     """ This function is currently only used for local testing as it relys on
@@ -213,3 +215,15 @@ def test_asserts():
         ds.surface_tension('MgO', temp)
     with testcase.assertRaises(ValueError):
         ds.vapor_pressures('MgO', temp)
+
+def test_additional_functions():
+    specs = find_cloud_species(temperature, pressure)
+    test = ['Al2O3', 'CaTiO3', 'Cr', 'Fe', 'FeO', 'MgSiO3', 'Mg2SiO4', 'MnS', 'SiO', 'SiO2', 'TiO2']
+    print(specs)
+    for spec in specs:
+        if spec in test:
+            test.remove(spec)
+        else:
+            assert False
+    assert len(test) == 0
+
