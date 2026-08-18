@@ -1,5 +1,6 @@
 """ This is the header file of Nimbus. To find functionalities check the src folder. """
 # pylint: disable=C0415
+import numpy as np
 
 class Nimbus:
     """ Main class to handle the cloud structure calculation """
@@ -58,6 +59,7 @@ class Nimbus:
         self.tsteps = 200  # number of intermediated evaluations (log-spaced)
         self.ode_rtol = 1e-3  # relative error of solve_ivp
         self.ode_atol = 1e-25  # absolute error of solve_ivp
+        self.ode_max_dt = np.inf  # maximum time step allowed [s]
         self.ode_minimum_mmr = 1e-30  # lowest MMR considered [g/g]
         self.minimum_nuc_rate = 1e-20  # lowest J value [1/cm3/s]
         self.static_rg = True  # True: itarate with const rg / False: calc rg on the fly

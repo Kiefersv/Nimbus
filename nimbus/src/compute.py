@@ -213,7 +213,8 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
         # ==== call the solver
         sol = solve_ivp(
             self.fex, [self.tstart, self.tend], yin, method=self.solver_type,
-            rtol=self.ode_rtol, atol=self.ode_atol, t_eval=self.evaltimes
+            rtol=self.ode_rtol, atol=self.ode_atol, t_eval=self.evaltimes,
+            max_step=self.ode_max_dt
         )
 
         # ==== analytic cloud structure plot (a bit messy, not gonna lie)

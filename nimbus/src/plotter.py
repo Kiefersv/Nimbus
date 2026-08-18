@@ -24,6 +24,7 @@ def plot_full_structure(self, y, title=''):
 
     # ==== General plotting set up
     fig, ax = plt.subplots(1, 6, figsize=(10, 3))
+    fig.suptitle(title)
     logp = np.log10(self.pres*1e-6)
     def rund(val):
         return np.log10(val)
@@ -77,5 +78,11 @@ def plot_full_structure(self, y, title=''):
     ax[4].set_xlim(-15)
     ax[5].set_xlabel('log(J [cm3/s])')
     ax[5].set_xlim(-15)
-    plt.subplots_adjust(wspace=0, bottom=0.15, left=0.07, right=0.98, top=0.98)
+
+    ax[0].legend()
+    ax[1].legend()
+    ax[2].legend()
+    ax[3].legend()
+
+    plt.subplots_adjust(wspace=0, bottom=0.15, left=0.07, right=0.98, top=0.9)
     plt.show()
