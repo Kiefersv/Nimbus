@@ -187,6 +187,7 @@ def optical_properties(self, tag=None, ds_prev=None, path_to_opacities=None, sig
         ds = self.results[tag]
     elif ds_prev is not None:
         ds = ds_prev
+        self.set_up_from_previous_run(ds_prev=ds_prev)
     else:
         ds = self.results['last_run']
 
