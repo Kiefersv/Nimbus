@@ -33,6 +33,19 @@ def test_nimbus():
     ds = obj.compute(typ='iterate', max_iterations=3)
     check(ds, [0.00026518302326593995, 0.002027077714200809, 0.00044025281923456183,
                20.893089112469035])
+    # iteratively but with no max iteration
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True)
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+    obj.set_up_solver()
+    ds = obj.compute(typ='iterate')
+    check(ds, [0.00015532806998874919, 0.002026365100614461, 0.00031179687608754234,
+               13.80748974162783])
+    # less than 1 itaratoin given, and self initialised solver
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True)
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+    ds = obj.compute(typ='iterate', max_iterations=0.5)
+    check(ds, [0.00107422120865269, 0.002042050311914651, 0.0002116511014967463,
+               109.3386841723017])
 
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
@@ -68,7 +81,7 @@ def test_nimbus():
     # ==== influx added
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
-    inj = lambda x, a, b, c: 1e-11
+    inj = lambda x, a, b, c: np.ones((3, 6)) * 1e-11
     obj.set_up_influx(inj)
     obj.set_up_solver()
     ds = obj.compute(typ='full')
@@ -197,6 +210,10 @@ def test_asserts():
     # set up nimbus
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
                  verbose=True, create_analytic_plots=True)
+
+    # ==== wrong type
+    with testcase.assertRaises(ValueError):
+        obj.compute(typ='WRONG')
 
     # ==== errors if atmospehre is not setup
     with testcase.assertRaises(ValueError):
