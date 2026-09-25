@@ -1,8 +1,8 @@
 """ All set-up functionalities of NIMBUS """
 # pylint: disable=C0301
 
-import numpy as np
 from time import time
+import numpy as np
 from .atmosphere_physics import mass_to_radius
 
 def set_initial_condidtions(self):

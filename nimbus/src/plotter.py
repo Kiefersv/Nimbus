@@ -41,9 +41,18 @@ def plot_full_structure(self, y, title=''):
     rg = mass_to_radius(self, xrun[-1], xtot, rhotot)
     ncl = xrun[-1] * self.rhoatmo / self.m_ccn  # cloud particle number density [1/cm3]
     ngas = self.pres / self.temp / self.kb
-    ax[0].plot(rund(self.rg_in*1e4), logp, color='k', linestyle='-.', label=r'r$_\mathrm{in}$ [$\mu$m]')
-    ax[0].plot(rund(rg*1e4), logp, color='orange', linestyle='-.', label=r'r$_\mathrm{new}$ [$\mu$m]')
-    ax[0].plot(rund(self.rg*1e4), logp, color='green', linestyle='-.', label=r'r$_\mathrm{out}$ [$\mu$m]')
+    ax[0].plot(
+        rund(self.rg_in*1e4), logp, color='k', linestyle='-.',
+        label=r'r$_\mathrm{in}$ [$\mu$m]'
+    )
+    ax[0].plot(
+        rund(rg*1e4), logp, color='orange', linestyle='-.',
+        label=r'r$_\mathrm{new}$ [$\mu$m]'
+    )
+    ax[0].plot(
+        rund(self.rg*1e4), logp, color='green', linestyle='-.',
+        label=r'r$_\mathrm{out}$ [$\mu$m]'
+    )
     ax[0].vlines([-4], logp[-1], logp[0], linestyle='-.', color='gray', label=r'1 $\mu$m')
 
     for s, spec in enumerate(self.species):

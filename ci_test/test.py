@@ -89,7 +89,8 @@ def test_nimbus():
                17082.166474858637])
 
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    kzz_f = lambda t, p: (1e9 + 1e2 * t / obj.tend) * np.ones_like(p)
+    def kzz_f(t, p):
+        return (1e9 + 1e2 * t / obj.tend) * np.ones_like(p)
     obj.set_up_atmosphere(temperature, pressure, kzz_f, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(typ='full')
@@ -168,19 +169,12 @@ def test_datastorage():
 def test_spectra():
     """ This function is currently only used for local testing as it relys on
     the MieAi implementation """
-    """ Integration testing """
     # ==== Example values
-    temperature = np.asarray([775, 951, 1073, 1111, 1540, 2654])  # [K]
-    pressure = np.asarray([1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3])  # [bar]
-    kzz = np.ones_like(pressure) * 1e9  # [cm2/s]
-    gravity = 10**2.49  # [cm/s2]
-    mmw = 2.34  # [amu]
-    species = 'MgSiO3'
-    deepmmr = 1e-3  # [g/g]
+    species2 = 'MgSiO3'
 
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species2, deepmmr)
     obj.compute(typ='iterate', max_iterations=3)
     df_cloud = obj.picaso_formater(mie_type='full', nradii=10)
     assert np.isclose(np.sum(df_cloud['opd']), 319.19585100687664)
@@ -190,7 +184,7 @@ def test_spectra():
 
     # ==== set up nimbus fully to test timestamps
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species2, deepmmr)
     obj.set_up_solver()
     obj.compute(typ='full')
     df_cloud = obj.picaso_formater(mie_type='full', nradii=10, time_stamps=[1e-2, 1e9])
@@ -205,6 +199,7 @@ def test_spectra():
         assert np.isclose(np.sum(df['wavenumber']), sols[d][3])
 
 def test_asserts():
+    """ Check asserts throughout all files """
     # set up testcase class:
     testcase = unittest.TestCase()
     # set up nimbus
@@ -234,6 +229,7 @@ def test_asserts():
         ds.vapor_pressures('MgO', temp)
 
 def test_additional_functions():
+    """ Test helper functions """
     specs = find_cloud_species(temperature, pressure)
     test = ['Al2O3', 'CaTiO3', 'Cr', 'Fe', 'FeO', 'MgSiO3', 'Mg2SiO4', 'MnS', 'SiO', 'SiO2', 'TiO2']
     print(specs)
@@ -243,4 +239,3 @@ def test_additional_functions():
         else:
             assert False
     assert len(test) == 0
-

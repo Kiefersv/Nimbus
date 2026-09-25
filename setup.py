@@ -3,6 +3,7 @@ from setuptools import setup, find_packages
 
 # Read requirements from requirements.txt
 def read_requirements():
+    """ read requirements file """
     with open("requirements.txt") as req_file:
         return req_file.read().splitlines()
 

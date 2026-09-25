@@ -12,8 +12,8 @@ from scipy.optimize import root_scalar
 #  Data read in
 # =======================================================================================
 # this step is done here to improve computational runtimes
-data_file = os.path.dirname(__file__) + '/../data/chem/cloud_material.csv'
-raw_data = np.array(list(csv.reader(open(data_file))))
+data_file_load = os.path.dirname(__file__) + '/../data/chem/cloud_material.csv'
+raw_data = np.array(list(csv.reader(open(data_file_load))))
 # loop over all species to initialise
 default_cloud_material_data = {}
 for s, spec in enumerate(raw_data[:, 0]):
@@ -119,8 +119,7 @@ class DataBase:
                 """ minimisation function """
                 mw = self.molecular_weight(spec)
                 pvap = self.vapor_pressures(species, tt, metallicity)
-                if pvap <= 1e-30:
-                    pvap = 1e-30
+                pvap = max(pvap, 1e-30)
                 p1 =  mmr * mmw / mw * pre
                 return np.log10(pvap) - np.log10(p1)
             uplim = 1e6

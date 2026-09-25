@@ -10,7 +10,7 @@ from .solver import set_initial_condidtions, set_up_solver
 from .data_storage import save_run
 from .atmosphere_physics import mass_to_radius
 
-def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
+def compute(self, typ='full', rel_dif_in_mmr=1e-3, max_iterations=None,
             save_file=None, tag=None, timeout=None, update_saturation_pressure=None):
     """
     Compute the cloud structure.

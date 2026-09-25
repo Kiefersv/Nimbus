@@ -19,7 +19,8 @@ def aoftf(value):
     """
     if callable(value):
         return value
-    elif isinstance(value, np.ndarray):
+
+    if isinstance(value, np.ndarray):
         def aaf(p, t):
             """
             assigns each array layer but as a function
@@ -38,6 +39,6 @@ def aoftf(value):
             """
             return value
         return aaf
-    else:
-        raise ValueError('Atmospheric structure inputs must be either a function '
-                         'or array.')
+
+    raise ValueError('Atmospheric structure inputs must be either a function '
+                     'or array.')

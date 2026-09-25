@@ -65,7 +65,7 @@ def save_run(self, sol, save_file=None, tag=None):
                 gas_mmr[s, r] = xrun[s*2]
                 solid_mmr[s, r] = xrun[s*2 + 1]
                 pvap = self.db.vapor_pressures(self.species[s], self.temp, self.mh)
-                saturation[s, r] = (pvap * self.mw[s] / self.pres / self.mmw)
+                saturation[s, r] = pvap * self.mw[s] / self.pres / self.mmw
 
         data = {
             'gas_mmr': (co2, gas_mmr[:, -1]),
@@ -128,13 +128,14 @@ def save_run(self, sol, save_file=None, tag=None):
             all_kzz[t] = self.kzz(self.evaltimes[t], self.pres)
             for s, _ in enumerate(self.species):
                 n1[s, t] = xrun[s*2] * self.rhoatmo / self.m1[s]  # gas-phase number density [1/cm3]
-                # assign the values
-                acc_rate[s, t] = self.acc_rate(rg[t], self.temp, n1[s, t], ncl[t], s)  # accretion rate [1/cm3/s]
+                # ==== assign the values
+                # accretion rate [1/cm3/s]
+                acc_rate[s, t] = self.acc_rate(rg[t], self.temp, n1[s, t], ncl[t], s)
                 nuc_rate[s, t] = self.nuc_rate(n1[s, t], self.temp, s)  # nucleation rate [1/cm3/s]
                 gas_mmr[s, t] = xrun[s*2]
                 solid_mmr[s, t] = xrun[s*2 + 1]
                 pvap = self.db.vapor_pressures(self.species[s], self.temp, self.mh)
-                saturation[s, t] = (pvap * self.mw[s] / self.pres / self.mmw)
+                saturation[s, t] = pvap * self.mw[s] / self.pres / self.mmw
         data = {
             'gas_mmr': (co2, gas_mmr[:, -1]),
             'total_cloud_mmr': (co2[1:], total_mmr[-1]),

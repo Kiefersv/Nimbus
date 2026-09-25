@@ -2,7 +2,7 @@
 # pylint: disable=R0913,E0402,R0915
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
+from matplotlib import cm
 from scipy.optimize import root_scalar
 
 from .atmosphere_physics import define_atmosphere_physics
@@ -209,8 +209,10 @@ def set_up_influx(self, influx_function):
             eval_times = np.logspace(np.log10(self.tstart), np.log10(self.tend), self.tsteps)
             expl = influx_function(self, self.pres, self.temp, eval_times)
             for s, spec in enumerate(self.species):
-                print('       -> Max ' + spec + ' gas influx: ' + str(np.max(expl[s*2])) + ' g/cm3/s')
-                print('       -> Max ' + spec + ' cloud influx: ' + str(np.max(expl[s*2 + 1])) + ' g/cm3/s')
+                print('       -> Max ' + spec + ' gas influx: '
+                      + str(np.max(expl[s*2])) + ' g/cm3/s')
+                print('       -> Max ' + spec + ' cloud influx: '
+                      + str(np.max(expl[s*2 + 1])) + ' g/cm3/s')
             print('       -> Max CCN influx: ' + str(np.max(expl[-1])) + ' g/cm3/s')
 
 def calc_atmos_struct(self):
@@ -269,14 +271,9 @@ def _find_cloud_species(temperature, pressure, species=None, mmw=2.34,
     # ==== Initialisation
     # information
     if verbose:
-        print(f'[INFO] The following cloud species might form clouds:')
-    # physical constants
-    rgas = 8.3143e7  # universal gas constant [erg/mol/K]
-    avog = 6.02e23  # Avogadro constant [mol]
-    kb = rgas / avog  # boltzmann constant [erg/K]
+        print('[INFO] The following cloud species might form clouds:')
     # database of thermodynamic data of the cloud forming species
     db = DataBase()  # open the data storage
-    rhoatmo = mmw * pressure / temperature / rgas
     # check all species if not any specific is given
     if species is None:
         species = db.list_complete_species()

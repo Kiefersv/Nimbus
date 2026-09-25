@@ -100,10 +100,11 @@ def picaso_formater(self, tag=None, ds_prev=None, path_to_opacities=None, sig=2,
     # ==== iterate over all timestamps (or only the last one)
     df = []  # Create opacities in picaso format
     for t, ti in enumerate(time_it):
-        df_t = pd.DataFrame(
-            dict(opd=opts['opd'].values[t, :-1].flatten(),
-                 w0=opts['w0'].values[t, :-1].flatten(),
-                 g0=opts['g0'].values[t, :-1].flatten()))
+        df_t = pd.DataFrame({
+            "opd":opts['opd'].values[t, :-1].flatten(),
+            "w0":opts['w0'].values[t, :-1].flatten(),
+            "g0":opts['g0'].values[t, :-1].flatten()
+        })
         df_t['pressure'] = np.concatenate(p_out)
         df_t['wavenumber'] = np.concatenate(w_out)
         df.append(df_t)
