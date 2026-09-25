@@ -149,7 +149,7 @@ def set_up_solver(self):
             dx[s*2, ~self.mask_sat[s]] += dx[s*2 + 1, ~self.mask_sat[s]]
             # set all cloud mmrs values below the vapour pressure to zero
             dx[s*2 + 1, ~self.mask_sat[s]] = 0
-        # remove cloud particles where ther is no cloud mass
+        # remove cloud particles where there is no cloud mass
         dx[-1, ~self.mask_sat[-1]] = 0  # set number density below cloud to 0
         # the lowest cell represents the deep interior and is not touched
         dx[:, -1] = 0

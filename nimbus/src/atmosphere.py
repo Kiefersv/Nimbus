@@ -2,6 +2,7 @@
 # pylint: disable=R0913,E0402,R0915
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 from scipy.optimize import root_scalar
 
 from .atmosphere_physics import define_atmosphere_physics
@@ -9,7 +10,8 @@ from .species_database import DataBase
 from .subfunctions import aoftf
 
 def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=None,
-                      deep_mmr=None, fsed=1, metalicity=1, ignore_as_nucleator=[]):
+                      deep_mmr=None, fsed=1, metalicity=1, ignore_as_nucleator=[],
+                      minimum_computational_pressure=None):
     """
     Set up the atmospheric structure of the simulation.
 
@@ -37,6 +39,9 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
         metalicity of atmosphere (used for certain pvaps)
     ignore_as_nucleator : List[str]
         Species which should not be considered to nucleate
+    minimum_computational_pressure : float, optional
+        Minimum pressure until which the clouds should be fully calculated.
+
     """
 
     # ==== Open a database
@@ -82,6 +87,10 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
     self.fsed = fsed  # (initial) settling parameter [None]
     self.mh = metalicity  # metalicity relative to solar (not log!) []
     self.ian = ignore_as_nucleator  # these species will not nucleate
+    if minimum_computational_pressure is None:
+        self.mcp = None  # use internal computational domain
+    else:
+        self.mcp = minimum_computational_pressure*1e6  # min p to which clouds stay condensed
 
     # ==== Set nucleation rate, accretion rate, and settling velocity
     define_atmosphere_physics(self)
@@ -133,6 +142,11 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
         self.mask_sat[s] = p1 / pvap >= 1  # mask where vapour can condense
         # updated the below cloud mask
         self.mask_sat[-1] += self.mask_sat[s]
+    # Now enforce the minimum computational pressure
+    if self.mcp is not None:
+        mask_min_p = self.mcp > self.pres
+        self.mask_sat[:, mask_min_p] = True
+
 
     # ==== Calculate initial radius
     self.rg = np.zeros_like(self.pres)
@@ -159,6 +173,8 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
         print(f'       -> Gravity: {gravity:.2e} cm/s2')
         for s in range(self.nspec):
             print('       -> ' + self.species[s] + f' deep MMR: {self.deep_gas_mmr[s]:.2e} g/g')
+        if self.mcp is not None:
+            print('       -> Minimum computational pressure: ' + str(self.mcp*1e-6) + ' bar')
 
 
 def set_up_influx(self, influx_function):
@@ -189,6 +205,13 @@ def set_up_influx(self, influx_function):
     # ==== Print current setup
     if not self.mute:
         print('[INFO] Top of atmosphere influx function added')
+        if self.isset_atmosphere:
+            eval_times = np.logspace(np.log10(self.tstart), np.log10(self.tend), self.tsteps)
+            expl = influx_function(self, self.pres, self.temp, eval_times)
+            for s, spec in enumerate(self.species):
+                print('       -> Max ' + spec + ' gas influx: ' + str(np.max(expl[s*2])) + ' g/cm3/s')
+                print('       -> Max ' + spec + ' cloud influx: ' + str(np.max(expl[s*2 + 1])) + ' g/cm3/s')
+            print('       -> Max CCN influx: ' + str(np.max(expl[-1])) + ' g/cm3/s')
 
 def calc_atmos_struct(self):
     """ This function performs atmospheric calculation updates """
@@ -287,15 +310,15 @@ def _find_cloud_species(temperature, pressure, species=None, mmw=2.34,
         # plotting style
         fig, ax = plt.subplots(1, 1)
         ax.set_yscale('log')
-        ax.set_ylim(pressure[-1], pressure[0])
+        ax.set_ylim(pressure[-1]*1e-6, pressure[0]*1e-6)
         ax.set_xlabel('Temperature [K]')
         ax.set_ylabel('Pressure [Bar]')
         # plot the tp-profile
-        ax.plot(temperature, pressure, color='k')
+        ax.plot(temperature, pressure*1e-6, color='k')
         # plot temperature curves for saturation of species
-        for s, spec in enumerate(species):
+        for s, spec in enumerate(species_out):
             tvap = db.condensation_temperature(spec, pressure, metallicity, mmw, mmr[s])
-            ax.plot(tvap, pressure, label=spec, linestyle='--')
+            ax.plot(tvap, pressure*1e-6, label=spec, linestyle='--', color=cm.tab20(s/20))
         ax.legend()
         # either save or show plot
         if plot_save_file is not None:
