@@ -1,0 +1,496 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nimbus Output &mdash; Nimbus 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../autoapi/index.html" />
+    <link rel="prev" title="Set Physics and Numerics" href="tutorial_fudge.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Nimbus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Install_And_Quick_Start.html">Installation and Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Physics_of_Nimbus.html">Physics of Nimbus</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../Tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Install_And_Quick_Start.html">Quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_basic.html">Postprocessed Clouds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_spectra.html">Opacities and Spectra</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_influx.html">Material Influx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_fudge.html">Setting Physics and Numerics</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Output of Nimbus</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Physical-Parameters">Physical Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Analytic-Parameters">Analytic Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Complete-list-of-outputs">Complete list of outputs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/Kiefersv/Nimbus">Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Nimbus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../Tutorials.html">Tutorials</a></li>
+      <li class="breadcrumb-item active">Nimbus Output</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorial_files/tutorial_output.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Nimbus-Output">
+<h1>Nimbus Output<a class="headerlink" href="#Nimbus-Output" title="Link to this heading"></a></h1>
+<p>Nimbus provides a comprehensive xarray dataset as output. For comprehensive examples on how to use xarray datasets checkout their <a class="reference external" href="https://docs.xarray.dev/en/stable/">documentation</a>. Here we list the most important physical and analytic output.</p>
+<section id="Physical-Parameters">
+<h2>Physical Parameters<a class="headerlink" href="#Physical-Parameters" title="Link to this heading"></a></h2>
+<p>The most important outputs of Nimbus are the cloud structure. The two main parameters are:</p>
+<ul class="simple">
+<li><p>‘cloud_mmr’: The Mass Mixing Ratio (MMR) of each cloud particle species</p></li>
+<li><p>‘cloud_radius’: The mean radius of the cloud particles</p></li>
+</ul>
+<p>Based on these values, other cloud parameters can be calculated and their optical properties are defined. To study the cloud structure in more detail, these variables are helpfully:</p>
+<ul class="simple">
+<li><p>‘nucleation_rate’: Defines where in the atmosphere new cloud particles are produced.</p></li>
+<li><p>‘growth_rate’: Defines where in the atmosphere cloud particles grow to larger sizes, often creating the main cloud base.</p></li>
+<li><p>‘gas_mmr’: Shows the depletion of the cloud species from the gas-phase. This is important to know when the effect of clouds on the gas-phase is studied.</p></li>
+<li><p>‘saturation_mmr’: Defines the theoretical minimum of gas-phase species. At pressures where this variable is smaller than the ‘gas_mmr’, phase equilibrium is no longer given.</p></li>
+</ul>
+</section>
+<section id="Analytic-Parameters">
+<h2>Analytic Parameters<a class="headerlink" href="#Analytic-Parameters" title="Link to this heading"></a></h2>
+<p>Nimbus includes information about the numerics of the run which can be used to assess the run. The most helpful ones are:</p>
+<ul class="simple">
+<li><p>‘species’: This lists the cloud species in order they apear in all other arrays.</p></li>
+<li><p>‘Did the run finish?’: If this is true, the run did not finished. In this case, check ‘tfailed’ to see which timestep was reached before it was aborted.</p></li>
+</ul>
+</section>
+<section id="Complete-list-of-outputs">
+<h2>Complete list of outputs<a class="headerlink" href="#Complete-list-of-outputs" title="Link to this heading"></a></h2>
+<p>These outputs are saved as data variables and can be accessed as ds[‘variable_name’]</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>‘variable_name’</p></th>
+<th class="head"><p>dimensions</p></th>
+<th class="head"><p>units</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Atmospheric structure</strong></p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>‘gas_mmr’</p></td>
+<td><p>[‘species’, ‘pressure’]</p></td>
+<td><p>g/g</p></td>
+<td><p>Gas-phase MMRs</p></td>
+</tr>
+<tr class="row-even"><td><p>‘gas_number_density’</p></td>
+<td><p>[‘species’, ‘pressure’]</p></td>
+<td><p>1/cm3</p></td>
+<td><p>Gas-phase number densities</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘temperature’</p></td>
+<td><p>[‘pressure’]</p></td>
+<td><p>K</p></td>
+<td><p>Temperature</p></td>
+</tr>
+<tr class="row-even"><td><p>‘rhoatmo’</p></td>
+<td><p>[‘pressure’]</p></td>
+<td><p>g/cm3</p></td>
+<td><p>Atmospheric density</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘Kzz’</p></td>
+<td><p>[‘pressure’]</p></td>
+<td><p>cm2/s</p></td>
+<td><p>Atmospheric mixing constant</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Cloud particle properties</strong></p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>‘total_cloud_mmr’</p></td>
+<td><p>[‘pressure’]</p></td>
+<td><p>g/g</p></td>
+<td><p>Sum of all cloud particle MMRs</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘cloud_mmr’</p></td>
+<td><p>[‘species’, ‘pressure’]</p></td>
+<td><p>g/g</p></td>
+<td><p>Cloud particle MMR</p></td>
+</tr>
+<tr class="row-even"><td><p>‘nucleation_rate’</p></td>
+<td><p>[‘species’, ‘pressure’]</p></td>
+<td><p>1/cm3/s</p></td>
+<td><p>Nucleation rate per species</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘growth_rate’</p></td>
+<td><p>[‘species’, ‘pressure’]</p></td>
+<td><p>1/cm3/s</p></td>
+<td><p>Growth rate per species</p></td>
+</tr>
+<tr class="row-even"><td><p>‘cloud_number_density’</p></td>
+<td><p>[‘pressure’]</p></td>
+<td><p>1/cm3</p></td>
+<td><p>Cloud particle number density</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘cloud_radius’</p></td>
+<td><p>[‘pressure’]</p></td>
+<td><p>cm</p></td>
+<td><p>Cloud particle radius</p></td>
+</tr>
+<tr class="row-even"><td><p>‘saturation_mmr’</p></td>
+<td><p>[‘species’, ‘pressure’]</p></td>
+<td><p>g/g</p></td>
+<td><p>Saturation limit per species</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>Time dependent output</strong></p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>‘all_gas_mmr’</p></td>
+<td><p>[‘species’, ‘time’, ‘pressure’]</p></td>
+<td><p>g/g</p></td>
+<td><p>Gas-phase MMRs</p></td>
+</tr>
+<tr class="row-even"><td><p>‘all_total_cloud_mmr’</p></td>
+<td><p>[‘time’, ‘pressure’]</p></td>
+<td><p>g/g</p></td>
+<td><p>Sum of all cloud particle MMRs</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘all_cloud_mmr’</p></td>
+<td><p>[‘species’, ‘time’, ‘pressure’]</p></td>
+<td><p>g/g</p></td>
+<td><p>Cloud particle MMR</p></td>
+</tr>
+<tr class="row-even"><td><p>‘all_nucleation_rate’</p></td>
+<td><p>[‘species’, ‘time’, ‘pressure’]</p></td>
+<td><p>1/cm3/s</p></td>
+<td><p>Nucleation rate per species</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘all_growth_rate’</p></td>
+<td><p>[‘species’, ‘time’, ‘pressure’]</p></td>
+<td><p>1/cm3/s</p></td>
+<td><p>Growth rate per species</p></td>
+</tr>
+<tr class="row-even"><td><p>‘all_cloud_number_density’</p></td>
+<td><p>[‘time’, ‘pressure’]</p></td>
+<td><p>1/cm3</p></td>
+<td><p>Cloud particle number density</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘all_gas_number_density’</p></td>
+<td><p>[‘species’, ‘time’, ‘pressure’]</p></td>
+<td><p>1/cm3</p></td>
+<td><p>Gas-phase number densities</p></td>
+</tr>
+<tr class="row-even"><td><p>‘all_cloud_radius’</p></td>
+<td><p>[‘time’, ‘pressure’]</p></td>
+<td><p>cm</p></td>
+<td><p>Cloud particle radius</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘all_Kzz’</p></td>
+<td><p>[‘time’, ‘pressure’]</p></td>
+<td><p>cm2/s</p></td>
+<td><p>Atmospheric mixing constant</p></td>
+</tr>
+<tr class="row-even"><td><p>‘all_saturation_mmr’</p></td>
+<td><p>[‘species’, ‘time’, ‘pressure’]</p></td>
+<td><p>g/g</p></td>
+<td><p>Saturation limit per species</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘all_temperature’</p></td>
+<td><p>[‘pressure’]</p></td>
+<td><p>K</p></td>
+<td><p>Temperature, not supported yet</p></td>
+</tr>
+<tr class="row-even"><td><p>‘all_rhoatmo’</p></td>
+<td><p>[‘pressure’]</p></td>
+<td><p>g/cm3</p></td>
+<td><p>Atmospheric density, not supported yet</p></td>
+</tr>
+</tbody>
+</table>
+<p>These outputs are saved as attributes can be accessed as ds.attrs[‘variable_name’]</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>‘variable_name’</p></th>
+<th class="head"><p>units</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Physical Properties</strong></p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>‘species’</p></td>
+<td><ul class="simple">
+<li></li>
+</ul>
+</td>
+<td><p>Name and order of the cloud species</p></td>
+</tr>
+<tr class="row-even"><td><p>‘mmw’</p></td>
+<td><p>amu</p></td>
+<td><p>Mean molecular weight</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘gravity’</p></td>
+<td><p>cm/s2</p></td>
+<td><p>Planetary gravity</p></td>
+</tr>
+<tr class="row-even"><td><p>‘metalicity’</p></td>
+<td><p>(cm3/cm3)/(cm3/cm3)</p></td>
+<td><p>Metalicity of the planet compared to solar</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘deep_mmr’</p></td>
+<td><p>g/g</p></td>
+<td><p>Interior gas-phase MMR</p></td>
+</tr>
+<tr class="row-even"><td><p>‘ignore_as_nucleator’</p></td>
+<td><ul class="simple">
+<li></li>
+</ul>
+</td>
+<td><p>Species which cannot nucleate</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>Run settings</strong></p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>‘fsed_init’</p></td>
+<td><ul class="simple">
+<li></li>
+</ul>
+</td>
+<td><p>Sedimentation efficency for initial conditions</p></td>
+</tr>
+<tr class="row-even"><td><p>‘tstart’</p></td>
+<td><p>s</p></td>
+<td><p>Start time of the simulation</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘tend’</p></td>
+<td><p>s</p></td>
+<td><p>End time of the simulation</p></td>
+</tr>
+<tr class="row-even"><td><p>‘tsteps’</p></td>
+<td><ul class="simple">
+<li></li>
+</ul>
+</td>
+<td><p>Number of timesteps in output</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘ode_rtol’</p></td>
+<td><ul class="simple">
+<li></li>
+</ul>
+</td>
+<td><p>Relative tolarance of the ODE solver</p></td>
+</tr>
+<tr class="row-even"><td><p>‘ode_atol’</p></td>
+<td><ul class="simple">
+<li></li>
+</ul>
+</td>
+<td><p>Absolute tolarance of the ODE solver</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘ode_minimum_mmr’</p></td>
+<td><p>g/g</p></td>
+<td><p>Minimum MMR for the ODE solver</p></td>
+</tr>
+<tr class="row-even"><td><p>‘static_rg’</p></td>
+<td><p>bool</p></td>
+<td><p>If True, static radius was used</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘r_ccn’</p></td>
+<td><p>cm</p></td>
+<td><p>Cloud condensation nucleai radius</p></td>
+</tr>
+<tr class="row-even"><td><p>‘cs_mol’</p></td>
+<td><p>cm2</p></td>
+<td><p>Molecular cross section</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘eps_k’</p></td>
+<td><p>erg/mol</p></td>
+<td><p>Lennard-Jones potential</p></td>
+</tr>
+<tr class="row-even"><td><p>‘rg_fit_deg’</p></td>
+<td><ul class="simple">
+<li></li>
+</ul>
+</td>
+<td><p>Polynomial degree of radius fit</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘timeout’</p></td>
+<td><p>s</p></td>
+<td><p>Maximum computation time</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Analytic</strong></p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>‘total_iterations’</p></td>
+<td><ul class="simple">
+<li></li>
+</ul>
+</td>
+<td><p>Total number of iterations performed</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘tfailed’</p></td>
+<td><p>s</p></td>
+<td><p>Time at which the simulation failed (“None” otherwise)</p></td>
+</tr>
+<tr class="row-even"><td><p>‘Did the run finish?’</p></td>
+<td><p>bool</p></td>
+<td><p>False if the run failed</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>Re-start parameters</strong></p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>‘y_last’</p></td>
+<td><ul class="simple">
+<li></li>
+</ul>
+</td>
+<td><p>Last ODE solver output, used to restart the run</p></td>
+</tr>
+<tr class="row-even"><td><p>‘settings’</p></td>
+<td><ul class="simple">
+<li></li>
+</ul>
+</td>
+<td><p>Array of settings (see below)</p></td>
+</tr>
+<tr class="row-odd"><td><p>‘solver_type’</p></td>
+<td><ul class="simple">
+<li></li>
+</ul>
+</td>
+<td><p>Name of ODE solver used</p></td>
+</tr>
+</tbody>
+</table>
+<p>The ‘settings’ variables contains an array of floats which define the cloud run. While it is mainly used to re-start old runs, you might want to revisit the settings. The values in this array are in order: [tstart, tend, tsteps, ode_rtol, ode_atol, ode_minimum_mmr, r_ccn, cs_mol, eps_k, r1, rho_ccn, rg_fit_deg]</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorial_fudge.html" class="btn btn-neutral float-left" title="Set Physics and Numerics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../autoapi/index.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sven Kiefer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

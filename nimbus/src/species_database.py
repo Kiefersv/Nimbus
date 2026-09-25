@@ -46,17 +46,15 @@ gibbs_janaf = xr.open_dataset(
 class DataBase:
     """
     Storage of physical properties. Information on the stored variables:
-    -> Cloud particle material:
-        -> Surface tension [erg cm^-2] parameters in the form:
-           surface_tension_A + surface_tension_B * T
-        -> solar_mmr: Expected mass mixing ratio at solar metalicity
-        -> solid_density: Density of the solid material [g/cm3]
-        -> monomer_radius: Radius of a single gas-phase molecule [cm]
-        -> molecular_weight: Mass of a single gas-phase molecule [g]
-        -> Vapor pressure [dyn/cm2] parameters in the form:
-           pvap_prefactor * pvap_base**(
-               pvap_A/T**2 + pvap_B/T + pvap_C + pvap_D*T + pvap_E*T**2 + pvap_F*T**2
-           )
+     - Surface tension [erg cm^-2] parameters in the form:
+       surface_tension_A + surface_tension_B * T
+     - solar_mmr: Expected mass mixing ratio at solar metalicity
+     - solid_density: Density of the solid material [g/cm3]
+     - monomer_radius: Radius of a single gas-phase molecule [cm]
+     - molecular_weight: Mass of a single gas-phase molecule [g]
+     - Vapor pressure [dyn/cm2] parameters in the form:
+       pvap_prefactor * pvap_base**(pvap_A/T**2 + pvap_B/T + pvap_C
+       + pvap_D*T + pvap_E*T**2 + pvap_F*T**2)
     """
 
     # pysical constants

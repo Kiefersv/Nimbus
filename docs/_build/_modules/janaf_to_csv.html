@@ -1,0 +1,181 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>janaf_to_csv &mdash; Nimbus 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Nimbus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../Install_And_Quick_Start.html">Installation and Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Physics_of_Nimbus.html">Physics of Nimbus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/Kiefersv/Nimbus">Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Nimbus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">janaf_to_csv</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for janaf_to_csv</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">This is a helper file to read in Janaf nist tables and add them to the Janaf databse,</span>
+<span class="sd">feel free to add your own. Just make sure you dont mix the gibbs free energies from</span>
+<span class="sd">Janaf with others (or be very sure what you are doing).</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.request</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlopen</span><span class="p">,</span> <span class="n">Request</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="c1"># Links to the data, more species can be appended</span>
+<div class="viewcode-block" id="species">
+<a class="viewcode-back" href="../autoapi/janaf_to_csv/index.html#janaf_to_csv.species">[docs]</a>
+<span class="n">species</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"H2"</span><span class="p">:</span> <span class="s2">"https://janaf.nist.gov/tables/H-050.txt"</span><span class="p">,</span>
+    <span class="s2">"H2O"</span><span class="p">:</span> <span class="s2">"https://janaf.nist.gov/tables/H-064.txt"</span><span class="p">,</span>
+    <span class="s2">"SiO"</span><span class="p">:</span> <span class="s2">"https://janaf.nist.gov/tables/O-012.txt"</span><span class="p">,</span>
+    <span class="s2">"SiO2"</span><span class="p">:</span> <span class="s2">"https://janaf.nist.gov/tables/O-040.txt"</span><span class="p">,</span>
+    <span class="s2">"SiO2[s]"</span><span class="p">:</span> <span class="s2">"https://janaf.nist.gov/tables/O-037.txt"</span><span class="p">,</span>
+    <span class="s2">"C[s]"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="s2">"C"</span><span class="p">:</span> <span class="s2">""</span>
+<span class="p">}</span></div>
+
+
+<span class="c1"># this is the file to append to</span>
+<div class="viewcode-block" id="FILE">
+<a class="viewcode-back" href="../autoapi/janaf_to_csv/index.html#janaf_to_csv.FILE">[docs]</a>
+<span class="n">FILE</span> <span class="o">=</span> <span class="s1">'janaf.nc'</span></div>
+
+
+<span class="c1"># create dataset</span>
+<div class="viewcode-block" id="ds">
+<a class="viewcode-back" href="../autoapi/janaf_to_csv/index.html#janaf_to_csv.ds">[docs]</a>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="n">species</span><span class="p">)</span></div>
+
+
+<span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">species</span><span class="p">:</span>
+    <span class="c1"># open link</span>
+<div class="viewcode-block" id="req">
+<a class="viewcode-back" href="../autoapi/janaf_to_csv/index.html#janaf_to_csv.req">[docs]</a>
+    <span class="n">req</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span>
+        <span class="n">url</span><span class="o">=</span><span class="n">species</span><span class="p">[</span><span class="n">spec</span><span class="p">],</span>
+        <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s1">'User-Agent'</span><span class="p">:</span> <span class="s1">'Mozilla/5.0'</span><span class="p">}</span>
+    <span class="p">)</span></div>
+
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+
+    <span class="c1"># loop over each line</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">outs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="c1"># skip the first two entries</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">continue</span>
+        <span class="c1"># make data into strings</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">line</span><span class="p">)[</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s1">'\t'</span><span class="p">)</span>
+        <span class="c1"># delete filler lines</span>
+        <span class="k">if</span> <span class="s1">'TRANSITIO'</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">or</span> <span class="s1">'&lt;--&gt;'</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">continue</span>
+        <span class="c1"># add data</span>
+        <span class="n">outs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])))</span>
+
+    <span class="c1"># create xarray dataset of current species</span>
+    <span class="n">run</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">outs</span><span class="p">)</span>
+    <span class="n">da</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">run</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="n">dims</span><span class="o">=</span><span class="s1">'temp_'</span> <span class="o">+</span> <span class="n">spec</span><span class="p">,</span>
+        <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s1">'temp_'</span> <span class="o">+</span> <span class="n">spec</span><span class="p">:</span> <span class="n">run</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]},</span>
+    <span class="p">)</span>
+    <span class="c1"># save it to the dataset</span>
+    <span class="n">ds</span><span class="p">[</span><span class="n">spec</span><span class="p">]</span> <span class="o">=</span> <span class="n">da</span>
+
+<span class="c1"># Save file</span>
+<span class="n">ds</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">FILE</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sven Kiefer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

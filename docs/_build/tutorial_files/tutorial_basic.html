@@ -1,0 +1,263 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Post processed clouds on top of an atmospheric model &mdash; Nimbus 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Optical properties of clouds" href="tutorial_spectra.html" />
+    <link rel="prev" title="Tutorials" href="../Tutorials.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Nimbus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Install_And_Quick_Start.html">Installation and Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Physics_of_Nimbus.html">Physics of Nimbus</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../Tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Install_And_Quick_Start.html">Quickstart</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Postprocessed Clouds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_spectra.html">Opacities and Spectra</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_influx.html">Material Influx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_fudge.html">Setting Physics and Numerics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_output.html">Output of Nimbus</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/Kiefersv/Nimbus">Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Nimbus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../Tutorials.html">Tutorials</a></li>
+      <li class="breadcrumb-item active">Post processed clouds on top of an atmospheric model</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorial_files/tutorial_basic.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Post-processed-clouds-on-top-of-an-atmospheric-model">
+<h1>Post processed clouds on top of an atmospheric model<a class="headerlink" href="#Post-processed-clouds-on-top-of-an-atmospheric-model" title="Link to this heading"></a></h1>
+<p>The most straight forward use of Nimbus is as post processing tool for clouds based on a given atmospheric profle. Here we show the example of how Nimbus clouds can be calculated based on Sonora Diamondback models for a cloud structure made from SiO2 and MgSiO3. To start we need to define the necessary atmospheric parameters</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">planet_gravity</span> <span class="o">=</span> <span class="mi">3100</span>  <span class="c1"># in cm/s^2</span>
+<span class="n">planet_mmw</span> <span class="o">=</span> <span class="mf">2.34</span>  <span class="c1"># mean molecular weight of the planet in amu</span>
+<span class="n">cloud_species</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'SiO2'</span><span class="p">,</span> <span class="s1">'MgSiO3'</span><span class="p">]</span>  <span class="c1"># name of the cloud species</span>
+<span class="n">cloud_species_mmr</span> <span class="o">=</span> <span class="p">[</span><span class="mf">3e-3</span><span class="p">,</span> <span class="mf">5e-4</span><span class="p">]</span>  <span class="c1"># in [g/g] and same order as cloud_species</span>
+<span class="n">cloud_species_cant_nucleate</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'MgSiO3'</span><span class="p">]</span>  <span class="c1"># species which cannot nucleate</span>
+</pre></div>
+</div>
+</div>
+<p>To start the calculation we need the atmpspheric structuer which we read in from the Sonora Diamondback models and we assume a Kzz of 1e10.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="c1"># ==== read in the tp profile</span>
+<span class="n">tpname</span> <span class="o">=</span> <span class="s1">'t1500g316f2_m0.0_co1.0.pt'</span>
+<span class="n">tp_profile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">tpname</span><span class="p">,</span> <span class="n">skip_header</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># ==== prepare data for Nimbus</span>
+<span class="n">pressures</span> <span class="o">=</span> <span class="n">tp_profile</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># in bars</span>
+<span class="n">temperatures</span> <span class="o">=</span> <span class="n">tp_profile</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>  <span class="c1"># in K</span>
+<span class="n">kzz</span> <span class="o">=</span> <span class="mf">1e10</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">temperatures</span><span class="p">)</span>  <span class="c1"># in cm2/s</span>
+</pre></div>
+</div>
+</div>
+<p>To set up Nimbus we first create the class object, where we define the working directory, and then give it the atmospheric structer. Nimbus then calculates all dependent parameters internally. <strong>Important</strong> all units are cgs, except pressure which is in bar. Also important, even though all in and outputs are allways in bar, if you manipulate Nimbus internally remember that all pressures are handled in dyn/cm^2 internally.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nimbus</span><span class="w"> </span><span class="kn">import</span> <span class="n">Nimbus</span>
+
+<span class="c1"># ==== Set up Nimbus object</span>
+<span class="n">nimb</span> <span class="o">=</span> <span class="n">Nimbus</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s1">'working/'</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># ==== Set up Nimbus atmosphere structure</span>
+<span class="n">nimb</span><span class="o">.</span><span class="n">set_up_atmosphere</span><span class="p">(</span>
+    <span class="n">temperatures</span><span class="p">,</span> <span class="n">pressures</span><span class="p">,</span> <span class="n">kzz</span><span class="p">,</span> <span class="n">planet_mmw</span><span class="p">,</span>
+    <span class="n">planet_gravity</span><span class="p">,</span> <span class="n">cloud_species</span><span class="p">,</span> <span class="n">cloud_species_mmr</span><span class="p">,</span>
+    <span class="n">ignore_as_nucleator</span><span class="o">=</span><span class="n">cloud_species_cant_nucleate</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+===========================================================
+                   Welcome to Nimbus
+===========================================================
+[INFO] For questions contact: kiefersv.mail@gmail.com
+[INFO] Settings selected:
+       -&gt; working directory: working/
+       -&gt; verbose: True
+       -&gt; analytic plots: False
+[INFO] Atmosphere set up with:
+       -&gt; pressure range: 6.37e+01 - 1.78e-04 bar
+       -&gt; temperature range: 3.77e+03 - 7.52e+02 K
+       -&gt; Kzz range at t=0: 1.00e+10 - 1.00e+10 cm2/s
+       -&gt; Mean molecular weight: 2.34e+00 amu
+       -&gt; Gravity: 3.10e+03 cm/s2
+       -&gt; SiO2 deep MMR: 3.00e-03 g/g
+       -&gt; MgSiO3 deep MMR: 5.00e-04 g/g
+</pre></div></div>
+</div>
+<p>To run the code you know only need to execute Nimbus</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ds</span> <span class="o">=</span> <span class="n">nimb</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">typ</span><span class="o">=</span><span class="s1">'full'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[INFO] Computation function call
+[WARN] Solver set up automatically. Use set_up_solver() for more control.
+[INFO] Solver set up.
+[INFO] Computation started
+[INFO] Cloud structures completed in 76.05s (1 iterations).
+[INFO] Saved run under tag: last_run
+</pre></div></div>
+</div>
+<p>Now that we have the cloud structure we can plot the results. A basic analysis plot might look something like this:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="c1"># ==== plot results</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s1">'cloud_radius'</span><span class="p">][:</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">ds</span><span class="p">[</span><span class="s1">'pressure'</span><span class="p">][:</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">'k'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s1">'cloud_mmr'</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">ds</span><span class="p">[</span><span class="s1">'pressure'</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">'blue'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s1">'cloud_mmr'</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">ds</span><span class="p">[</span><span class="s1">'pressure'</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s1">'gas_mmr'</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">ds</span><span class="p">[</span><span class="s1">'pressure'</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">'blue'</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'SiO2'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s1">'gas_mmr'</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">ds</span><span class="p">[</span><span class="s1">'pressure'</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'MgSiO3'</span><span class="p">)</span>
+
+<span class="c1"># ==== make the plot pretty</span>
+<span class="k">for</span> <span class="n">axi</span> <span class="ow">in</span> <span class="n">ax</span><span class="p">:</span>
+    <span class="n">axi</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="n">ds</span><span class="p">[</span><span class="s1">'pressure'</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">top</span><span class="o">=</span><span class="n">ds</span><span class="p">[</span><span class="s1">'pressure'</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">axi</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s1">'log'</span><span class="p">)</span>
+    <span class="n">axi</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s1">'log'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">wspace</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'pressure [bar]'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'Cloud MMR [g/g]'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'Gas MMR [g/g]'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'Particle radius [cm]'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_yaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">([])</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">get_yaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">([])</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">1e-10</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">1e-10</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/tutorial_files_tutorial_basic_9_0.png" src="../_images/tutorial_files_tutorial_basic_9_0.png" />
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../Tutorials.html" class="btn btn-neutral float-left" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorial_spectra.html" class="btn btn-neutral float-right" title="Optical properties of clouds" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sven Kiefer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

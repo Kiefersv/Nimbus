@@ -1,0 +1,530 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nimbus.nimbus &mdash; Nimbus 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Nimbus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Install_And_Quick_Start.html">Installation and Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Physics_of_Nimbus.html">Physics of Nimbus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/Kiefersv/Nimbus">Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Nimbus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../nimbus.html">nimbus</a></li>
+      <li class="breadcrumb-item active">nimbus.nimbus</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for nimbus.nimbus</h1><div class="highlight"><pre>
+<span></span><span class="sd">""" This is the header file of Nimbus. To find functionalities check the src folder. """</span>
+<span class="c1"># pylint: disable=C0415</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<div class="viewcode-block" id="Nimbus">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Nimbus</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">""" Main class to handle the cloud structure calculation """</span>
+
+    <span class="c1"># ==== physical constants</span>
+<div class="viewcode-block" id="Nimbus.rgas">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.rgas">[docs]</a>
+    <span class="n">rgas</span> <span class="o">=</span> <span class="mf">8.3143e7</span>  <span class="c1"># universal gas constant [erg/mol/K]</span></div>
+
+<div class="viewcode-block" id="Nimbus.avog">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.avog">[docs]</a>
+    <span class="n">avog</span> <span class="o">=</span> <span class="mf">6.02e23</span>  <span class="c1"># Avogadro constant [mol]</span></div>
+
+<div class="viewcode-block" id="Nimbus.kb">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.kb">[docs]</a>
+    <span class="n">kb</span> <span class="o">=</span> <span class="n">rgas</span> <span class="o">/</span> <span class="n">avog</span>  <span class="c1"># boltzmann constant [erg/K]</span></div>
+
+<div class="viewcode-block" id="Nimbus.pf">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.pf">[docs]</a>
+    <span class="n">pf</span> <span class="o">=</span> <span class="mi">1000000</span>  <span class="c1"># Reference pressure [dyn/cm2]</span></div>
+
+
+    <span class="c1"># ==== import set up functions</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.src.atmosphere</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_up_atmosphere</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.src.atmosphere</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_up_influx</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.src.atmosphere</span><span class="w"> </span><span class="kn">import</span> <span class="n">calc_atmos_struct</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.src.atmosphere</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_cloud_species</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.src.solver</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_up_solver</span>
+
+    <span class="c1"># ==== import the main computational function</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.src.compute</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute</span>
+
+    <span class="c1"># ==== import data handling functions</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.src.data_storage</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_previous_run</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.src.data_storage</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_up_from_previous_run</span>
+
+    <span class="c1"># ==== import plotting routines</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.src.spectra</span><span class="w"> </span><span class="kn">import</span> <span class="n">picaso_formater</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.src.spectra</span><span class="w"> </span><span class="kn">import</span> <span class="n">optical_properties</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">working_dir</span><span class="o">=</span><span class="s1">'.'</span><span class="p">,</span> <span class="n">create_analytic_plots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">mute</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Constructor.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        working_dir : str, optional</span>
+<span class="sd">            Directory to store and load files from</span>
+<span class="sd">        create_analytic_plots : bool, optional</span>
+<span class="sd">            If true, analytic plots will be produced, increases computation time</span>
+<span class="sd">        verbose : bool, optional</span>
+<span class="sd">            If true, additional information are printed, increases computation time</span>
+<span class="sd">        mute : bool, optional</span>
+<span class="sd">            If true, Nimbus runs completely quietly, no output at all.</span>
+<span class="sd">        """</span>
+
+        <span class="c1"># ==== Workflow settings</span>
+<div class="viewcode-block" id="Nimbus.working_dir">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.working_dir">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">working_dir</span> <span class="o">=</span> <span class="n">working_dir</span> <span class="o">+</span> <span class="s1">'/'</span>  <span class="c1"># working directory</span></div>
+
+<div class="viewcode-block" id="Nimbus.do_plots">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.do_plots">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">do_plots</span> <span class="o">=</span> <span class="n">create_analytic_plots</span>  <span class="c1"># If true, analytic plots are created</span></div>
+
+<div class="viewcode-block" id="Nimbus.verbose">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.verbose">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>  <span class="c1"># print diagonsic infos on the cost of computation time</span></div>
+
+<div class="viewcode-block" id="Nimbus.mute">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.mute">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mute</span> <span class="o">=</span> <span class="n">mute</span>  <span class="c1"># overwrites verbose and do_plots and makes Nimbus run quietly</span></div>
+
+
+        <span class="c1"># ==== Default solver settings (can be changed with set_solver_settings())</span>
+<div class="viewcode-block" id="Nimbus.solver_type">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.solver_type">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span> <span class="o">=</span> <span class="s1">'LSODA'</span>  <span class="c1"># type of solver from solve_ivp</span></div>
+
+<div class="viewcode-block" id="Nimbus.tstart">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.tstart">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tstart</span> <span class="o">=</span> <span class="mf">1e-4</span>  <span class="c1"># start time of simulation [s]</span></div>
+
+<div class="viewcode-block" id="Nimbus.tend">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.tend">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tend</span> <span class="o">=</span> <span class="mf">1e12</span>  <span class="c1"># end time of simulation [s]</span></div>
+
+<div class="viewcode-block" id="Nimbus.tsteps">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.tsteps">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tsteps</span> <span class="o">=</span> <span class="mi">200</span>  <span class="c1"># number of intermediated evaluations (log-spaced)</span></div>
+
+<div class="viewcode-block" id="Nimbus.ode_rtol">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.ode_rtol">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ode_rtol</span> <span class="o">=</span> <span class="mf">1e-3</span>  <span class="c1"># relative error of solve_ivp</span></div>
+
+<div class="viewcode-block" id="Nimbus.ode_atol">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.ode_atol">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ode_atol</span> <span class="o">=</span> <span class="mf">1e-25</span>  <span class="c1"># absolute error of solve_ivp</span></div>
+
+<div class="viewcode-block" id="Nimbus.ode_max_dt">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.ode_max_dt">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ode_max_dt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>  <span class="c1"># maximum time step allowed [s]</span></div>
+
+<div class="viewcode-block" id="Nimbus.ode_minimum_mmr">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.ode_minimum_mmr">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ode_minimum_mmr</span> <span class="o">=</span> <span class="mf">1e-30</span>  <span class="c1"># lowest MMR considered [g/g]</span></div>
+
+<div class="viewcode-block" id="Nimbus.minimum_nuc_rate">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.minimum_nuc_rate">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimum_nuc_rate</span> <span class="o">=</span> <span class="mf">1e-20</span>  <span class="c1"># lowest J value [1/cm3/s]</span></div>
+
+<div class="viewcode-block" id="Nimbus.static_rg">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.static_rg">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_rg</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># True: itarate with const rg / False: calc rg on the fly</span></div>
+
+<div class="viewcode-block" id="Nimbus.update_sat">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.update_sat">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_sat</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># If False, the cloud base pressure is kept fix</span></div>
+
+
+        <span class="c1"># ==== Default cloud physics parameters</span>
+<div class="viewcode-block" id="Nimbus.r_ccn">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.r_ccn">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">r_ccn</span> <span class="o">=</span> <span class="mf">1e-7</span>  <span class="c1"># default for minimum cloudparticle radius [cm]</span></div>
+
+<div class="viewcode-block" id="Nimbus.cs_mol">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.cs_mol">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cs_mol</span> <span class="o">=</span> <span class="mf">2e-15</span>  <span class="c1"># default for molecular cross section [cm2]</span></div>
+
+<div class="viewcode-block" id="Nimbus.eps_k">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.eps_k">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps_k</span> <span class="o">=</span> <span class="mf">59.7</span>  <span class="c1"># Depth of the Lennard-Jones potential [erg/mol]</span></div>
+
+<div class="viewcode-block" id="Nimbus.r1">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.r1">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">r1</span> <span class="o">=</span> <span class="mf">2.001e-8</span> <span class="c1"># monomer radius [cm]</span></div>
+
+<div class="viewcode-block" id="Nimbus.rho_ccn">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.rho_ccn">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rho_ccn</span> <span class="o">=</span> <span class="mf">2.18</span>  <span class="c1"># density of nucleation seads [g/cm3]</span></div>
+
+<div class="viewcode-block" id="Nimbus.rg_fit_deg">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.rg_fit_deg">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rg_fit_deg</span> <span class="o">=</span> <span class="mi">8</span>  <span class="c1"># degree of the polynomial to fit the ittarative radius</span></div>
+
+
+        <span class="c1"># ==== storage variables</span>
+<div class="viewcode-block" id="Nimbus.results">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.results">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># stores results</span></div>
+
+<div class="viewcode-block" id="Nimbus.rg_history">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.rg_history">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rg_history</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># stores history of rg.</span></div>
+
+<div class="viewcode-block" id="Nimbus.loop_nr">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.loop_nr">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loop_nr</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># remember the current loop number</span></div>
+
+<div class="viewcode-block" id="Nimbus.itterations">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.itterations">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">itterations</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># remember number of itterations performed</span></div>
+
+
+        <span class="c1"># ==== Fudge factors to play around with simulation</span>
+        <span class="c1"># NOTE: The default values here correspond to a non-fudged run</span>
+<div class="viewcode-block" id="Nimbus.nucleation_efficiency">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.nucleation_efficiency">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nucleation_efficiency</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># factor to reduce or increase nucleation rate</span></div>
+
+<div class="viewcode-block" id="Nimbus.growth_efficiency">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.growth_efficiency">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">growth_efficiency</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># factor to reduce or increase nucleation rate</span></div>
+
+<div class="viewcode-block" id="Nimbus.sticking_coefficient">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.sticking_coefficient">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sticking_coefficient</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># of collisional accreatin reaction rates</span></div>
+
+<div class="viewcode-block" id="Nimbus.coal_efficiency">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.coal_efficiency">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coal_efficiency</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># gravitational coalessence efficiency</span></div>
+
+<div class="viewcode-block" id="Nimbus.coag_efficiency">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.coag_efficiency">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coag_efficiency</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># coagulation efficiency</span></div>
+
+
+        <span class="c1"># ==== initialisation checks</span>
+<div class="viewcode-block" id="Nimbus.isset_atmosphere">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.isset_atmosphere">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isset_atmosphere</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># checks if an atmosphere was initialised</span></div>
+
+<div class="viewcode-block" id="Nimbus.isset_solver">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.isset_solver">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isset_solver</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># checks if solver is set up</span></div>
+
+<div class="viewcode-block" id="Nimbus.isset_initialisation">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.isset_initialisation">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isset_initialisation</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># checks if initial condistions are set up</span></div>
+
+<div class="viewcode-block" id="Nimbus.isset_transmission_spectrum">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.isset_transmission_spectrum">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isset_transmission_spectrum</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># checks if all info for ts are given</span></div>
+
+<div class="viewcode-block" id="Nimbus.isset_emission_spectrum">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.isset_emission_spectrum">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isset_emission_spectrum</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># checks if all info for es are given</span></div>
+
+
+        <span class="c1"># ==== working variables</span>
+<div class="viewcode-block" id="Nimbus.fex">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.fex">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fex</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># right hand side of time evolution (solved with solve_ivp)</span></div>
+
+<div class="viewcode-block" id="Nimbus.jac">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.jac">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jac</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Jacobian matrix [currently not used]</span></div>
+
+<div class="viewcode-block" id="Nimbus.x0">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.x0">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x0</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># initial mass mixing ratios [g/g]</span></div>
+
+<div class="viewcode-block" id="Nimbus.tf">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.tf">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># top flux function (see setup function for details)</span></div>
+
+<div class="viewcode-block" id="Nimbus.ds">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.ds">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Internal DataBase object</span></div>
+
+<div class="viewcode-block" id="Nimbus.evaltimes">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.evaltimes">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evaltimes</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># evaluation timesteps</span></div>
+
+<div class="viewcode-block" id="Nimbus.timeout">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.timeout">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># time after which the solver is stopped [s]</span></div>
+
+<div class="viewcode-block" id="Nimbus.tfailed">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.tfailed">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tfailed</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># set to eval time when computation failed [s]</span></div>
+
+<div class="viewcode-block" id="Nimbus.start_time">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.start_time">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># time when compute was started [s]</span></div>
+
+<div class="viewcode-block" id="Nimbus.complete">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.complete">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">complete</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># only set false if computation had to be stopped</span></div>
+
+<div class="viewcode-block" id="Nimbus.yin_store">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.yin_store">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yin_store</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># initial condition storage</span></div>
+
+
+        <span class="c1"># ==== internal physics functions</span>
+<div class="viewcode-block" id="Nimbus.nuc_rate">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.nuc_rate">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nuc_rate</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># nucleation rate</span></div>
+
+<div class="viewcode-block" id="Nimbus.acc_rate">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.acc_rate">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acc_rate</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># accretion rate</span></div>
+
+<div class="viewcode-block" id="Nimbus.evp_rate">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.evp_rate">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evp_rate</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># evaporation rates</span></div>
+
+<div class="viewcode-block" id="Nimbus.coag_rate">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.coag_rate">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coag_rate</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># coagulation and coalescence rate</span></div>
+
+<div class="viewcode-block" id="Nimbus.vsed">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.vsed">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vsed</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># terminal settling velocity</span></div>
+
+
+        <span class="c1"># ==== Atmospheric parameters</span>
+<div class="viewcode-block" id="Nimbus.temp">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.temp">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># temperature profile [K]</span></div>
+
+<div class="viewcode-block" id="Nimbus.pres">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.pres">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pres</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># pressure profile, convert from bar to [dyn/cm2]</span></div>
+
+<div class="viewcode-block" id="Nimbus.kzz">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.kzz">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kzz</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># mixing coefficient [cm2/s]</span></div>
+
+<div class="viewcode-block" id="Nimbus.mmw">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.mmw">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mmw</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># mean molecular weight [amu]</span></div>
+
+<div class="viewcode-block" id="Nimbus.gravity">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.gravity">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gravity</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># gravity [cm/s2]</span></div>
+
+<div class="viewcode-block" id="Nimbus.fsed">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.fsed">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsed</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (initial) settling parameter [None]</span></div>
+
+<div class="viewcode-block" id="Nimbus.mh">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.mh">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mh</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># metalicity relative to solar (not log!) []</span></div>
+
+<div class="viewcode-block" id="Nimbus.ian">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.ian">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ian</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># these species will not nucleate</span></div>
+
+<div class="viewcode-block" id="Nimbus.rhop">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.rhop">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rhop</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># density of cloud material [g/cm3]</span></div>
+
+<div class="viewcode-block" id="Nimbus.mw">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.mw">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mw</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># cloud material molecular weight [amu]</span></div>
+
+<div class="viewcode-block" id="Nimbus.m1">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.m1">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m1</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># monomer mass [g]</span></div>
+
+<div class="viewcode-block" id="Nimbus.rg">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.rg">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rg</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># cloud particle radius [cm]</span></div>
+
+<div class="viewcode-block" id="Nimbus.rgas_spec_cloud">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.rgas_spec_cloud">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rgas_spec_cloud</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># specific gas constant</span></div>
+
+<div class="viewcode-block" id="Nimbus.logp">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.logp">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logp</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># pressure in log10([dyn/cm2])</span></div>
+
+<div class="viewcode-block" id="Nimbus.logp_mid">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.logp_mid">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logp_mid</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># mid pressure levels in log10([dyn/cm2)]</span></div>
+
+<div class="viewcode-block" id="Nimbus.dlogp">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.dlogp">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dlogp</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># pressure grid bin size in log10([dyn/cm2)]</span></div>
+
+<div class="viewcode-block" id="Nimbus.dlogp_mid">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.dlogp_mid">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dlogp_mid</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># mid pressure grid bin size in log10([dyn/cm2)]</span></div>
+
+<div class="viewcode-block" id="Nimbus.kzz_mid">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.kzz_mid">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kzz_mid</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># mid Kzz levels in log10([cm2/s)]</span></div>
+
+<div class="viewcode-block" id="Nimbus.m_ccn">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.m_ccn">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_ccn</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># CCN mass, derived from r_ccn and rho_ccn [g]</span></div>
+
+<div class="viewcode-block" id="Nimbus.mask_sat_tot">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.mask_sat_tot">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_sat_tot</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># mask of cloud domain</span></div>
+
+<div class="viewcode-block" id="Nimbus.natmo">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.natmo">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">natmo</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># total gas-phase number density [1/cm3]</span></div>
+
+<div class="viewcode-block" id="Nimbus.rhoatmo">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.rhoatmo">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># atmospheric density [g/cm]</span></div>
+
+<div class="viewcode-block" id="Nimbus.vth">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.vth">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vth</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># thermal velocity [cm/s]</span></div>
+
+<div class="viewcode-block" id="Nimbus.lmfp">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.lmfp">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lmfp</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># mean free path length [cm]</span></div>
+
+<div class="viewcode-block" id="Nimbus.h">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.h">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># scale height [cm]</span></div>
+
+<div class="viewcode-block" id="Nimbus.ct">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.ct">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ct</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># sound speed [cm/s]</span></div>
+
+<div class="viewcode-block" id="Nimbus.dz">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.dz">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dz</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># altitude difference between alyers [cm]</span></div>
+
+<div class="viewcode-block" id="Nimbus.rhoatmo_mid">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.rhoatmo_mid">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo_mid</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># atmospheric density at mid-pressure [g/cm3]</span></div>
+
+<div class="viewcode-block" id="Nimbus.temp_mid">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.temp_mid">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_mid</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># temperature at mid-pressure [K]</span></div>
+
+<div class="viewcode-block" id="Nimbus.dz_mid">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.dz_mid">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dz_mid</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># altitude bin zise at mid pressure [cm]</span></div>
+
+
+        <span class="c1"># ==== Welcome message</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'==========================================================='</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'                   Welcome to Nimbus                       '</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'==========================================================='</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'[INFO] For questions contact: kiefersv.mail@gmail.com'</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'[INFO] Settings selected:'</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'       -&gt; working directory: '</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">working_dir</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'       -&gt; verbose: '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">verbose</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'       -&gt; analytic plots: '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">create_analytic_plots</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Nimbus.test">
+<a class="viewcode-back" href="../../autoapi/nimbus/nimbus/index.html#nimbus.Nimbus.test">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" test """</span>
+        <span class="k">return</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sven Kiefer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,450 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nimbus.src.spectra &mdash; Nimbus 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Nimbus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Install_And_Quick_Start.html">Installation and Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Physics_of_Nimbus.html">Physics of Nimbus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/Kiefersv/Nimbus">Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Nimbus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../nimbus.html">nimbus</a></li>
+      <li class="breadcrumb-item active">nimbus.src.spectra</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for nimbus.src.spectra</h1><div class="highlight"><pre>
+<span></span><span class="sd">""" Functions to calculate spectra of the resutls """</span>
+<span class="c1"># pylint: disable=C0415</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+<span class="c1"># === wavelength grid (fixed to picaso 193 format)</span>
+<div class="viewcode-block" id="wave_in">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/spectra/index.html#nimbus.src.spectra.wave_in">[docs]</a>
+<span class="n">wave_in</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span>
+    <span class="mf">0.268</span><span class="p">,</span> <span class="mf">0.287</span><span class="p">,</span> <span class="mf">0.312</span><span class="p">,</span> <span class="mf">0.337</span><span class="p">,</span> <span class="mf">0.362</span><span class="p">,</span> <span class="mf">0.387</span><span class="p">,</span> <span class="mf">0.408</span><span class="p">,</span> <span class="mf">0.426</span><span class="p">,</span> <span class="mf">0.445</span><span class="p">,</span>
+    <span class="mf">0.465</span><span class="p">,</span> <span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.506</span><span class="p">,</span> <span class="mf">0.523</span><span class="p">,</span> <span class="mf">0.537</span><span class="p">,</span> <span class="mf">0.552</span><span class="p">,</span> <span class="mf">0.565</span><span class="p">,</span> <span class="mf">0.578</span><span class="p">,</span> <span class="mf">0.591</span><span class="p">,</span>
+    <span class="mf">0.604</span><span class="p">,</span> <span class="mf">0.617</span><span class="p">,</span> <span class="mf">0.628</span><span class="p">,</span> <span class="mf">0.642</span><span class="p">,</span> <span class="mf">0.657</span><span class="p">,</span> <span class="mf">0.677</span><span class="p">,</span> <span class="mf">0.697</span><span class="p">,</span> <span class="mf">0.714</span><span class="p">,</span> <span class="mf">0.729</span><span class="p">,</span>
+    <span class="mf">0.739</span><span class="p">,</span> <span class="mf">0.752</span><span class="p">,</span> <span class="mf">0.765</span><span class="p">,</span> <span class="mf">0.777</span><span class="p">,</span> <span class="mf">0.792</span><span class="p">,</span> <span class="mf">0.81</span><span class="p">,</span> <span class="mf">0.822</span><span class="p">,</span> <span class="mf">0.834</span><span class="p">,</span> <span class="mf">0.852</span><span class="p">,</span>
+    <span class="mf">0.865</span><span class="p">,</span> <span class="mf">0.877</span><span class="p">,</span> <span class="mf">0.891</span><span class="p">,</span> <span class="mf">0.904</span><span class="p">,</span> <span class="mf">0.919</span><span class="p">,</span> <span class="mf">0.931</span><span class="p">,</span> <span class="mf">0.944</span><span class="p">,</span> <span class="mf">0.963</span><span class="p">,</span> <span class="mf">0.980</span><span class="p">,</span>
+    <span class="mf">0.996</span><span class="p">,</span> <span class="mf">1.016</span><span class="p">,</span> <span class="mf">1.040</span><span class="p">,</span> <span class="mf">1.061</span><span class="p">,</span> <span class="mf">1.080</span><span class="p">,</span> <span class="mf">1.102</span><span class="p">,</span> <span class="mf">1.126</span><span class="p">,</span> <span class="mf">1.148</span><span class="p">,</span> <span class="mf">1.169</span><span class="p">,</span>
+    <span class="mf">1.189</span><span class="p">,</span> <span class="mf">1.206</span><span class="p">,</span> <span class="mf">1.224</span><span class="p">,</span> <span class="mf">1.241</span><span class="p">,</span> <span class="mf">1.259</span><span class="p">,</span> <span class="mf">1.276</span><span class="p">,</span> <span class="mf">1.296</span><span class="p">,</span> <span class="mf">1.318</span><span class="p">,</span> <span class="mf">1.339</span><span class="p">,</span>
+    <span class="mf">1.358</span><span class="p">,</span> <span class="mf">1.374</span><span class="p">,</span> <span class="mf">1.386</span><span class="p">,</span> <span class="mf">1.400</span><span class="p">,</span> <span class="mf">1.416</span><span class="p">,</span> <span class="mf">1.434</span><span class="p">,</span> <span class="mf">1.452</span><span class="p">,</span> <span class="mf">1.471</span><span class="p">,</span> <span class="mf">1.488</span><span class="p">,</span>
+    <span class="mf">1.506</span><span class="p">,</span> <span class="mf">1.523</span><span class="p">,</span> <span class="mf">1.538</span><span class="p">,</span> <span class="mf">1.552</span><span class="p">,</span> <span class="mf">1.567</span><span class="p">,</span> <span class="mf">1.584</span><span class="p">,</span> <span class="mf">1.604</span><span class="p">,</span> <span class="mf">1.627</span><span class="p">,</span> <span class="mf">1.646</span><span class="p">,</span>
+    <span class="mf">1.660</span><span class="p">,</span> <span class="mf">1.675</span><span class="p">,</span> <span class="mf">1.692</span><span class="p">,</span> <span class="mf">1.713</span><span class="p">,</span> <span class="mf">1.740</span><span class="p">,</span> <span class="mf">1.766</span><span class="p">,</span> <span class="mf">1.788</span><span class="p">,</span> <span class="mf">1.812</span><span class="p">,</span> <span class="mf">1.837</span><span class="p">,</span>
+    <span class="mf">1.863</span><span class="p">,</span> <span class="mf">1.889</span><span class="p">,</span> <span class="mf">1.916</span><span class="p">,</span> <span class="mf">1.947</span><span class="p">,</span> <span class="mf">1.982</span><span class="p">,</span> <span class="mf">2.010</span><span class="p">,</span> <span class="mf">2.030</span><span class="p">,</span> <span class="mf">2.050</span><span class="p">,</span> <span class="mf">2.070</span><span class="p">,</span>
+    <span class="mf">2.091</span><span class="p">,</span> <span class="mf">2.114</span><span class="p">,</span> <span class="mf">2.129</span><span class="p">,</span> <span class="mf">2.137</span><span class="p">,</span> <span class="mf">2.148</span><span class="p">,</span> <span class="mf">2.163</span><span class="p">,</span> <span class="mf">2.183</span><span class="p">,</span> <span class="mf">2.209</span><span class="p">,</span> <span class="mf">2.240</span><span class="p">,</span>
+    <span class="mf">2.276</span><span class="p">,</span> <span class="mf">2.314</span><span class="p">,</span> <span class="mf">2.354</span><span class="p">,</span> <span class="mf">2.394</span><span class="p">,</span> <span class="mf">2.437</span><span class="p">,</span> <span class="mf">2.482</span><span class="p">,</span> <span class="mf">2.527</span><span class="p">,</span> <span class="mf">2.574</span><span class="p">,</span> <span class="mf">2.623</span><span class="p">,</span>
+    <span class="mf">2.676</span><span class="p">,</span> <span class="mf">2.730</span><span class="p">,</span> <span class="mf">2.787</span><span class="p">,</span> <span class="mf">2.847</span><span class="p">,</span> <span class="mf">2.909</span><span class="p">,</span> <span class="mf">2.965</span><span class="p">,</span> <span class="mf">3.014</span><span class="p">,</span> <span class="mf">3.055</span><span class="p">,</span> <span class="mf">3.085</span><span class="p">,</span>
+    <span class="mf">3.118</span><span class="p">,</span> <span class="mf">3.156</span><span class="p">,</span> <span class="mf">3.193</span><span class="p">,</span> <span class="mf">3.231</span><span class="p">,</span> <span class="mf">3.269</span><span class="p">,</span> <span class="mf">3.308</span><span class="p">,</span> <span class="mf">3.363</span><span class="p">,</span> <span class="mf">3.438</span><span class="p">,</span> <span class="mf">3.513</span><span class="p">,</span>
+    <span class="mf">3.587</span><span class="p">,</span> <span class="mf">3.662</span><span class="p">,</span> <span class="mf">3.749</span><span class="p">,</span> <span class="mf">3.849</span><span class="p">,</span> <span class="mf">3.949</span><span class="p">,</span> <span class="mf">4.074</span><span class="p">,</span> <span class="mf">4.202</span><span class="p">,</span> <span class="mf">4.301</span><span class="p">,</span> <span class="mf">4.395</span><span class="p">,</span>
+    <span class="mf">4.504</span><span class="p">,</span> <span class="mf">4.605</span><span class="p">,</span> <span class="mf">4.662</span><span class="p">,</span> <span class="mf">4.700</span><span class="p">,</span> <span class="mf">4.75</span><span class="p">,</span> <span class="mf">4.796</span><span class="p">,</span> <span class="mf">4.827</span><span class="p">,</span> <span class="mf">4.882</span><span class="p">,</span> <span class="mf">5.000</span><span class="p">,</span>
+    <span class="mf">5.149</span><span class="p">,</span> <span class="mf">5.265</span><span class="p">,</span> <span class="mf">5.379</span><span class="p">,</span> <span class="mf">5.572</span><span class="p">,</span> <span class="mf">5.759</span><span class="p">,</span> <span class="mf">5.899</span><span class="p">,</span> <span class="mf">6.064</span><span class="p">,</span> <span class="mf">6.297</span><span class="p">,</span> <span class="mf">6.515</span><span class="p">,</span>
+    <span class="mf">6.664</span><span class="p">,</span> <span class="mf">6.873</span><span class="p">,</span> <span class="mf">7.094</span><span class="p">,</span> <span class="mf">7.284</span><span class="p">,</span> <span class="mf">7.498</span><span class="p">,</span> <span class="mf">7.714</span><span class="p">,</span> <span class="mf">7.904</span><span class="p">,</span> <span class="mf">8.074</span><span class="p">,</span> <span class="mf">8.345</span><span class="p">,</span>
+    <span class="mf">8.673</span><span class="p">,</span> <span class="mf">8.995</span><span class="p">,</span> <span class="mf">9.348</span><span class="p">,</span> <span class="mf">9.648</span><span class="p">,</span> <span class="mf">10.091</span><span class="p">,</span> <span class="mf">10.692</span><span class="p">,</span> <span class="mf">11.292</span><span class="p">,</span> <span class="mf">11.986</span><span class="p">,</span> <span class="mf">12.787</span><span class="p">,</span>
+    <span class="mf">13.588</span><span class="p">,</span> <span class="mf">14.575</span><span class="p">,</span> <span class="mf">15.777</span><span class="p">,</span> <span class="mf">16.978</span><span class="p">,</span> <span class="mf">18.18</span><span class="p">,</span> <span class="mf">19.382</span><span class="p">,</span> <span class="mf">21.395</span><span class="p">,</span> <span class="mf">24.839</span><span class="p">,</span> <span class="mf">29.700</span><span class="p">,</span>
+    <span class="mf">35.753</span><span class="p">,</span> <span class="mf">42.212</span><span class="p">,</span> <span class="mf">53.879</span><span class="p">,</span> <span class="mf">73.692</span><span class="p">,</span> <span class="mf">97.752</span><span class="p">,</span> <span class="mf">138.793</span><span class="p">,</span> <span class="mf">227.531</span>
+<span class="p">])</span></div>
+
+<div class="viewcode-block" id="nw">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/spectra/index.html#nimbus.src.spectra.nw">[docs]</a>
+<span class="n">nw</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">wave_in</span><span class="p">)</span>  <span class="c1"># length of grid</span></div>
+
+
+<div class="viewcode-block" id="picaso_formater">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/spectra/index.html#nimbus.src.spectra.picaso_formater">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">picaso_formater</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ds_prev</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path_to_opacities</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sig</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                    <span class="n">mie_type</span><span class="o">=</span><span class="s1">'full'</span><span class="p">,</span> <span class="n">nradii</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">mieai_object</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_stamps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">opt_ds</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">        Create pandas dataframe of opacities that can be read into PICASO. This function is</span>
+<span class="sd">        a simplified version of VIRGA code. Please cite Batalha et al. (2026) if you use it.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tag : str, optional</span>
+<span class="sd">            Tag of the model to be calculated. Default is the last run. If neither tag nor</span>
+<span class="sd">            ds_prev are given, the 'last_run' is loaded.</span>
+<span class="sd">        ds_prev : xarray.Dataset, optional</span>
+<span class="sd">            Dataset of previous run. If neither tag nor ds_prev are given, the 'last_run'</span>
+<span class="sd">            is loaded.</span>
+<span class="sd">        path_to_opacities : str, optional</span>
+<span class="sd">            Path to the folder containing opacity files. If none, default files are used.</span>
+<span class="sd">        sig : float</span>
+<span class="sd">            Standard deviation for lognormal size radius distribution.</span>
+<span class="sd">        mie_type : str, optional</span>
+<span class="sd">            Can be 'full' for normal calculations, 'grid' for grid interpolation, or 'ai' for</span>
+<span class="sd">            an Ai model. Grids you need to produce yourself using MieAi, and only certain</span>
+<span class="sd">            species are available within Ai models.</span>
+<span class="sd">        nradii : int, optional</span>
+<span class="sd">            Number of radius bins, 100 or more is recommended.</span>
+<span class="sd">        mieai_object : MieAi class, optional</span>
+<span class="sd">            Giving a mieai class rather than creating the default one. Allows for more</span>
+<span class="sd">            felxibility and mutliprocessing.</span>
+<span class="sd">        time_stamps : list, optional</span>
+<span class="sd">            If none, only final solution is returned, otherwise, a snapshot of each given</span>
+<span class="sd">            time is returned.</span>
+<span class="sd">        opt_ds : xarray.Dataset, optional</span>
+<span class="sd">            Dataset from a previous run, if this is given, no new properties are calculated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        df_cloud : pd.dataframe</span>
+<span class="sd">            Opacities in PICASO format</span>
+<span class="sd">        """</span>
+
+    <span class="c1"># ==== Check if optical properties should be calculated or loaded</span>
+    <span class="k">if</span> <span class="n">opt_ds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># call optical properties function to calculate qext, qsca, and asym</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="n">optical_properties</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">,</span> <span class="n">ds_prev</span><span class="o">=</span><span class="n">ds_prev</span><span class="p">,</span> <span class="n">path_to_opacities</span><span class="o">=</span><span class="n">path_to_opacities</span><span class="p">,</span>
+            <span class="n">sig</span><span class="o">=</span><span class="n">sig</span><span class="p">,</span> <span class="n">mie_type</span><span class="o">=</span><span class="n">mie_type</span><span class="p">,</span> <span class="n">nradii</span><span class="o">=</span><span class="n">nradii</span><span class="p">,</span> <span class="n">mieai_object</span><span class="o">=</span><span class="n">mieai_object</span><span class="p">,</span>
+            <span class="n">time_stamps</span><span class="o">=</span><span class="n">time_stamps</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># if a previous run is give, use that</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="n">opt_ds</span>
+
+    <span class="c1"># ==== check if timestamps are given</span>
+    <span class="k">if</span> <span class="n">time_stamps</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">time_it</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">time_it</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_stamps</span><span class="p">)</span>
+
+    <span class="c1"># ==== calculate grid</span>
+    <span class="c1"># pressure of the output</span>
+    <span class="n">p_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">wave_in</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logp_mid</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-6</span><span class="p">])</span>
+    <span class="c1"># wavelength of the output</span>
+    <span class="n">w_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mi">1</span> <span class="o">/</span> <span class="n">wave_in</span> <span class="o">/</span> <span class="mf">1e-4</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logp_mid</span><span class="p">))</span>
+
+    <span class="c1"># ==== iterate over all timestamps (or only the last one)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># Create opacities in picaso format</span>
+    <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">ti</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">time_it</span><span class="p">):</span>
+        <span class="n">df_t</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+            <span class="s2">"opd"</span><span class="p">:</span><span class="n">opts</span><span class="p">[</span><span class="s1">'opd'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+            <span class="s2">"w0"</span><span class="p">:</span><span class="n">opts</span><span class="p">[</span><span class="s1">'w0'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+            <span class="s2">"g0"</span><span class="p">:</span><span class="n">opts</span><span class="p">[</span><span class="s1">'g0'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="p">})</span>
+        <span class="n">df_t</span><span class="p">[</span><span class="s1">'pressure'</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">p_out</span><span class="p">)</span>
+        <span class="n">df_t</span><span class="p">[</span><span class="s1">'wavenumber'</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">w_out</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df_t</span><span class="p">)</span>
+
+    <span class="c1"># if no timestamps are given, return only one dataframe</span>
+    <span class="k">if</span> <span class="n">time_stamps</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">df</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># otherwise return a list of dataframes</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+
+<div class="viewcode-block" id="optical_properties">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/spectra/index.html#nimbus.src.spectra.optical_properties">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">optical_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ds_prev</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path_to_opacities</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sig</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                       <span class="n">mie_type</span><span class="o">=</span><span class="s1">'full'</span><span class="p">,</span> <span class="n">nradii</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">mieai_object</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_stamps</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Create pandas dataframe of opacities that can be read into PICASO. This function is</span>
+<span class="sd">    a simplified version of VIRGA code. Please cite Batalha et al. (2026) if you use it.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tag : str, optional</span>
+<span class="sd">        Tag of the model to be calculated. Default is the last run. If neither tag nor</span>
+<span class="sd">        ds_prev are given, the 'last_run' is loaded.</span>
+<span class="sd">    ds_prev : xarray.Dataset, optional</span>
+<span class="sd">        Dataset of previous run. If neither tag nor ds_prev are given, the 'last_run'</span>
+<span class="sd">        is loaded.</span>
+<span class="sd">    path_to_opacities : str, optional</span>
+<span class="sd">        Path to the folder containing opacity files. If none, default files are used.</span>
+<span class="sd">    sig : float</span>
+<span class="sd">        Standard deviation for lognormal size radius distribution.</span>
+<span class="sd">    mie_type : str, optional</span>
+<span class="sd">        Can be 'full' for normal calculations, 'grid' for grid interpolation, 'ai' for</span>
+<span class="sd">        an Ai model, or 'homogenous' if mie_net is not installed. Grids you need to</span>
+<span class="sd">        produce yourself using MieNet, and only certain species are available within Ai</span>
+<span class="sd">        models. 'homogenous' is selected if MieNet is not installed.</span>
+<span class="sd">    nradii : int, optional</span>
+<span class="sd">        Number of radius bins, 100 or more is recommended.</span>
+<span class="sd">    mieai_object : MieAi class, optional</span>
+<span class="sd">        Giving a mieai class rather than creating the default one. Allows for more</span>
+<span class="sd">        felxibility and mutliprocessing.</span>
+<span class="sd">    time_stamps : list, optional</span>
+<span class="sd">        If none, only final solution is returned, otherwise, a snapshot of each given</span>
+<span class="sd">        time is returned.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df_cloud : xarray.Dataset</span>
+<span class="sd">        Containing the optical properties</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># ===================================================================================</span>
+    <span class="c1"># Initialisation</span>
+    <span class="c1"># ===================================================================================</span>
+
+
+    <span class="c1"># ==== import mieai only here so Nimbus can be run without it</span>
+    <span class="k">if</span> <span class="n">mieai_object</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ma</span> <span class="o">=</span> <span class="n">mieai_object</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># check if AI should be used</span>
+        <span class="n">use_ai</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">mie_type</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">'AI'</span><span class="p">:</span>
+            <span class="n">use_ai</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># try to load Mie Net</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">mienet</span><span class="w"> </span><span class="kn">import</span> <span class="n">MieNet</span>
+            <span class="n">ma</span> <span class="o">=</span> <span class="n">MieNet</span><span class="p">(</span><span class="n">use_ai</span><span class="o">=</span><span class="n">use_ai</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">'MieNet needs to be installed to use optical property calculations. '</span>
+                <span class="s1">'Please go to https://github.com/d-attaway/MieNet'</span>
+            <span class="p">)</span>
+
+    <span class="c1"># ==== Set optional inputs</span>
+    <span class="k">if</span> <span class="n">path_to_opacities</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dir_opac</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span> <span class="o">+</span> <span class="s1">'/../data/opacities/'</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dir_opac</span> <span class="o">=</span> <span class="n">path_to_opacities</span> <span class="o">+</span> <span class="s1">'/'</span>
+
+    <span class="c1"># ==== get data from tag</span>
+    <span class="k">if</span> <span class="n">tag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">ds_prev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">ds_prev</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_up_from_previous_run</span><span class="p">(</span><span class="n">ds_prev</span><span class="o">=</span><span class="n">ds_prev</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">'last_run'</span><span class="p">]</span>
+
+    <span class="c1"># ==== check if timestamps are given</span>
+    <span class="k">if</span> <span class="n">time_stamps</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">time_it</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">time_it</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_stamps</span><span class="p">)</span>
+    <span class="n">nt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_it</span><span class="p">)</span>  <span class="c1"># number of time steps</span>
+
+    <span class="c1"># ==== Get cloud structure</span>
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s1">'cloud_mmr'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">ndz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="o">-</span><span class="n">ds</span><span class="p">[</span><span class="s1">'cloud_number_density'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dz</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">rg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s1">'cloud_radius'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># ==== radius grid</span>
+    <span class="n">rmin</span> <span class="o">=</span> <span class="mf">1e-8</span>
+    <span class="n">rmax</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">rmin</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">rmax</span><span class="p">),</span> <span class="n">nradii</span><span class="p">)</span>
+    <span class="n">rat</span> <span class="o">=</span> <span class="n">radius</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">radius</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">rup</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">rat</span> <span class="o">/</span> <span class="p">(</span><span class="n">rat</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">radius</span>
+    <span class="n">dr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">rup</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">dr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">rup</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">-</span><span class="n">rup</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">dr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">dr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">dr</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="c1"># ==== general variables</span>
+    <span class="n">nz</span> <span class="o">=</span> <span class="n">qc</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># number of atmospheric lauyers</span>
+    <span class="n">ngas</span> <span class="o">=</span> <span class="n">qc</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># number of gas-phase species</span>
+    <span class="n">nrad</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span>  <span class="c1"># number of cloud particle radii</span>
+
+    <span class="c1"># ==== working and output arrays</span>
+    <span class="n">scat_gas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nz</span><span class="p">,</span> <span class="n">nw</span><span class="p">))</span>  <span class="c1"># working array scattering coefficient</span>
+    <span class="n">ext_gas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nz</span><span class="p">,</span> <span class="n">nw</span><span class="p">))</span>  <span class="c1"># working array extinction coefficient</span>
+    <span class="n">cqs_gas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nz</span><span class="p">,</span> <span class="n">nw</span><span class="p">))</span>  <span class="c1"># working array asymmetry coefficient</span>
+    <span class="n">opd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">nz</span><span class="p">,</span> <span class="n">nw</span><span class="p">))</span>  <span class="c1"># total optical depth</span>
+    <span class="n">w0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">nz</span><span class="p">,</span> <span class="n">nw</span><span class="p">))</span>  <span class="c1"># single scattering albedo</span>
+    <span class="n">g0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">nz</span><span class="p">,</span> <span class="n">nw</span><span class="p">))</span>  <span class="c1"># asymmetry parameter</span>
+    <span class="n">vmr_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">nrad</span><span class="p">,</span> <span class="n">ngas</span><span class="p">))</span>  <span class="c1"># check if vmr changes between pressures</span>
+
+    <span class="c1"># ===================================================================================</span>
+    <span class="c1"># Data readout</span>
+    <span class="c1"># ===================================================================================</span>
+
+    <span class="c1"># ==== iterate over all timestamps (or only the last one)</span>
+    <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">ti</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">time_it</span><span class="p">):</span>
+
+        <span class="c1"># ==== get data of current timestamp</span>
+        <span class="k">if</span> <span class="n">ti</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ds_t</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">ti</span><span class="p">)</span>
+            <span class="n">qc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ds_t</span><span class="p">[</span><span class="s1">'all_cloud_mmr'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">ndz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="o">-</span><span class="n">ds_t</span><span class="p">[</span><span class="s1">'all_cloud_number_density'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dz</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">rg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ds_t</span><span class="p">[</span><span class="s1">'all_cloud_radius'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="c1"># ===============================================================================</span>
+        <span class="c1"># Mixed opacity precalculation</span>
+        <span class="c1"># ===============================================================================</span>
+
+        <span class="c1"># ==== calculate volume fractions from mass mixing ratio</span>
+        <span class="n">vol</span> <span class="o">=</span> <span class="n">qc</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhop</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,]</span>
+        <span class="n">vf</span> <span class="o">=</span> <span class="n">vol</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">vol</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="n">vf</span><span class="p">[</span><span class="n">vf</span> <span class="o">&lt;</span> <span class="mf">1e-50</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e-50</span>
+
+        <span class="c1"># ==== loop over all height layers</span>
+        <span class="k">for</span> <span class="n">iz</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nz</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">ndz</span><span class="p">[</span><span class="n">iz</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># calculate size distributions of each material</span>
+            <span class="n">arg1</span> <span class="o">=</span> <span class="n">dr</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sig</span><span class="p">))</span>
+            <span class="n">arg2</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">radius</span> <span class="o">/</span> <span class="n">rg</span><span class="p">[</span><span class="n">iz</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">arg1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">arg2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">arg1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">arg2</span><span class="p">))</span>
+            <span class="n">ndr_mixed</span> <span class="o">=</span> <span class="n">ndz</span><span class="p">[</span><span class="n">iz</span><span class="p">]</span> <span class="o">*</span> <span class="n">dist</span>
+
+            <span class="c1"># set volume mixing ratios</span>
+            <span class="n">vmr</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">gas</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">):</span>
+                <span class="n">vmr</span><span class="p">[</span><span class="n">gas</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">nrad</span><span class="p">,))</span> <span class="o">*</span> <span class="n">vf</span><span class="p">[</span><span class="n">iz</span><span class="p">,</span> <span class="n">g</span><span class="p">]</span>
+                <span class="n">vmr_test</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="n">g</span><span class="p">]</span> <span class="o">=</span> <span class="n">vmr</span><span class="p">[</span><span class="n">gas</span><span class="p">]</span>
+
+            <span class="c1"># check if vmrs have changed, and only then re-calculate opaciteis</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">vmr_test</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">vmr_test</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">vmr_test</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">1e-4</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">mie_type</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">'FULL'</span><span class="p">:</span>
+                    <span class="n">qet</span><span class="p">,</span> <span class="n">qst</span><span class="p">,</span> <span class="n">cqt</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">efficiencies</span><span class="p">(</span><span class="n">wave_in</span><span class="p">,</span> <span class="n">radius</span> <span class="o">*</span> <span class="mf">1e4</span><span class="p">,</span> <span class="n">vmr</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">mie_type</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">'GRID'</span><span class="p">:</span>
+                    <span class="n">qet</span><span class="p">,</span> <span class="n">qst</span><span class="p">,</span> <span class="n">cqt</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">grid_efficiencies</span><span class="p">(</span><span class="n">wave_in</span><span class="p">,</span> <span class="n">radius</span> <span class="o">*</span> <span class="mf">1e4</span><span class="p">,</span> <span class="n">vmr</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">mie_type</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">'AI'</span><span class="p">:</span>
+                    <span class="n">qet</span><span class="p">,</span> <span class="n">qst</span><span class="p">,</span> <span class="n">cqt</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">ai_efficiencies</span><span class="p">(</span><span class="n">wave_in</span><span class="p">,</span> <span class="n">radius</span> <span class="o">*</span> <span class="mf">1e4</span><span class="p">,</span> <span class="n">vmr</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Wrong mie type selected: '</span> <span class="o">+</span> <span class="n">mie_type</span><span class="p">)</span>
+                <span class="n">cqt</span> <span class="o">=</span> <span class="n">qet</span> <span class="o">*</span> <span class="n">cqt</span>
+                <span class="c1"># remeber the vmrs for the next run</span>
+                <span class="n">vmr_test</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">vmr_test</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># total geometric cross-section</span>
+            <span class="n">pir2ndz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">radius</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">ndr_mixed</span>
+
+            <span class="c1"># opacity of mixed particles</span>
+            <span class="n">scat_gas</span><span class="p">[</span><span class="n">iz</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">qst</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">pir2ndz</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">ext_gas</span><span class="p">[</span><span class="n">iz</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">qet</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">pir2ndz</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">cqs_gas</span><span class="p">[</span><span class="n">iz</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cqt</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">pir2ndz</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># ===============================================================================</span>
+        <span class="c1">#  Prepare output</span>
+        <span class="c1"># ===============================================================================</span>
+
+        <span class="c1"># ==== Sublayering to prevent sharp boundaries</span>
+        <span class="k">for</span> <span class="n">iz</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nz</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ext_gas</span><span class="p">[</span><span class="n">iz</span><span class="p">,</span> <span class="p">:])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">ibot</span> <span class="o">=</span> <span class="n">iz</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">iz</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">ibot</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">ibot</span> <span class="o">&gt;=</span> <span class="n">nz</span> <span class="o">-</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Not doing sublayer as cloud deck at the bottom of pressure grid"</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="p">[</span><span class="n">scat_gas</span><span class="p">,</span> <span class="n">ext_gas</span><span class="p">,</span> <span class="n">cqs_gas</span><span class="p">]:</span>
+                <span class="n">arr</span><span class="p">[</span><span class="n">ibot</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">ibot</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="mf">0.1</span>
+                <span class="n">arr</span><span class="p">[</span><span class="n">ibot</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">ibot</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="mf">0.05</span>
+                <span class="n">arr</span><span class="p">[</span><span class="n">ibot</span> <span class="o">+</span> <span class="mi">3</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">ibot</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="mf">0.01</span>
+
+        <span class="c1"># ==== Sum over gases and compute spectral optical depth profile etc</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">scat_gas</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">opd</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">ext_gas</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">w0</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">scat_gas</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">/</span> <span class="n">ext_gas</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">g0</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">cqs_gas</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">/</span> <span class="n">scat_gas</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+
+    <span class="c1"># ==== generate xarray output</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
+        <span class="n">data_vars</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">'opd'</span><span class="p">:</span> <span class="p">([</span><span class="s1">'time'</span><span class="p">,</span> <span class="s1">'pressure'</span><span class="p">,</span> <span class="s1">'wavelength'</span><span class="p">],</span> <span class="n">opd</span><span class="p">),</span>
+            <span class="s1">'w0'</span><span class="p">:</span> <span class="p">([</span><span class="s1">'time'</span><span class="p">,</span> <span class="s1">'pressure'</span><span class="p">,</span> <span class="s1">'wavelength'</span><span class="p">],</span> <span class="n">w0</span><span class="p">),</span>
+            <span class="s1">'g0'</span><span class="p">:</span> <span class="p">([</span><span class="s1">'time'</span><span class="p">,</span> <span class="s1">'pressure'</span><span class="p">,</span> <span class="s1">'wavelength'</span><span class="p">],</span> <span class="n">g0</span><span class="p">),</span>
+        <span class="p">},</span>
+        <span class="n">coords</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">'time'</span><span class="p">:</span> <span class="n">time_it</span><span class="p">,</span>
+            <span class="s1">'pressure'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="p">,</span>
+            <span class="s1">'wavelength'</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">wave_in</span> <span class="o">/</span> <span class="mf">1e-4</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">ds</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sven Kiefer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

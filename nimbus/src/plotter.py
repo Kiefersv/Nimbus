@@ -16,10 +16,14 @@ def plot_full_structure(self, y, title=''):
     """
     Plot the cloud structure.
 
-    :param self: Nimbus object
-    :param y: solution of solve ivp
-    :param title: title for the plot
-    :return:
+    Parameters
+    ----------
+    self : Nimbus class
+        Nimbus object
+    y : np.array
+        solution of solve ivp
+    title : str
+        Title for the plot
     """
 
     # ==== General plotting set up

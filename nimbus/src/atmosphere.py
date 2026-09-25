@@ -262,8 +262,8 @@ def _find_cloud_species(temperature, pressure, species=None, mmw=2.34,
     plot_save_file : str, None
         If None, plot is shown, if file name given, plot is saved under that name
 
-    Return
-    ------
+    Returns
+    -------
     species_out : List[str]
         list of species that should be considered
     """

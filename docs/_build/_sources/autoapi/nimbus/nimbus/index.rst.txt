@@ -1,0 +1,492 @@
+nimbus.nimbus
+=============
+
+.. py:module:: nimbus.nimbus
+
+.. autoapi-nested-parse::
+
+   This is the header file of Nimbus. To find functionalities check the src folder. 
+
+   ..
+       !! processed by numpydoc !!
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   nimbus.nimbus.Nimbus
+
+
+Module Contents
+---------------
+
+.. py:class:: Nimbus(working_dir='.', create_analytic_plots=False, verbose=False, mute=False)
+
+   
+   Main class to handle the cloud structure calculation 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:attribute:: rgas
+      :value: 83143000.0
+
+
+
+   .. py:attribute:: avog
+      :value: 6.02e+23
+
+
+
+   .. py:attribute:: kb
+      :value: 1.3811129568106312e-16
+
+
+
+   .. py:attribute:: pf
+      :value: 1000000
+
+
+
+   .. py:attribute:: working_dir
+      :value: './'
+
+
+
+   .. py:attribute:: do_plots
+      :value: False
+
+
+
+   .. py:attribute:: verbose
+      :value: False
+
+
+
+   .. py:attribute:: mute
+      :value: False
+
+
+
+   .. py:attribute:: solver_type
+      :value: 'LSODA'
+
+
+
+   .. py:attribute:: tstart
+      :value: 0.0001
+
+
+
+   .. py:attribute:: tend
+      :value: 1000000000000.0
+
+
+
+   .. py:attribute:: tsteps
+      :value: 200
+
+
+
+   .. py:attribute:: ode_rtol
+      :value: 0.001
+
+
+
+   .. py:attribute:: ode_atol
+      :value: 1e-25
+
+
+
+   .. py:attribute:: ode_max_dt
+
+
+   .. py:attribute:: ode_minimum_mmr
+      :value: 1e-30
+
+
+
+   .. py:attribute:: minimum_nuc_rate
+      :value: 1e-20
+
+
+
+   .. py:attribute:: static_rg
+      :value: True
+
+
+
+   .. py:attribute:: update_sat
+      :value: False
+
+
+
+   .. py:attribute:: r_ccn
+      :value: 1e-07
+
+
+
+   .. py:attribute:: cs_mol
+      :value: 2e-15
+
+
+
+   .. py:attribute:: eps_k
+      :value: 59.7
+
+
+
+   .. py:attribute:: r1
+      :value: 2.001e-08
+
+
+
+   .. py:attribute:: rho_ccn
+      :value: 2.18
+
+
+
+   .. py:attribute:: rg_fit_deg
+      :value: 8
+
+
+
+   .. py:attribute:: results
+
+
+   .. py:attribute:: rg_history
+      :value: None
+
+
+
+   .. py:attribute:: loop_nr
+      :value: 0
+
+
+
+   .. py:attribute:: itterations
+      :value: 0
+
+
+
+   .. py:attribute:: nucleation_efficiency
+      :value: 1
+
+
+
+   .. py:attribute:: growth_efficiency
+      :value: 1
+
+
+
+   .. py:attribute:: sticking_coefficient
+      :value: 1
+
+
+
+   .. py:attribute:: coal_efficiency
+      :value: 1
+
+
+
+   .. py:attribute:: coag_efficiency
+      :value: 1
+
+
+
+   .. py:attribute:: isset_atmosphere
+      :value: False
+
+
+
+   .. py:attribute:: isset_solver
+      :value: False
+
+
+
+   .. py:attribute:: isset_initialisation
+      :value: False
+
+
+
+   .. py:attribute:: isset_transmission_spectrum
+      :value: False
+
+
+
+   .. py:attribute:: isset_emission_spectrum
+      :value: False
+
+
+
+   .. py:attribute:: fex
+      :value: None
+
+
+
+   .. py:attribute:: jac
+      :value: None
+
+
+
+   .. py:attribute:: x0
+      :value: None
+
+
+
+   .. py:attribute:: tf
+      :value: None
+
+
+
+   .. py:attribute:: ds
+      :value: None
+
+
+
+   .. py:attribute:: evaltimes
+      :value: None
+
+
+
+   .. py:attribute:: timeout
+      :value: None
+
+
+
+   .. py:attribute:: tfailed
+      :value: None
+
+
+
+   .. py:attribute:: start_time
+      :value: None
+
+
+
+   .. py:attribute:: complete
+      :value: True
+
+
+
+   .. py:attribute:: yin_store
+      :value: None
+
+
+
+   .. py:attribute:: nuc_rate
+      :value: None
+
+
+
+   .. py:attribute:: acc_rate
+      :value: None
+
+
+
+   .. py:attribute:: evp_rate
+      :value: None
+
+
+
+   .. py:attribute:: coag_rate
+      :value: None
+
+
+
+   .. py:attribute:: vsed
+      :value: None
+
+
+
+   .. py:attribute:: temp
+      :value: None
+
+
+
+   .. py:attribute:: pres
+      :value: None
+
+
+
+   .. py:attribute:: kzz
+      :value: None
+
+
+
+   .. py:attribute:: mmw
+      :value: None
+
+
+
+   .. py:attribute:: gravity
+      :value: None
+
+
+
+   .. py:attribute:: fsed
+      :value: None
+
+
+
+   .. py:attribute:: mh
+      :value: None
+
+
+
+   .. py:attribute:: ian
+      :value: None
+
+
+
+   .. py:attribute:: rhop
+      :value: None
+
+
+
+   .. py:attribute:: mw
+      :value: None
+
+
+
+   .. py:attribute:: m1
+      :value: None
+
+
+
+   .. py:attribute:: rg
+      :value: None
+
+
+
+   .. py:attribute:: rgas_spec_cloud
+      :value: None
+
+
+
+   .. py:attribute:: logp
+      :value: None
+
+
+
+   .. py:attribute:: logp_mid
+      :value: None
+
+
+
+   .. py:attribute:: dlogp
+      :value: None
+
+
+
+   .. py:attribute:: dlogp_mid
+      :value: None
+
+
+
+   .. py:attribute:: kzz_mid
+      :value: None
+
+
+
+   .. py:attribute:: m_ccn
+      :value: None
+
+
+
+   .. py:attribute:: mask_sat_tot
+      :value: None
+
+
+
+   .. py:attribute:: natmo
+      :value: None
+
+
+
+   .. py:attribute:: rhoatmo
+      :value: None
+
+
+
+   .. py:attribute:: vth
+      :value: None
+
+
+
+   .. py:attribute:: lmfp
+      :value: None
+
+
+
+   .. py:attribute:: h
+      :value: None
+
+
+
+   .. py:attribute:: ct
+      :value: None
+
+
+
+   .. py:attribute:: dz
+      :value: None
+
+
+
+   .. py:attribute:: rhoatmo_mid
+      :value: None
+
+
+
+   .. py:attribute:: temp_mid
+      :value: None
+
+
+
+   .. py:attribute:: dz_mid
+      :value: None
+
+
+
+   .. py:method:: test(r)
+
+      
+      test 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+

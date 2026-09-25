@@ -258,8 +258,8 @@ def mass_to_radius(self, xn, xc, rhop):
     xc : np.ndarray
         Cloud particle mass mixing ratio [g/g]
 
-    Return
-    ------
+    Returns
+    -------
     radius : np.ndarray
         Cloud particle radius [cm]
     """

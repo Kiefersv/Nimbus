@@ -156,3 +156,7 @@ class Nimbus:
             print('       -> working directory: ' + self.working_dir[:-1])
             print('       -> verbose: ' + str(verbose))
             print('       -> analytic plots: ' + str(create_analytic_plots))
+
+    def test(self, r):
+        """ test """
+        return

@@ -1,0 +1,355 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nimbus.src.compute &mdash; Nimbus 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Nimbus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Install_And_Quick_Start.html">Installation and Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Physics_of_Nimbus.html">Physics of Nimbus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/Kiefersv/Nimbus">Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Nimbus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../nimbus.html">nimbus</a></li>
+      <li class="breadcrumb-item active">nimbus.src.compute</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for nimbus.src.compute</h1><div class="highlight"><pre>
+<span></span><span class="sd">""" Main computation functions for single cloud particle species calculations """</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">time</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.integrate</span><span class="w"> </span><span class="kn">import</span> <span class="n">solve_ivp</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.plotter</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_full_structure</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.solver</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_initial_condidtions</span><span class="p">,</span> <span class="n">set_up_solver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.data_storage</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_run</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.atmosphere_physics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mass_to_radius</span>
+
+<div class="viewcode-block" id="compute">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/compute/index.html#nimbus.src.compute.compute">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">typ</span><span class="o">=</span><span class="s1">'full'</span><span class="p">,</span> <span class="n">rel_dif_in_mmr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">max_iterations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">save_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">update_saturation_pressure</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute the cloud structure.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    typ : str, optional</span>
+<span class="sd">        This parameter determines the stopping creterion. Options are:</span>
+<span class="sd">         - 'convergence': run itteratively until convergence (see rel_dif_in_mmr)</span>
+<span class="sd">         - 'iterate': use a fixed number of itterations (see itterations)</span>
+<span class="sd">         - 'full': fully time dependent simulation with variable radius</span>
+<span class="sd">    rel_dif_in_mmr : float, optional</span>
+<span class="sd">        Convergence criterion given as maximum change in the relative MMR between</span>
+<span class="sd">        itterations. Only used if typ = 'iterate'.</span>
+<span class="sd">    max_iterations : int, optional</span>
+<span class="sd">        Number of itterations conducted; each itteration keeps the cloud particle radius</span>
+<span class="sd">        constant. If typ is 'iterate', this variable gives the number of itterations</span>
+<span class="sd">        conducted (default 10). If typ is 'convergence', this gives an additional</span>
+<span class="sd">        stopping creterion in case of non-convergence (default 50).</span>
+<span class="sd">    save_file : str, optional</span>
+<span class="sd">        Save the results under the given name as xarray dataset.</span>
+<span class="sd">    tag : str, optional</span>
+<span class="sd">        Save the run internally under the given tag.</span>
+<span class="sd">    timeout : float, optional</span>
+<span class="sd">        Time after which the solver will stop to proceed. If none is given, solver will</span>
+<span class="sd">        continue until it is done</span>
+<span class="sd">    update_saturation_pressure : bool, optional</span>
+<span class="sd">        If True, the cloud base pressure of each material is dynamically calculated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ds : xarray.Dataset</span>
+<span class="sd">        Returns the result as an xarray dataset</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># ==== Preparations =================================================================</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'[INFO] Computation function call'</span><span class="p">)</span>
+
+    <span class="c1"># set the saturation pressure calculation if given</span>
+    <span class="k">if</span> <span class="n">update_saturation_pressure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_sat</span> <span class="o">=</span> <span class="n">update_saturation_pressure</span>
+
+    <span class="c1"># ==== set up settings specific for the evaluation typ</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">it_str</span> <span class="o">=</span> <span class="s1">''</span>
+    <span class="k">if</span> <span class="n">typ</span> <span class="o">==</span> <span class="s1">'convergence'</span><span class="p">:</span>
+        <span class="c1"># settings if a convergence createrion is used</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_rg</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># keep radius constant in each itteration</span>
+        <span class="k">if</span> <span class="n">max_iterations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">max_iterations</span> <span class="o">=</span> <span class="mi">50</span>  <span class="c1"># default number of max_iterations</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">'       -&gt; Max itterations set to 50'</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">typ</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'iterate'</span><span class="p">,</span> <span class="s1">'iter'</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_rg</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># keep radius constant in each itteration</span>
+        <span class="k">if</span> <span class="n">max_iterations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">max_iterations</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># default number of itterations</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">'       -&gt; Number of itterations set to 10'</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">it_str</span> <span class="o">=</span> <span class="s1">'/'</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_iterations</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">typ</span> <span class="o">==</span> <span class="s1">'full'</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_rg</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># allow for a variable radius</span>
+        <span class="n">max_iterations</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># this value is not used</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"[ERROR] Compute type unkown. Please select one of the "</span>
+                         <span class="s2">"following: 'convergence', 'iterate', 'full'."</span><span class="p">)</span>
+
+    <span class="c1"># ==== set timeout if given</span>
+    <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'       -&gt; Timeout set to </span><span class="si">{}</span><span class="s1"> seconds.'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">timeout</span><span class="p">))</span>
+
+    <span class="c1"># additionally check itterations</span>
+    <span class="k">if</span> <span class="n">max_iterations</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'[WARN] Itterations cannot be less than 1.'</span><span class="p">)</span>
+        <span class="n">max_iterations</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">it_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_iterations</span><span class="p">)</span>
+    <span class="c1"># remember number of itterations</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">itterations</span> <span class="o">=</span> <span class="n">max_iterations</span>
+
+    <span class="c1"># starting time to evaluate runtime</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+
+    <span class="c1"># set timesteps</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">evaltimes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tend</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">tsteps</span><span class="p">)</span>
+
+
+    <span class="c1"># check if solver is set up, and do set up if necessary</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isset_solver</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'[WARN] Solver set up automatically. '</span>
+                  <span class="s1">'Use set_up_solver() for more control.'</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_up_solver</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isset_solver</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="c1"># initial conditions</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isset_initialisation</span><span class="p">:</span>
+        <span class="n">yin</span> <span class="o">=</span> <span class="n">set_initial_condidtions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>  <span class="c1"># load initial conditions</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">yin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yin_store</span>
+
+    <span class="c1"># Variables to save intermediate results</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">rg_history</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># remember the number of itterations</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="c1"># warning flags to print warnings only once</span>
+    <span class="n">deg_warn_flag</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="c1"># ==== Main computational loop ==================================================</span>
+    <span class="c1"># There are two ways to calculate the cloud structure:</span>
+    <span class="c1">#   1) Keep rg constant, and itterate (convergence, itterate)</span>
+    <span class="c1">#   2) Calculate rg on the fly (full)</span>
+
+    <span class="c1"># print info</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\r</span><span class="s1">[INFO] Computation started'</span><span class="p">)</span>
+
+    <span class="c1"># ==== 1) Itterate over static rg</span>
+    <span class="c1"># This loop iterates of cloud particle size. In each loop, rg is held constant</span>
+    <span class="c1"># and updated at the end of the loop.</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_rg</span><span class="p">:</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># ==== preparations</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loop_nr</span> <span class="o">=</span> <span class="n">t</span>  <span class="c1"># loop number</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rg_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rg</span> <span class="c1"># remember input radius</span>
+
+            <span class="c1"># ==== print progress if verbose</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\r</span><span class="s1">[INFO] Loop '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loop_nr</span><span class="p">)</span> <span class="o">+</span> <span class="s1">''</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">it_str</span>
+                      <span class="o">+</span> <span class="s1">' || Current loop progress 00.00%'</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">''</span><span class="p">)</span>
+
+            <span class="c1"># ==== call the solver</span>
+            <span class="n">sol</span> <span class="o">=</span> <span class="n">solve_ivp</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fex</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tend</span><span class="p">],</span> <span class="n">yin</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="p">,</span>
+                <span class="n">rtol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ode_rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ode_atol</span><span class="p">,</span> <span class="n">t_eval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">evaltimes</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sol</span><span class="p">)</span>
+
+            <span class="c1"># ==== prepare next run</span>
+            <span class="n">yin</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">y</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># set initial conditions to last run</span>
+            <span class="c1"># calculate acutal radius from output</span>
+            <span class="n">xrun</span> <span class="o">=</span> <span class="n">yin</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+            <span class="c1"># calculate the physics</span>
+            <span class="n">xrun</span><span class="p">[</span><span class="n">xrun</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ode_minimum_mmr</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ode_minimum_mmr</span>
+            <span class="n">xtot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">xrun</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">rhotot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">xrun</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">rhop</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="n">xtot</span>
+            <span class="n">rg</span> <span class="o">=</span> <span class="n">mass_to_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xrun</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">xtot</span><span class="p">,</span> <span class="n">rhotot</span><span class="p">)</span>
+            <span class="c1"># find out if there are enough data points for full polynomial degree</span>
+            <span class="n">deg_fit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rg_fit_deg</span>
+            <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">rg_fit_deg</span><span class="p">:</span>
+                <span class="c1"># This results in a preciese fit, but keep minimum of 1 degree</span>
+                <span class="n">deg_fit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">deg_warn_flag</span><span class="p">:</span>
+                    <span class="n">deg_warn_flag</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="c1"># create a polnom fit to the cloud particle radius to prevent sudden changes</span>
+            <span class="n">fit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyval</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]),</span>
+                                        <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">rg</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]),</span>
+                                        <span class="n">deg</span><span class="o">=</span><span class="n">deg_fit</span><span class="p">),</span>
+                             <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="p">))</span>
+            <span class="n">rg</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">fit</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="o">-</span><span class="mi">50</span><span class="p">)</span>  <span class="c1"># prevent extreme values</span>
+            <span class="n">rg</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">rg</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rg</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">rg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_ccn</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rg_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rg</span><span class="p">)</span>
+
+            <span class="c1"># ==== analytic cloud structure plot</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_plots</span><span class="p">:</span>
+                <span class="n">plot_full_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sol</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+
+            <span class="c1"># ==== stopping creterion</span>
+            <span class="k">if</span> <span class="n">typ</span> <span class="o">==</span> <span class="s1">'iterate'</span> <span class="ow">and</span> <span class="n">t</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">itterations</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="c1"># at least two itterations are needed for convergence</span>
+            <span class="k">if</span> <span class="n">typ</span> <span class="o">==</span> <span class="s1">'convergence'</span> <span class="ow">and</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># calculate max mmr offset</span>
+                <span class="n">ynew</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">y</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">yold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">y</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">max_mmr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">ynew</span> <span class="o">-</span> <span class="n">yold</span><span class="p">)</span><span class="o">/</span><span class="n">ynew</span><span class="p">))</span>
+                <span class="c1"># check if it is small enough</span>
+                <span class="k">if</span> <span class="n">max_mmr</span> <span class="o">&lt;</span> <span class="n">rel_dif_in_mmr</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="c1"># break if maximum number of itterations has been reached</span>
+                <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">itterations</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">'[WARN] Maximum itterations reached with '</span>
+                          <span class="s1">'precision: '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_mmr</span><span class="p">))</span>
+                    <span class="k">break</span>
+
+            <span class="c1"># ==== incremment itterations and start new loop</span>
+            <span class="n">t</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># ==== 2) Calculate rg on the fly</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># ==== preparations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rg_history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rg</span>  <span class="c1"># remember input radius</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loop_nr</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># there is only 1 loop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rg_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rg</span>  <span class="c1"># remember input radius for plotting</span>
+
+        <span class="c1"># ==== call the solver</span>
+        <span class="n">sol</span> <span class="o">=</span> <span class="n">solve_ivp</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fex</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tend</span><span class="p">],</span> <span class="n">yin</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="p">,</span>
+            <span class="n">rtol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ode_rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ode_atol</span><span class="p">,</span> <span class="n">t_eval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">evaltimes</span><span class="p">,</span>
+            <span class="n">max_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ode_max_dt</span>
+        <span class="p">)</span>
+
+        <span class="c1"># ==== analytic cloud structure plot (a bit messy, not gonna lie)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_plots</span><span class="p">:</span>
+            <span class="n">plot_full_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sol</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="c1"># ==== Check if run compelted or not</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">evaltimes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">sol</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tfailed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaltimes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">sol</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:])</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">complete</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># ==== Finish up ====================================================================</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+        <span class="c1"># ==== print final informations</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\r</span><span class="s1">[INFO] Cloud structures completed in '</span>
+              <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">s (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">loop_nr</span><span class="si">}</span><span class="s1"> iterations).'</span><span class="p">)</span>
+        <span class="c1"># ==== additional warnings</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">deg_warn_flag</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'[WARN] Not enough data points, degree of radius fit '</span>
+                  <span class="s1">'chagned to: '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">deg_fit</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">complete</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tfailed</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="se">\r</span><span class="s1">[WARN] Computation timed out at 10^(</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1">) s simulation time.'</span><span class="p">)</span>
+
+    <span class="c1"># ==== save data internally</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">save_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sol</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="n">save_file</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ds</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sven Kiefer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

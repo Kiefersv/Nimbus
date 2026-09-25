@@ -9,7 +9,7 @@ def read_requirements():
 
 setup(
     name='nimbus',
-    version='v0.1',
+    version='v2.0',
     packages=find_packages(),
     install_requires=read_requirements(),
     include_package_data=True,

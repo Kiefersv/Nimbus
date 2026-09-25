@@ -1,0 +1,764 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nimbus &mdash; Nimbus 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="nimbus.nimbus" href="nimbus/index.html" />
+    <link rel="prev" title="API Reference" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Nimbus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Install_And_Quick_Start.html">Installation and Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Physics_of_Nimbus.html">Physics of Nimbus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/Kiefersv/Nimbus">Github</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">nimbus</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="nimbus/index.html">nimbus.nimbus</a></li>
+<li class="toctree-l4"><a class="reference internal" href="src/index.html">nimbus.src</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#package-contents">Package Contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#nimbus.Nimbus"><code class="docutils literal notranslate"><span class="pre">Nimbus</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nimbus.DataBase"><code class="docutils literal notranslate"><span class="pre">DataBase</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nimbus.find_cloud_species"><code class="docutils literal notranslate"><span class="pre">find_cloud_species()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nimbus.__author__"><code class="docutils literal notranslate"><span class="pre">__author__</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../janaf_to_csv/index.html">janaf_to_csv</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Nimbus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
+      <li class="breadcrumb-item active">nimbus</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/autoapi/nimbus/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-nimbus">
+<span id="nimbus"></span><h1>nimbus<a class="headerlink" href="#module-nimbus" title="Link to this heading"></a></h1>
+<p>init function</p>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="nimbus/index.html">nimbus.nimbus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/index.html">nimbus.src</a></li>
+</ul>
+</div>
+</section>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#nimbus.__author__" title="nimbus.__author__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__author__</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#nimbus.Nimbus" title="nimbus.Nimbus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Nimbus</span></code></a></p></td>
+<td><p>Main class to handle the cloud structure calculation</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#nimbus.DataBase" title="nimbus.DataBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataBase</span></code></a></p></td>
+<td><p>Storage of physical properties. Information on the stored variables:</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#nimbus.find_cloud_species" title="nimbus.find_cloud_species"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_cloud_species</span></code></a>(temperature, pressure[, species, ...])</p></td>
+<td><p>Outside wrapper function that converts pressure to cgs.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nimbus.Nimbus">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">nimbus.</span></span><span class="sig-name descname"><span class="pre">Nimbus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">working_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_analytic_plots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/nimbus.html#Nimbus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.Nimbus" title="Link to this definition"></a></dt>
+<dd><p>Main class to handle the cloud structure calculation</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.rgas">
+<span class="sig-name descname"><span class="pre">rgas</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">83143000.0</span></span><a class="headerlink" href="#nimbus.Nimbus.rgas" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.avog">
+<span class="sig-name descname"><span class="pre">avog</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6.02e+23</span></span><a class="headerlink" href="#nimbus.Nimbus.avog" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.kb">
+<span class="sig-name descname"><span class="pre">kb</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.3811129568106312e-16</span></span><a class="headerlink" href="#nimbus.Nimbus.kb" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.pf">
+<span class="sig-name descname"><span class="pre">pf</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1000000</span></span><a class="headerlink" href="#nimbus.Nimbus.pf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.working_dir">
+<span class="sig-name descname"><span class="pre">working_dir</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'./'</span></span><a class="headerlink" href="#nimbus.Nimbus.working_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.do_plots">
+<span class="sig-name descname"><span class="pre">do_plots</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#nimbus.Nimbus.do_plots" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.verbose">
+<span class="sig-name descname"><span class="pre">verbose</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#nimbus.Nimbus.verbose" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.mute">
+<span class="sig-name descname"><span class="pre">mute</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#nimbus.Nimbus.mute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.solver_type">
+<span class="sig-name descname"><span class="pre">solver_type</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LSODA'</span></span><a class="headerlink" href="#nimbus.Nimbus.solver_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.tstart">
+<span class="sig-name descname"><span class="pre">tstart</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0001</span></span><a class="headerlink" href="#nimbus.Nimbus.tstart" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.tend">
+<span class="sig-name descname"><span class="pre">tend</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1000000000000.0</span></span><a class="headerlink" href="#nimbus.Nimbus.tend" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.tsteps">
+<span class="sig-name descname"><span class="pre">tsteps</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">200</span></span><a class="headerlink" href="#nimbus.Nimbus.tsteps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.ode_rtol">
+<span class="sig-name descname"><span class="pre">ode_rtol</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.001</span></span><a class="headerlink" href="#nimbus.Nimbus.ode_rtol" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.ode_atol">
+<span class="sig-name descname"><span class="pre">ode_atol</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-25</span></span><a class="headerlink" href="#nimbus.Nimbus.ode_atol" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.ode_max_dt">
+<span class="sig-name descname"><span class="pre">ode_max_dt</span></span><a class="headerlink" href="#nimbus.Nimbus.ode_max_dt" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.ode_minimum_mmr">
+<span class="sig-name descname"><span class="pre">ode_minimum_mmr</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-30</span></span><a class="headerlink" href="#nimbus.Nimbus.ode_minimum_mmr" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.minimum_nuc_rate">
+<span class="sig-name descname"><span class="pre">minimum_nuc_rate</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-20</span></span><a class="headerlink" href="#nimbus.Nimbus.minimum_nuc_rate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.static_rg">
+<span class="sig-name descname"><span class="pre">static_rg</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="headerlink" href="#nimbus.Nimbus.static_rg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.update_sat">
+<span class="sig-name descname"><span class="pre">update_sat</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#nimbus.Nimbus.update_sat" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.r_ccn">
+<span class="sig-name descname"><span class="pre">r_ccn</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-07</span></span><a class="headerlink" href="#nimbus.Nimbus.r_ccn" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.cs_mol">
+<span class="sig-name descname"><span class="pre">cs_mol</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2e-15</span></span><a class="headerlink" href="#nimbus.Nimbus.cs_mol" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.eps_k">
+<span class="sig-name descname"><span class="pre">eps_k</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">59.7</span></span><a class="headerlink" href="#nimbus.Nimbus.eps_k" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.r1">
+<span class="sig-name descname"><span class="pre">r1</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.001e-08</span></span><a class="headerlink" href="#nimbus.Nimbus.r1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.rho_ccn">
+<span class="sig-name descname"><span class="pre">rho_ccn</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.18</span></span><a class="headerlink" href="#nimbus.Nimbus.rho_ccn" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.rg_fit_deg">
+<span class="sig-name descname"><span class="pre">rg_fit_deg</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8</span></span><a class="headerlink" href="#nimbus.Nimbus.rg_fit_deg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.results">
+<span class="sig-name descname"><span class="pre">results</span></span><a class="headerlink" href="#nimbus.Nimbus.results" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.rg_history">
+<span class="sig-name descname"><span class="pre">rg_history</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.rg_history" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.loop_nr">
+<span class="sig-name descname"><span class="pre">loop_nr</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></span><a class="headerlink" href="#nimbus.Nimbus.loop_nr" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.itterations">
+<span class="sig-name descname"><span class="pre">itterations</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></span><a class="headerlink" href="#nimbus.Nimbus.itterations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.nucleation_efficiency">
+<span class="sig-name descname"><span class="pre">nucleation_efficiency</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#nimbus.Nimbus.nucleation_efficiency" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.growth_efficiency">
+<span class="sig-name descname"><span class="pre">growth_efficiency</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#nimbus.Nimbus.growth_efficiency" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.sticking_coefficient">
+<span class="sig-name descname"><span class="pre">sticking_coefficient</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#nimbus.Nimbus.sticking_coefficient" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.coal_efficiency">
+<span class="sig-name descname"><span class="pre">coal_efficiency</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#nimbus.Nimbus.coal_efficiency" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.coag_efficiency">
+<span class="sig-name descname"><span class="pre">coag_efficiency</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#nimbus.Nimbus.coag_efficiency" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.isset_atmosphere">
+<span class="sig-name descname"><span class="pre">isset_atmosphere</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#nimbus.Nimbus.isset_atmosphere" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.isset_solver">
+<span class="sig-name descname"><span class="pre">isset_solver</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#nimbus.Nimbus.isset_solver" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.isset_initialisation">
+<span class="sig-name descname"><span class="pre">isset_initialisation</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#nimbus.Nimbus.isset_initialisation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.isset_transmission_spectrum">
+<span class="sig-name descname"><span class="pre">isset_transmission_spectrum</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#nimbus.Nimbus.isset_transmission_spectrum" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.isset_emission_spectrum">
+<span class="sig-name descname"><span class="pre">isset_emission_spectrum</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#nimbus.Nimbus.isset_emission_spectrum" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.fex">
+<span class="sig-name descname"><span class="pre">fex</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.fex" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.jac">
+<span class="sig-name descname"><span class="pre">jac</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.jac" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.x0">
+<span class="sig-name descname"><span class="pre">x0</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.x0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.tf">
+<span class="sig-name descname"><span class="pre">tf</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.tf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.ds">
+<span class="sig-name descname"><span class="pre">ds</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.ds" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.evaltimes">
+<span class="sig-name descname"><span class="pre">evaltimes</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.evaltimes" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.timeout">
+<span class="sig-name descname"><span class="pre">timeout</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.timeout" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.tfailed">
+<span class="sig-name descname"><span class="pre">tfailed</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.tfailed" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.start_time">
+<span class="sig-name descname"><span class="pre">start_time</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.start_time" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.complete">
+<span class="sig-name descname"><span class="pre">complete</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="headerlink" href="#nimbus.Nimbus.complete" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.yin_store">
+<span class="sig-name descname"><span class="pre">yin_store</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.yin_store" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.nuc_rate">
+<span class="sig-name descname"><span class="pre">nuc_rate</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.nuc_rate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.acc_rate">
+<span class="sig-name descname"><span class="pre">acc_rate</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.acc_rate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.evp_rate">
+<span class="sig-name descname"><span class="pre">evp_rate</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.evp_rate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.coag_rate">
+<span class="sig-name descname"><span class="pre">coag_rate</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.coag_rate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.vsed">
+<span class="sig-name descname"><span class="pre">vsed</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.vsed" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.temp">
+<span class="sig-name descname"><span class="pre">temp</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.temp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.pres">
+<span class="sig-name descname"><span class="pre">pres</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.pres" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.kzz">
+<span class="sig-name descname"><span class="pre">kzz</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.kzz" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.mmw">
+<span class="sig-name descname"><span class="pre">mmw</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.mmw" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.gravity">
+<span class="sig-name descname"><span class="pre">gravity</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.gravity" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.fsed">
+<span class="sig-name descname"><span class="pre">fsed</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.fsed" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.mh">
+<span class="sig-name descname"><span class="pre">mh</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.mh" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.ian">
+<span class="sig-name descname"><span class="pre">ian</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.ian" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.rhop">
+<span class="sig-name descname"><span class="pre">rhop</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.rhop" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.mw">
+<span class="sig-name descname"><span class="pre">mw</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.mw" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.m1">
+<span class="sig-name descname"><span class="pre">m1</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.m1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.rg">
+<span class="sig-name descname"><span class="pre">rg</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.rg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.rgas_spec_cloud">
+<span class="sig-name descname"><span class="pre">rgas_spec_cloud</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.rgas_spec_cloud" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.logp">
+<span class="sig-name descname"><span class="pre">logp</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.logp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.logp_mid">
+<span class="sig-name descname"><span class="pre">logp_mid</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.logp_mid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.dlogp">
+<span class="sig-name descname"><span class="pre">dlogp</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.dlogp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.dlogp_mid">
+<span class="sig-name descname"><span class="pre">dlogp_mid</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.dlogp_mid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.kzz_mid">
+<span class="sig-name descname"><span class="pre">kzz_mid</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.kzz_mid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.m_ccn">
+<span class="sig-name descname"><span class="pre">m_ccn</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.m_ccn" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.mask_sat_tot">
+<span class="sig-name descname"><span class="pre">mask_sat_tot</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.mask_sat_tot" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.natmo">
+<span class="sig-name descname"><span class="pre">natmo</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.natmo" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.rhoatmo">
+<span class="sig-name descname"><span class="pre">rhoatmo</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.rhoatmo" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.vth">
+<span class="sig-name descname"><span class="pre">vth</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.vth" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.lmfp">
+<span class="sig-name descname"><span class="pre">lmfp</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.lmfp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.h">
+<span class="sig-name descname"><span class="pre">h</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.h" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.ct">
+<span class="sig-name descname"><span class="pre">ct</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.ct" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.dz">
+<span class="sig-name descname"><span class="pre">dz</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.dz" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.rhoatmo_mid">
+<span class="sig-name descname"><span class="pre">rhoatmo_mid</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.rhoatmo_mid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.temp_mid">
+<span class="sig-name descname"><span class="pre">temp_mid</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.temp_mid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.Nimbus.dz_mid">
+<span class="sig-name descname"><span class="pre">dz_mid</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#nimbus.Nimbus.dz_mid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nimbus.Nimbus.test">
+<span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/nimbus.html#Nimbus.test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.Nimbus.test" title="Link to this definition"></a></dt>
+<dd><p>test</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="nimbus.DataBase">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">nimbus.</span></span><span class="sig-name descname"><span class="pre">DataBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/src/species_database.html#DataBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.DataBase" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Storage of physical properties. Information on the stored variables:</dt><dd><ul class="simple">
+<li><p>Surface tension [erg cm^-2] parameters in the form:
+surface_tension_A + surface_tension_B * T</p></li>
+<li><p>solar_mmr: Expected mass mixing ratio at solar metalicity</p></li>
+<li><p>solid_density: Density of the solid material [g/cm3]</p></li>
+<li><p>monomer_radius: Radius of a single gas-phase molecule [cm]</p></li>
+<li><p>molecular_weight: Mass of a single gas-phase molecule [g]</p></li>
+<li><p>Vapor pressure [dyn/cm2] parameters in the form:
+pvap_prefactor * pvap_base**(pvap_A/T**2 + pvap_B/T + pvap_C
++ pvap_D*T + pvap_E*T**2 + pvap_F*T**2)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.DataBase.rgas">
+<span class="sig-name descname"><span class="pre">rgas</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">83143000.0</span></span><a class="headerlink" href="#nimbus.DataBase.rgas" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.DataBase.avog">
+<span class="sig-name descname"><span class="pre">avog</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6.02e+23</span></span><a class="headerlink" href="#nimbus.DataBase.avog" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.DataBase.kb">
+<span class="sig-name descname"><span class="pre">kb</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.3811129568106312e-16</span></span><a class="headerlink" href="#nimbus.DataBase.kb" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.DataBase.pf">
+<span class="sig-name descname"><span class="pre">pf</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1000000</span></span><a class="headerlink" href="#nimbus.DataBase.pf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.DataBase.kjpmol_to_ergpmol">
+<span class="sig-name descname"><span class="pre">kjpmol_to_ergpmol</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10000000000.0</span></span><a class="headerlink" href="#nimbus.DataBase.kjpmol_to_ergpmol" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nimbus.DataBase.gibbs_janaf">
+<span class="sig-name descname"><span class="pre">gibbs_janaf</span></span><a class="headerlink" href="#nimbus.DataBase.gibbs_janaf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nimbus.DataBase.list_species">
+<span class="sig-name descname"><span class="pre">list_species</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/src/species_database.html#DataBase.list_species"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.DataBase.list_species" title="Link to this definition"></a></dt>
+<dd><p>Return all available species</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nimbus.DataBase.list_complete_species">
+<span class="sig-name descname"><span class="pre">list_complete_species</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/src/species_database.html#DataBase.list_complete_species"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.DataBase.list_complete_species" title="Link to this definition"></a></dt>
+<dd><p>Return all available species</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nimbus.DataBase.monomer_mass">
+<span class="sig-name descname"><span class="pre">monomer_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/src/species_database.html#DataBase.monomer_mass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.DataBase.monomer_mass" title="Link to this definition"></a></dt>
+<dd><p>Return m_species [g]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nimbus.DataBase.specific_gas_constant">
+<span class="sig-name descname"><span class="pre">specific_gas_constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/src/species_database.html#DataBase.specific_gas_constant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.DataBase.specific_gas_constant" title="Link to this definition"></a></dt>
+<dd><p>Return R_spec [erg/g/K]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nimbus.DataBase.condensation_temperature">
+<span class="sig-name descname"><span class="pre">condensation_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metallicity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/src/species_database.html#DataBase.condensation_temperature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.DataBase.condensation_temperature" title="Link to this definition"></a></dt>
+<dd><p>Return temperature [K] at which species condenses</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nimbus.DataBase.solar_mmr">
+<span class="sig-name descname"><span class="pre">solar_mmr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metallicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/src/species_database.html#DataBase.solar_mmr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.DataBase.solar_mmr" title="Link to this definition"></a></dt>
+<dd><p>Solar MMR [g/g]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nimbus.DataBase.monomer_radius">
+<span class="sig-name descname"><span class="pre">monomer_radius</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/src/species_database.html#DataBase.monomer_radius"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.DataBase.monomer_radius" title="Link to this definition"></a></dt>
+<dd><p>Return r_species [cm]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nimbus.DataBase.molecular_weight">
+<span class="sig-name descname"><span class="pre">molecular_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/src/species_database.html#DataBase.molecular_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.DataBase.molecular_weight" title="Link to this definition"></a></dt>
+<dd><p>return mu_species [amu]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nimbus.DataBase.solid_density">
+<span class="sig-name descname"><span class="pre">solid_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/src/species_database.html#DataBase.solid_density"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.DataBase.solid_density" title="Link to this definition"></a></dt>
+<dd><p>Return rho_species [g/cm3]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nimbus.DataBase.surface_tension">
+<span class="sig-name descname"><span class="pre">surface_tension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/src/species_database.html#DataBase.surface_tension"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.DataBase.surface_tension" title="Link to this definition"></a></dt>
+<dd><p>Return sigma_species(temp) [erg/cm2]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nimbus.DataBase.gibbs_free_energy">
+<span class="sig-name descname"><span class="pre">gibbs_free_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/src/species_database.html#DataBase.gibbs_free_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.DataBase.gibbs_free_energy" title="Link to this definition"></a></dt>
+<dd><p>Return G_species(temp) [erg]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nimbus.DataBase.vapor_pressures">
+<span class="sig-name descname"><span class="pre">vapor_pressures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metalicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/src/species_database.html#DataBase.vapor_pressures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.DataBase.vapor_pressures" title="Link to this definition"></a></dt>
+<dd><p>Data according to Lee et al. 2018 (A&amp;A 614, A126)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>species</strong> – Name of species, see below for supported</p></li>
+<li><p><strong>temp</strong> – Temperature in Kelvin, can be float or array</p></li>
+<li><p><strong>metalicity</strong> – metalicity, optional (only used by few pvaps)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>pvap : vapor pressure</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nimbus.find_cloud_species">
+<span class="sig-prename descclassname"><span class="pre">nimbus.</span></span><span class="sig-name descname"><span class="pre">find_cloud_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.34</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmr_cloudspecies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metallicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_analytic_plots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_save_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/nimbus/src/atmosphere.html#find_cloud_species"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.find_cloud_species" title="Link to this definition"></a></dt>
+<dd><p>Outside wrapper function that converts pressure to cgs.
+See _find_clod_species() for more details.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="nimbus.__author__">
+<span class="sig-prename descclassname"><span class="pre">nimbus.</span></span><span class="sig-name descname"><span class="pre">__author__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Sven</span> <span class="pre">Kiefer'</span></span><a class="reference internal" href="../../_modules/nimbus.html#__author__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.__author__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="nimbus/index.html" class="btn btn-neutral float-right" title="nimbus.nimbus" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sven Kiefer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

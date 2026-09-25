@@ -67,8 +67,8 @@ def picaso_formater(self, tag=None, ds_prev=None, path_to_opacities=None, sig=2,
         opt_ds : xarray.Dataset, optional
             Dataset from a previous run, if this is given, no new properties are calculated.
 
-        Return
-        ------
+        Returns
+        -------
         df_cloud : pd.dataframe
             Opacities in PICASO format
         """
@@ -148,8 +148,8 @@ def optical_properties(self, tag=None, ds_prev=None, path_to_opacities=None, sig
         If none, only final solution is returned, otherwise, a snapshot of each given
         time is returned.
 
-    Return
-    ------
+    Returns
+    -------
     df_cloud : xarray.Dataset
         Containing the optical properties
     """

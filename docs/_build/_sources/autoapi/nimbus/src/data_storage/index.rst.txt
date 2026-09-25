@@ -1,0 +1,142 @@
+nimbus.src.data_storage
+=======================
+
+.. py:module:: nimbus.src.data_storage
+
+.. autoapi-nested-parse::
+
+   Functions to sotre and load data 
+
+   ..
+       !! processed by numpydoc !!
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   nimbus.src.data_storage.save_run
+   nimbus.src.data_storage.set_up_from_previous_run
+   nimbus.src.data_storage.load_previous_run
+
+
+Module Contents
+---------------
+
+.. py:function:: save_run(self, sol, save_file=None, tag=None)
+
+   
+   Save the run as xarray
+
+
+   :Parameters:
+
+       **self** : Nimbus class
+           Nimbus object
+
+       **sol** : solve_ivp object
+           Solution of the run that should be saved.
+
+       **save_file** : str
+           Name of file to save to.
+
+       **tag** : str
+           Internal tag to remember run.
+
+
+
+   :Returns:
+
+       **ds** : xarray.Dataset
+           Xarray dataset containing the run
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: set_up_from_previous_run(self, tag=None, file_name=None, load_from_tag=None, ds_prev=None)
+
+   
+   Set initial conditions to last time step of a previous run and set up atmosphere
+   identical to this run.
+
+
+   :Parameters:
+
+       **self** : Nimbus class
+           Nimbus object
+
+       **tag** : str, optional
+           Name to store data in Nimbus.
+
+       **file_name** : str
+           Name of the file to load from working directory.
+
+       **load_from_tag** : str
+           Load the corresponding dataset from ds.results
+
+       **ds_prev** : xarray.Dataset
+           Xarray dataset from previous run
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: load_previous_run(self, tag=None, file_name=None, ds_prev=None)
+
+   
+   Load previously saved Nimbus runs.
+
+
+   :Parameters:
+
+       **self** : Nimbus class
+           Nimbus object.
+
+       **tag** : str, optional
+           Name to store data in Nimbus.
+
+       **file_name** : str
+           Name of the file to load from working directory.
+
+       **ds_prev** : xarray.Dataset
+           Xarray dataset from previous run
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

@@ -19,11 +19,11 @@ sys.path.insert(0, os.path.abspath("../.."))
 # -- Project information -----------------------------------------------------
 
 project = "Nimbus"
-copyright = "2025, Sven Kiefer"
+copyright = "2026, Sven Kiefer"
 author = "Sven Kiefer"
 
 # The full version, including alpha/beta/rc tags
-release = "0.1"
+release = "2.0"
 
 # -- General configuration ---------------------------------------------------
 
@@ -40,7 +40,11 @@ extensions = [
     "numpydoc",
     "nbsphinx",
     "recommonmark",
+    "autoapi.extension",
 ]
+
+
+autoapi_dirs = ["../nimbus"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

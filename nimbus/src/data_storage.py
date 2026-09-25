@@ -11,7 +11,8 @@ def save_run(self, sol, save_file=None, tag=None):
 
     Parameters
     ----------
-    self : Nimbus object
+    self : Nimbus class
+        Nimbus object
     sol : solve_ivp object
         Solution of the run that should be saved.
     save_file : str
@@ -19,8 +20,8 @@ def save_run(self, sol, save_file=None, tag=None):
     tag : str
         Internal tag to remember run.
 
-    Return
-    ------
+    Returns
+    -------
     ds : xarray.Dataset
         Xarray dataset containing the run
 
@@ -247,7 +248,8 @@ def set_up_from_previous_run(self, tag=None, file_name=None, load_from_tag=None,
 
     Parameters
     ----------
-    self : Nimbus object
+    self : Nimbus class
+        Nimbus object
     tag : str, optional
         Name to store data in Nimbus.
     file_name : str
@@ -309,7 +311,7 @@ def load_previous_run(self, tag=None, file_name=None, ds_prev=None):
     Parameters
     ----------
     self : Nimbus class
-        current nimbus object.
+        Nimbus object.
     tag : str, optional
         Name to store data in Nimbus.
     file_name : str

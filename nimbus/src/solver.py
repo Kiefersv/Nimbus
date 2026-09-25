@@ -7,9 +7,15 @@ from .atmosphere_physics import mass_to_radius
 
 def set_initial_condidtions(self):
     """
-    The current initial conditions assume no cloud particles in the cloud layers and a
-    saturated vapour. Below the cloud layer, the deep MMR is assumed. This has proven to
-    be a generally acceptable choice. However, improvements could be made here.
+    Set initial conditions of the atmosphere. The current initial conditions assume no
+    cloud particles in the cloud layers and a saturated vapour. Below the cloud layer,
+    the deep MMR is assumed. This has proven to be a generally acceptable choice.
+    However, improvements could be made here.
+
+    Parameters
+    ----------
+    self : Nimbus class
+        Nimbus object
     """
     # ==== Initialise array, and set all values to the minimum value
     x0 = np.zeros((self.nspec*2 + 1, self.sz)) + self.ode_minimum_mmr

@@ -3,7 +3,7 @@ import numpy as np
 
 def aoftf(value):
     """
-    AoFtF = array_or_function_to_function
+    AoFtF stands for array_or_function_to_function.
     Nimbus is fully time-dependent and can therefore either take a static or
     time-dependent atmospheric structure. Internally, all these variables are handled
     as functions. Here, an input is checked if it is a function or array. In the latter
@@ -13,8 +13,8 @@ def aoftf(value):
     ----------
     value : np.ndarray or function
 
-    Return
-    ------
+    Returns
+    -------
     function
     """
     if callable(value):

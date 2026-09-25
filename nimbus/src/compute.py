@@ -19,9 +19,9 @@ def compute(self, typ='full', rel_dif_in_mmr=1e-3, max_iterations=None,
     ----------
     typ : str, optional
         This parameter determines the stopping creterion. Options are:
-            - 'convergence': run itteratively until convergence (see rel_dif_in_mmr)
-            - 'iterate': use a fixed number of itterations (see itterations)
-            - 'full': fully time dependent simulation with variable radius
+         - 'convergence': run itteratively until convergence (see rel_dif_in_mmr)
+         - 'iterate': use a fixed number of itterations (see itterations)
+         - 'full': fully time dependent simulation with variable radius
     rel_dif_in_mmr : float, optional
         Convergence criterion given as maximum change in the relative MMR between
         itterations. Only used if typ = 'iterate'.
@@ -40,8 +40,8 @@ def compute(self, typ='full', rel_dif_in_mmr=1e-3, max_iterations=None,
     update_saturation_pressure : bool, optional
         If True, the cloud base pressure of each material is dynamically calculated.
 
-    Return
-    ------
+    Returns
+    -------
     ds : xarray.Dataset
         Returns the result as an xarray dataset
     """
