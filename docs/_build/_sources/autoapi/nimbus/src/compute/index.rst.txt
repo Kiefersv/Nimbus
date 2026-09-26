@@ -1,0 +1,81 @@
+nimbus.src.compute
+==================
+
+.. py:module:: nimbus.src.compute
+
+.. autoapi-nested-parse::
+
+   Main computation functions for single cloud particle species calculations 
+
+   ..
+       !! processed by numpydoc !!
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   nimbus.src.compute.compute
+
+
+Module Contents
+---------------
+
+.. py:function:: compute(self, typ='full', rel_dif_in_mmr=0.001, max_iterations=None, save_file=None, tag=None, timeout=None, update_saturation_pressure=None)
+
+   
+   Compute the cloud structure.
+
+
+   :Parameters:
+
+       **typ** : str, optional
+           This parameter determines the stopping creterion. Options are:
+            - 'convergence': run itteratively until convergence (see rel_dif_in_mmr)
+            - 'iterate': use a fixed number of itterations (see itterations)
+            - 'full': fully time dependent simulation with variable radius
+
+       **rel_dif_in_mmr** : float, optional
+           Convergence criterion given as maximum change in the relative MMR between
+           itterations. Only used if typ = 'iterate'.
+
+       **max_iterations** : int, optional
+           Number of itterations conducted; each itteration keeps the cloud particle radius
+           constant. If typ is 'iterate', this variable gives the number of itterations
+           conducted (default 10). If typ is 'convergence', this gives an additional
+           stopping creterion in case of non-convergence (default 50).
+
+       **save_file** : str, optional
+           Save the results under the given name as xarray dataset.
+
+       **tag** : str, optional
+           Save the run internally under the given tag.
+
+       **timeout** : float, optional
+           Time after which the solver will stop to proceed. If none is given, solver will
+           continue until it is done
+
+       **update_saturation_pressure** : bool, optional
+           If True, the cloud base pressure of each material is dynamically calculated.
+
+
+
+   :Returns:
+
+       **ds** : xarray.Dataset
+           Returns the result as an xarray dataset
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

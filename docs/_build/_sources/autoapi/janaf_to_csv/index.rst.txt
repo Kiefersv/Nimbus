@@ -1,0 +1,39 @@
+janaf_to_csv
+============
+
+.. py:module:: janaf_to_csv
+
+.. autoapi-nested-parse::
+
+   This is a helper file to read in Janaf nist tables and add them to the Janaf databse,
+   feel free to add your own. Just make sure you dont mix the gibbs free energies from
+   Janaf with others (or be very sure what you are doing).
+
+   ..
+       !! processed by numpydoc !!
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   janaf_to_csv.species
+   janaf_to_csv.FILE
+   janaf_to_csv.ds
+   janaf_to_csv.req
+
+
+Module Contents
+---------------
+
+.. py:data:: species
+
+.. py:data:: FILE
+   :value: 'janaf.nc'
+
+
+.. py:data:: ds
+
+.. py:data:: req
+

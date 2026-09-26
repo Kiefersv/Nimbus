@@ -2,13 +2,17 @@
 import xarray as xr
 import numpy as np
 
+from .atmosphere_physics import mass_to_radius
+from .atmosphere import set_up_atmosphere
+
 def save_run(self, sol, save_file=None, tag=None):
     """
     Save the run as xarray
 
     Parameters
     ----------
-    self : Nimbus object
+    self : Nimbus class
+        Nimbus object
     sol : solve_ivp object
         Solution of the run that should be saved.
     save_file : str
@@ -16,46 +20,193 @@ def save_run(self, sol, save_file=None, tag=None):
     tag : str
         Internal tag to remember run.
 
-    Return
-    ------
+    Returns
+    -------
     ds : xarray.Dataset
         Xarray dataset containing the run
 
     """
-    # ==== calcualte dependent variables
-    nc = sol.y[self.sz * 2:self.sz * 3, -1] * self.rhoatmo / self.m_ccn
-    n1 = sol.y[:self.sz, -1] * self.rhoatmo / self.m1
-    nuc_rate = np.nan_to_num(self.nuc_rate(n1, self.temp))
-    growth_rate = self.acc_rate(self.rg, self.temp, n1, nc)
+    if self.static_rg:
+        # ==== set up dataset stuff
+        coordinates={
+            'iteration': range(len(self.all_runs)),
+            'pressure': self.pres * 1e-6,
+            'species': self.species,
+        }
+        co = ['species', 'iteration', 'pressure']
+        co2 = ['species', 'pressure']
+
+        # ==== initialise variables
+        gas_mmr = np.zeros((self.nspec, len(self.all_runs), self.sz))
+        solid_mmr = np.zeros((self.nspec, len(self.all_runs), self.sz))
+        nuc_rate = np.zeros((self.nspec, len(self.all_runs), self.sz))
+        acc_rate = np.zeros((self.nspec, len(self.all_runs), self.sz))
+        saturation = np.zeros((self.nspec, len(self.all_runs), self.sz))
+        n1 = np.zeros((self.nspec, len(self.all_runs), self.sz))
+        total_mmr = np.zeros((len(self.all_runs), self.sz))
+        ncl = np.zeros((len(self.all_runs), self.sz))
+        rg = np.zeros((len(self.all_runs), self.sz))
+        all_kzz = np.zeros((len(self.all_runs), self.sz))
+        for r, run in enumerate(self.all_runs):
+            xrun = run.y[:, -1].reshape((self.nspec*2 + 1, self.sz))
+            # calculate the physics
+            xrun[xrun < self.ode_minimum_mmr] = self.ode_minimum_mmr
+            total_mmr[r] = np.sum(xrun[1::2], axis=0)
+            xn = xrun[-1]  # cloud number density mmr
+            ncl[r] = xn * self.rhoatmo / self.m_ccn  # cloud particle number density [1/cm3]
+            rg[r] = self.rg_history[r]
+            all_kzz[r] = self.kzz(self.tend, self.pres)
+            for s, _ in enumerate(self.species):
+                # gas-phase number density [1/cm3]
+                n1[s, r] = xrun[s*2] * self.rhoatmo / self.m1[s]
+                # accretion rate [1/cm3/s]
+                acc_rate[s, r] = self.acc_rate(rg[r], self.temp, n1[s, r], ncl[r], s)
+                # nucleation rate [1/cm3/s]
+                nuc_rate[s, r] = self.nuc_rate(n1[s, r], self.temp, s)
+                gas_mmr[s, r] = xrun[s*2]
+                solid_mmr[s, r] = xrun[s*2 + 1]
+                pvap = self.db.vapor_pressures(self.species[s], self.temp, self.mh)
+                saturation[s, r] = pvap * self.mw[s] / self.pres / self.mmw
+
+        data = {
+            'gas_mmr': (co2, gas_mmr[:, -1]),
+            'cloud_mmr': (co2, solid_mmr[:, -1]),
+            'nucleation_rate': (co2, nuc_rate[:, -1]),
+            'growth_rate': (co2, acc_rate[:, -1]),
+            'cloud_number_density': (co2[1:], ncl[-1]),
+            'gas_number_density': (co2, gas_mmr[:, -1]),
+            'cloud_radius': (co2[-1], rg[-1]),
+            'temperature': (co2[-1], self.temp),
+            'rhoatmo': (co2[-1], self.rhoatmo),
+            'Kzz': (co2[-1], all_kzz[-1]),
+            'saturation_mmr': (co2, saturation[:, -1]),
+            'all_gas_mmr': (co, gas_mmr),
+            'all_cloud_mmr': (co, solid_mmr),
+            'all_nucleation_rate': (co, nuc_rate),
+            'all_growth_rate': (co, acc_rate),
+            'all_cloud_number_density': (co[1:], ncl),
+            'all_gas_number_density': (co, gas_mmr),
+            'all_cloud_radius': (co[1:], rg),
+            'all_temperature': (co[2:], self.temp),
+            'all_rhoatmo': (co[2:], self.rhoatmo),
+            'all_Kzz': (co[1:], all_kzz),
+            'all_saturation_mmr': (co, saturation),
+        }
+    else:
+        # ==== check how many times were successfully calculated
+        tstep_done = len(sol.y[0, :])
+
+        # ==== set up dataset stuff
+        coordinates={
+            'time': self.evaltimes[:tstep_done],
+            'pressure': self.pres * 1e-6,
+            'species': self.species,
+        }
+        co = ['species', 'time', 'pressure']
+        co2 = ['species', 'pressure']
+
+        # ==== initialise variables
+        gas_mmr = np.zeros((self.nspec, tstep_done, self.sz))
+        solid_mmr = np.zeros((self.nspec, tstep_done, self.sz))
+        nuc_rate = np.zeros((self.nspec, tstep_done, self.sz))
+        acc_rate = np.zeros((self.nspec, tstep_done, self.sz))
+        saturation = np.zeros((self.nspec, tstep_done, self.sz))
+        n1 = np.zeros((self.nspec, tstep_done, self.sz))
+        total_mmr = np.zeros((tstep_done, self.sz))
+        ncl = np.zeros((tstep_done, self.sz))
+        rg = np.zeros((tstep_done, self.sz))
+        all_kzz = np.zeros((tstep_done, self.sz))
+        for t in range(tstep_done):
+            xrun = sol.y[:, t].reshape((self.nspec*2 + 1, self.sz))
+            # calculate the physics
+            xrun[xrun < self.ode_minimum_mmr] = self.ode_minimum_mmr
+            xtot = np.sum(xrun[1::2], axis=0)
+            total_mmr[t] = xtot
+            rhotot = np.sum(xrun[1::2]*self.rhop[:, np.newaxis], axis=0)/xtot
+            xn = xrun[-1]  # cloud number density mmr
+            ncl[t] = xn * self.rhoatmo / self.m_ccn  # cloud particle number density [1/cm3]
+            rg[t] = mass_to_radius(self, xrun[-1], xtot, rhotot)
+            all_kzz[t] = self.kzz(self.evaltimes[t], self.pres)
+            for s, _ in enumerate(self.species):
+                n1[s, t] = xrun[s*2] * self.rhoatmo / self.m1[s]  # gas-phase number density [1/cm3]
+                # ==== assign the values
+                # accretion rate [1/cm3/s]
+                acc_rate[s, t] = self.acc_rate(rg[t], self.temp, n1[s, t], ncl[t], s)
+                nuc_rate[s, t] = self.nuc_rate(n1[s, t], self.temp, s)  # nucleation rate [1/cm3/s]
+                gas_mmr[s, t] = xrun[s*2]
+                solid_mmr[s, t] = xrun[s*2 + 1]
+                pvap = self.db.vapor_pressures(self.species[s], self.temp, self.mh)
+                saturation[s, t] = pvap * self.mw[s] / self.pres / self.mmw
+        data = {
+            'gas_mmr': (co2, gas_mmr[:, -1]),
+            'total_cloud_mmr': (co2[1:], total_mmr[-1]),
+            'cloud_mmr': (co2, solid_mmr[:, -1]),
+            'nucleation_rate': (co2, nuc_rate[:, -1]),
+            'growth_rate': (co2, acc_rate[:, -1]),
+            'cloud_number_density': (co2[1:], ncl[-1]),
+            'gas_number_density': (co2, gas_mmr[:, -1]),
+            'cloud_radius': (co2[-1], rg[-1]),
+            'temperature': (co2[1:], self.temp),
+            'rhoatmo': (co2[1:], self.rhoatmo),
+            'Kzz': (co2[1:], all_kzz[-1]),
+            'saturation_mmr': (co2, saturation[:, -1]),
+            'all_gas_mmr': (co, gas_mmr),
+            'all_total_cloud_mmr': (co[1:], total_mmr),
+            'all_cloud_mmr': (co, solid_mmr),
+            'all_nucleation_rate': (co, nuc_rate),
+            'all_growth_rate': (co, acc_rate),
+            'all_cloud_number_density': (co[1:], ncl),
+            'all_gas_number_density': (co, gas_mmr),
+            'all_cloud_radius': (co[1:], rg),
+            'all_temperature': (co[2:], self.temp),
+            'all_rhoatmo': (co[2:], self.rhoatmo),
+            'all_Kzz': (co[1:], all_kzz),
+            'all_saturation_mmr': (co, saturation),
+        }
+
+    # ==== set attributies
+    if self.timeout is not None:
+        timeout = self.timeout
+    else:
+        timeout = "None"
+    if self.tfailed is not None:
+        tfailed = self.tfailed
+    else:
+        tfailed = "None"
+
+    # ==== remember solver settings
+    sets = np.asarray([
+        self.tstart,
+        self.tend,
+        self.tsteps,
+        self.ode_rtol,
+        self.ode_atol,
+        self.ode_minimum_mmr,
+        self.r_ccn,
+        self.cs_mol,
+        self.eps_k,
+        self.r1,
+        self.rho_ccn,
+        self.rg_fit_deg,
+    ])
 
     # ==== How data is stored
     ds = xr.Dataset(
-        data_vars={
-            'qv': (['pressure'], sol.y[:self.sz, -1]),
-            'qc': (['pressure'], sol.y[self.sz:self.sz * 2, -1]),
-            'qn': (['pressure'], sol.y[self.sz * 2:self.sz * 3, -1]),
-            'rg': (['pressure'], self.rg),
-            'nc': (['pressure'], nc),
-            'n1': (['pressure'], n1),
-            'J': (['pressure'], nuc_rate),
-            'G': (['pressure'], growth_rate),
-            'rho_atmo': (['pressure'], self.rhoatmo),
-            'temperature': (['pressure'], self.temp),
-            'kzz': (['pressure'], self.kzz),
-            'full_y': (['pressurex3', 'evaltimes'], sol.y),
-        },
-        coords={
-            'pressure': self.pres * 1e-6,
-            'evaltimes': self.evaltimes,
-            'pressurex3': np.append(np.append(self.pres, self.pres), self.pres),
-        },
+        data_vars=data,
+        coords=coordinates,
         attrs={
+            'species': self.species,
             'mmw': self.mmw,
-            'y': sol.y[:, -1],
-            'itterations': self.loop_nr,
+            'gravity': self.gravity,
+            'metalicity': self.mh,
+            'deep_mmr': self.deep_gas_mmr,
+            'fsed_init': self.fsed,
+            'ignore_as_nucleator': self.ian,
+            'total_iterations': self.loop_nr,
             'tstart': self.tstart,
             'tend': self.tend,
             'tsteps': self.tsteps,
+            'tfailed': tfailed,
             'ode_rtol': self.ode_rtol,
             'ode_atol': self.ode_atol,
             'ode_minimum_mmr': self.ode_minimum_mmr,
@@ -64,6 +215,11 @@ def save_run(self, sol, save_file=None, tag=None):
             'cs_mol': self.cs_mol,
             'eps_k': self.eps_k,
             'rg_fit_deg': self.rg_fit_deg,
+            'timeout': timeout,
+            'Did the run finish?': str(self.complete),
+            'y_last': sol.y[:, -1],
+            'settings': sets,
+            'solver_type': self.solver_type
         },
     )
 
@@ -85,35 +241,105 @@ def save_run(self, sol, save_file=None, tag=None):
 
     return ds
 
+def set_up_from_previous_run(self, tag=None, file_name=None, load_from_tag=None, ds_prev=None):
+    """
+    Set initial conditions to last time step of a previous run and set up atmosphere
+    identical to this run.
 
+    Parameters
+    ----------
+    self : Nimbus class
+        Nimbus object
+    tag : str, optional
+        Name to store data in Nimbus.
+    file_name : str
+        Name of the file to load from working directory.
+    load_from_tag : str
+        Load the corresponding dataset from ds.results
+    ds_prev : xarray.Dataset
+        Xarray dataset from previous run
+    """
 
-def load_previous_run(self, file_name, tag=None):
+    # ==== if no tag is given use file name
+    if tag is None:
+        tag = 'last_run'
+
+    # ==== Load previous run
+    if load_from_tag is not None:
+        ds = self.results[tag]
+    elif file_name is not None:
+        ds = xr.open_dataset(file_name)
+    elif ds_prev is not None:
+        ds = ds_prev
+    else:
+        raise ValueError("[ERROR] Either tag or file_name must be specified to set up "
+                         "from previous run.")
+    # load results into Nimbus
+    self.results[tag] = ds
+
+    # ==== set up atmosphere from stored properties
+    set_up_atmosphere(
+        self, ds['temperature'].values, ds['pressure'].values, ds['Kzz'].values,
+        ds.attrs['mmw'], ds.attrs['gravity'], ds.attrs['species'], ds.attrs['deep_mmr'],
+        ds.attrs['fsed_init'], ds.attrs['metalicity'], ds.attrs['ignore_as_nucleator']
+    )
+
+    # ==== set initial conditions to last step of previous run
+    self.yin_store = ds.attrs['y_last']
+    self.isset_initialisation = True  # set initialisation flag
+
+    # ==== set settings
+    self.solver_type = ds.attrs['solver_type']
+    self.static_rg = ds.attrs['static_rg'] == 'True'
+    self.tstart = ds.attrs['settings'][0]
+    self.tend = ds.attrs['settings'][1]
+    self.tsteps = int(ds.attrs['settings'][2])
+    self.ode_rtol = ds.attrs['settings'][3]
+    self.ode_atol = ds.attrs['settings'][4]
+    self.ode_minimum_mmr = ds.attrs['settings'][5]
+    self.r_ccn = ds.attrs['settings'][6]
+    self.cs_mol = ds.attrs['settings'][7]
+    self.eps_k = ds.attrs['settings'][8]
+    self.r1 = ds.attrs['settings'][9]
+    self.rho_ccn = ds.attrs['settings'][10]
+    self.rg_fit_deg = int(ds.attrs['settings'][11])
+
+def load_previous_run(self, tag=None, file_name=None, ds_prev=None):
     """
     Load previously saved Nimbus runs.
 
     Parameters
     ----------
     self : Nimbus class
-        current nimbus object.
-    file_name : str
-        Name of the file to load from working directory.
+        Nimbus object.
     tag : str, optional
         Name to store data in Nimbus.
+    file_name : str
+        Name of the file to load from working directory.
+    ds_prev : xarray.Dataset
+        Xarray dataset from previous run
     """
 
-    # load file
-    ds = xr.open_dataset(file_name)
-
-    # if no tag is given use file name
+    # ==== if no tag is given use file name
     if tag is None:
-        tag = file_name.split('.')[0]
-
-    # load results into Nimbus
-    self.results[tag] = ds
+        tag = 'last_run'
 
     # ==== Print info
     print('[INFO] Loaded previous run with tag: ' + tag)
-    print('       -> File name: ' + file_name)
+
+    # ==== Load previous run
+    if file_name is not None:
+        ds = xr.open_dataset(file_name)
+        print('       -> File name: ' + file_name)
+    elif ds_prev is not None:
+        ds = ds_prev
+        print('       -> loaded from xarray.Dataset')
+    else:
+        raise ValueError("[ERROR] Either file_name must be specified to set up "
+                         "from previous run or ds_prev must be given.")
+
+    # load results into Nimbus
+    self.results[tag] = ds
 
     # return results
     return ds

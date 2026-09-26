@@ -1,0 +1,253 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Physics of Nimbus &mdash; Nimbus 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Tutorials" href="Tutorials.html" />
+    <link rel="prev" title="Installation and Quick Start" href="Install_And_Quick_Start.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Nimbus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Install_And_Quick_Start.html">Installation and Quick Start</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Physics of Nimbus</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Master-Equations">Master Equations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Cloud-Physics">Cloud Physics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Settling-Velocity">Settling Velocity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Nucleation-Rate">Nucleation Rate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Accretion-Rate">Accretion Rate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Coagulation-and-Gravitational-Coalescence">Coagulation and Gravitational Coalescence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Adding-New-Species">Adding New Species</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Numerics-of-Nimbus">Numerics of Nimbus</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/Kiefersv/Nimbus">Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Nimbus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Physics of Nimbus</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Physics_of_Nimbus.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Physics-of-Nimbus">
+<h1>Physics of Nimbus<a class="headerlink" href="#Physics-of-Nimbus" title="Link to this heading"></a></h1>
+<p>This section presents a summary of the physics included in Nimbus. More details can be found in</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://arxiv.org/pdf/2603.13167">Kiefer et al. (2026)</a> for the basics of Nimbus (v1.0).</p></li>
+<li><p><a href="#id1"><span class="problematic" id="id2">`Kiefer et al. (in prep) &lt;&gt;`__</span></a> for mixed materials, coagulation, and gravitational coalescence. This version also includes external material input (v2.0).</p></li>
+</ul>
+<section id="Master-Equations">
+<h2>Master Equations<a class="headerlink" href="#Master-Equations" title="Link to this heading"></a></h2>
+<p>Nimbus calculates the Mass Mixing Ratios (MMRs) of cloud forming materials throughout the atmosphere. It considers gas-phase transport through diffusion, cloud particle transport through diffusion and gravitational settling, nucleation through MCNT, and accretion of material in the diffusion and collision limited regime. The master equations are:</p>
+<div class="math notranslate nohighlight">
+\[\rho_a \frac{d q_v^\mathrm{mat}}{dt} = -\frac{\partial}{\partial z} K_{zz} \rho_a \frac{\partial q_v^\mathrm{mat}}{\partial z} - J^\mathrm{mat} m_\mathrm{n} - G^\mathrm{mat} m_\mathrm{1}^\mathrm{mat} + F_v^\mathrm{mat}  \tag{1}\]</div>
+<div class="math notranslate nohighlight">
+\[\rho_a \frac{d q_c^\mathrm{mat}}{dt} = \frac{\partial}{\partial z} q_c^\mathrm{mat} \rho_a v_\mathrm{dr} - \frac{\partial}{\partial z} K_{zz} \rho_a \frac{\partial q_c^\mathrm{mat}}{\partial z} + J^\mathrm{mat} m_\mathrm{n} + G^\mathrm{mat} m_\mathrm{1}^\mathrm{mat} + F_c^\mathrm{mat} + F_n^\mathrm{mat} \tag{2}\]</div>
+<div class="math notranslate nohighlight">
+\[\rho_a \frac{d q_n}{dt} = \frac{\partial}{\partial z} q_n \rho_a v_\mathrm{dr} - \frac{\partial}{\partial z} K_{zz} \rho_a \frac{\partial q_n}{\partial z} - m_n f_\mathrm{coag} - m_n f_\mathrm{coal} + \sum_\mathrm{mat} \left( J^\mathrm{mat} m_\mathrm{n} + F_n^\mathrm{mat} \right)  \tag{3}\]</div>
+<p>where the variables are defined as:</p>
+<ul class="adaptive-list"><li><p><span class="math notranslate nohighlight">\(q_v^\mathrm{mat}\)</span> [g/g] is MMR of the gas-phase material,</p>
+</li><li><p><span class="math notranslate nohighlight">\(q_c^\mathrm{mat}\)</span> [g/g] is the MMR of the cloud particle material,</p>
+</li><li><p><span class="math notranslate nohighlight">\(q_n\)</span> [g/g] is the MMR of the Cloud Condensation Nucleai (CCN),</p>
+</li><li><p><span class="math notranslate nohighlight">\(K_{zz}\)</span> [cm<span class="math notranslate nohighlight">\(^2\)</span>/s] is the atmospheric mixing constant,</p>
+</li><li><p><span class="math notranslate nohighlight">\(\rho_a\)</span> [g/cm<span class="math notranslate nohighlight">\(^3\)</span>] is the atmospheric density,</p>
+</li><li><p><span class="math notranslate nohighlight">\(z\)</span> [cm] is the altitude,</p>
+</li><li><p><span class="math notranslate nohighlight">\(t\)</span> [s] is the time,</p>
+</li><li><p><span class="math notranslate nohighlight">\(m_\mathrm{n}\)</span> [g] is the CCN mass,</p>
+</li><li><p><span class="math notranslate nohighlight">\(m_1^\mathrm{mat}\)</span> [g] is the gas-phase mass of the cloud forming material,</p>
+</li><li><p><span class="math notranslate nohighlight">\(J^\mathrm{mat}\)</span> [1/cm<span class="math notranslate nohighlight">\(^{3}\)</span>/s] is the nucleation rate,</p>
+</li><li><p><span class="math notranslate nohighlight">\(G^\mathrm{mat}\)</span> [1/cm<span class="math notranslate nohighlight">\(^{3}\)</span>/s] is the accretion rate,</p>
+</li><li><p><span class="math notranslate nohighlight">\(v_\mathrm{dr}\)</span> [cm/s] is the settling velocity,</p>
+</li><li><p><span class="math notranslate nohighlight">\(F_v^\mathrm{mat}\)</span> [g/cm<span class="math notranslate nohighlight">\(^3\)</span>/s}] is the gas injection function,</p>
+</li><li><p><span class="math notranslate nohighlight">\(F_c^\mathrm{mat}\)</span> [g/cm<span class="math notranslate nohighlight">\(^3\)</span>/s}] is the cloud mass injection function,</p>
+</li><li><p><span class="math notranslate nohighlight">\(F_n^\mathrm{mat}\)</span> [g/cm<span class="math notranslate nohighlight">\(^3\)</span>/s}] is the CCN injection function,</p>
+</li><li><p><span class="math notranslate nohighlight">\(f_\mathrm{coag}\)</span> [1/cm<span class="math notranslate nohighlight">\(^3\)</span>/s] is the coagulation rate,</p>
+</li><li><p><span class="math notranslate nohighlight">\(f_\mathrm{coag}\)</span> [1/cm<span class="math notranslate nohighlight">\(^3\)</span>/s] is the coalessence rate,</p>
+</li></ul><p>Additional parameters needed to calculate the cloud particle physics are calculated during runtime. This includes: the cloud particle number density <span class="math notranslate nohighlight">\(n_c\)</span> [1/cm<span class="math notranslate nohighlight">\(^3\)</span>], the total cloud particle density <span class="math notranslate nohighlight">\(\rho_c\)</span> [g/cm<span class="math notranslate nohighlight">\(^3\)</span>], the average cloud particle mass <span class="math notranslate nohighlight">\(m_c\)</span>[g], and the cloud particle radius <span class="math notranslate nohighlight">\(r_c\)</span> [cm]:</p>
+<div class="math notranslate nohighlight">
+\[n_c = \frac{q_n \rho_a}{m_\mathrm{n}} \tag{4}\]</div>
+<div class="math notranslate nohighlight">
+\[\rho_c = \frac{\sum_\mathrm{mat} q_c^\mathrm{mat}}{\sum q_c^\mathrm{mat}/\rho_c^\mathrm{mat}} \tag{5}\]</div>
+<div class="math notranslate nohighlight">
+\[m_c = \frac{m_n }{q_n} \sum_\mathrm{mat} q_c^\mathrm{mat} \tag{6}\]</div>
+<div class="math notranslate nohighlight">
+\[r_c = \sqrt[3]{\frac{3 m_c}{4 \pi \rho_c}} \tag{7}\]</div>
+<p>Nimbus can account for multiple cloud particle species that form onto each other, resulting in heterogeneous cloud particles. For more information on the general physics of mixed particles, see <a class="reference external" href="https://www.aanda.org/articles/aa/abs/2006/31/aa4598-05/aa4598-05.html">Helling &amp; Woitke 2006</a>. In Nimbus, Eq. 1 and 2 are solved for each cloud material seperatly. Certain species, for example MgSiO<span class="math notranslate nohighlight">\(_3\)</span>, are known to nucleate inefficiently. These species can be ‘deactivated’ as nucleators to
+better represent the heterogeneous growth of particles in exoplanet atmospheres.</p>
+<style>
+.adaptive-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 0.1rem 1rem;
+}
+</style></section>
+<section id="Cloud-Physics">
+<h2>Cloud Physics<a class="headerlink" href="#Cloud-Physics" title="Link to this heading"></a></h2>
+<p>In this section, we cover the microphysical processes included in Nimbus. To learn more how to modify each property within Nimbus check out the <a class="reference internal" href="Tutorials.html"><span class="doc">Tutorials</span></a>.</p>
+<section id="Settling-Velocity">
+<h3>Settling Velocity<a class="headerlink" href="#Settling-Velocity" title="Link to this heading"></a></h3>
+<p>The gravitational acceleration of cloud particles is counteracted by the frictional force of the surrounding gas. The balance between these two forces will determine the terminal velocity <span class="math notranslate nohighlight">\(v_\mathrm{dr}\)</span> [cm/s] of the cloud particles. Since acceleration timescales are typically short, it can be assumed that cloud particles settle with <span class="math notranslate nohighlight">\(v_\mathrm{dr}\)</span>. The strength of the frictional force depends on the cloud particle and atmospheric properties. There are two regimes which can be
+distinguished using the Knudsen number. If the Knudsen number is large (<span class="math notranslate nohighlight">\(Kn \gg 1\)</span>), the drag force can be described by a free molecular flow. This is called the Epstein regime. If the Knudsen number is small (<span class="math notranslate nohighlight">\(Kn \ll 1\)</span>), this is called the Stokes regime. For Nimbus, we use the interpolation scheme of <a class="reference external" href="https://www.aanda.org/articles/aa/abs/2024/11/aa51112-24/aa51112-24.html">Huang et al. 2024</a>:</p>
+<div class="math notranslate nohighlight">
+\[v_\mathrm{dr} = \frac{g ~r ~\rho_c}{v_\mathrm{th}~\rho_a} \sqrt{1 + \left(\frac{4~r}{9~l} \right)^2} \tag{5}\]</div>
+<p>where <span class="math notranslate nohighlight">\(g\)</span> [cm/s<span class="math notranslate nohighlight">\(^2\)</span>] is the gravity, <span class="math notranslate nohighlight">\(v_\mathrm{th} = \sqrt{R_g T/(2\pi \mu_c)}\)</span> [cm/s] is the thermal velocity, <span class="math notranslate nohighlight">\(R_g = 8.314 \times 10^7\)</span> erg/(K~mol) is the ideal gas constant, <span class="math notranslate nohighlight">\(T\)</span> [K] is the temperature of the atmosphere, and <span class="math notranslate nohighlight">\(\mu_c\)</span> [amu] is the molecular weight of the cloud forming specie. This interpolation scheme results in a smooth transition between the high and low Knudsen number regimes.</p>
+</section>
+<section id="Nucleation-Rate">
+<h3>Nucleation Rate<a class="headerlink" href="#Nucleation-Rate" title="Link to this heading"></a></h3>
+<p>Cloud formation in gas-giant planets starts with the formation of molecular clusters from the gas-phase. Modified Classical Nucleation Theory (MCNT) provieds an approximation of the nucleation rate in the absence of thermodynamic properties of larger clusters. The accuracy of this approximation depends on the nucleating species. The nucleation rate is given by:</p>
+<div class="math notranslate nohighlight">
+\[J^\mathrm{mat} = 4 \pi r^2 ~ v_\mathrm{rel}^\mathrm{mat} ~Z ~ n_1^\mathrm{mat} ~n_{c} ~\exp(\Delta G^\mathrm{mat}/k_BT) s_\mathrm{nuc} \tag{6}\]</div>
+<p>where <span class="math notranslate nohighlight">\(n_1^\mathrm{mat}\)</span> [1/cm<span class="math notranslate nohighlight">\(^{3}\)</span>] is the number density of the nucleating species in the gas-phase, <span class="math notranslate nohighlight">\(v_\mathrm{rel}\)</span> [cm/s] is the relative velocity, <span class="math notranslate nohighlight">\(Z\)</span> is the Zeldovich factor, and <span class="math notranslate nohighlight">\(\Delta G\)</span> [erg] the energy of formation. Since MCNT is used in cases where thermodynamic cluster data is missing, <span class="math notranslate nohighlight">\(\Delta G\)</span> has to be derived through approximations. The variable <span class="math notranslate nohighlight">\(s_\mathrm{nuc}\)</span> is a user input that allows to explor variations in the nucleation
+rate. It is by default set to 1.</p>
+</section>
+<section id="Accretion-Rate">
+<h3>Accretion Rate<a class="headerlink" href="#Accretion-Rate" title="Link to this heading"></a></h3>
+<p>Once CCNs are present in the gas-phase, other materials can start to accrete. The rate at which materials accrete can either be collision or diffusion limited:</p>
+<div class="math notranslate nohighlight">
+\[G^\mathrm{mat}_\mathrm{col} = 4 \pi r^2~ s~v_\mathrm{th}^\mathrm{mat} ~n_1^\mathrm{mat} ~n_{cl}  ~\left(1 - \frac{p_\mathrm{vap}^\mathrm{mat}}{p_1^\mathrm{mat}} \right) \tag{7}\]</div>
+<div class="math notranslate nohighlight">
+\[G^\mathrm{mat}_\mathrm{dif} = 4 \pi r ~D^\mathrm{mat} ~n_1^\mathrm{mat} ~n_{cl} ~\left(1 - \frac{p_\mathrm{vap}^\mathrm{mat}}{p_1^\mathrm{mat}} \right) \tag{8}\]</div>
+<p>where <span class="math notranslate nohighlight">\(G^\mathrm{mat}_\mathrm{col}\)</span>~[1/cm<span class="math notranslate nohighlight">\(^{3}\)</span>/s] is the growth rate in the collision limited regime, <span class="math notranslate nohighlight">\(G_\mathrm{dif}^\mathrm{mat}\)</span> [1/cm<span class="math notranslate nohighlight">\(^{3}\)</span>/s] is the growth rate in the diffusion limited regime, <span class="math notranslate nohighlight">\(D^\mathrm{mat}\)</span> [cm<span class="math notranslate nohighlight">\(^2\)</span>/s] is the gas phase diffusion constant. The variable <span class="math notranslate nohighlight">\(1\geq s &gt;0\)</span> denotes the sticking coefficient and can be used to fit cloud profiles to observations. For Nimbus, we use the tanh interpolation function for homogenous,
+mono-dispersed particles from <a class="reference external" href="https://doi.org/10.1093/mnras/stad2037">Lee (2023)</a>:</p>
+<div class="math notranslate nohighlight">
+\[f_x = \frac{1}{2} \left( 1 - \tanh\left( 2 \log_{10}\left( \frac{G_\mathrm{dif}^\mathrm{mat}}{G_\mathrm{col}^\mathrm{mat}} \right) \right) \right) \tag{9}\]</div>
+<div class="math notranslate nohighlight">
+\[G = G_\mathrm{dif}^\mathrm{mat} f_x + G_\mathrm{col}^\mathrm{mat} (1 - f_x) \tag{10}\]</div>
+<p>This interpolation results in a smooth transition between both limits which is favourable for the numerical evaluation. Some cloud particle materials exist in the gas-phase and can condense directly onto cloud particles. This is true, for example, for SiO which can from through the following reaction:</p>
+<div class="math notranslate nohighlight">
+\[\mathrm{SiO} \rightarrow \mathrm{SiO[s]}. \tag{11}\]</div>
+<p>Other cloud particles will form through more complex surface reactions. For example, SiO<span class="math notranslate nohighlight">\(_2\)</span> preferentially forms through:</p>
+<div class="math notranslate nohighlight">
+\[\mathrm{SiO} + \mathrm{H_2O} \rightarrow \mathrm{SiO[s]} + \mathrm{H_2}. \tag{12}\]</div>
+<p>The rate of these surface reactions, and therefore the vapour pressure, depends on the metallicity of the gas-phase.</p>
+</section>
+<section id="Coagulation-and-Gravitational-Coalescence">
+<h3>Coagulation and Gravitational Coalescence<a class="headerlink" href="#Coagulation-and-Gravitational-Coalescence" title="Link to this heading"></a></h3>
+<p>The coagulation <span class="math notranslate nohighlight">\(f_\mathrm{coag}\)</span> [Units of cm<span class="math notranslate nohighlight">\(^{-3}\)</span>s<span class="math notranslate nohighlight">\(^{-1}\)</span>] and gravitational coalescence rate <span class="math notranslate nohighlight">\(f_\mathrm{coal}\)</span> [Units of cm<span class="math notranslate nohighlight">\(^{-3}\)</span>s<span class="math notranslate nohighlight">\(^{-1}\)</span>] are calculated following <a class="reference external" href="https://www.aanda.org/articles/aa/abs/2025/06/aa54511-25/aa54511-25.html">Lee 2025</a> for mono-disperse particle distributions:</p>
+<div class="math notranslate nohighlight">
+\[f_\mathrm{coag} = \frac{4 k_bT \beta}{3 \eta_a} n_c^2 \tag{13}\]</div>
+<div class="math notranslate nohighlight">
+\[f_\mathrm{coal} = 2 \pi r_c^2 E\Delta v ~n_c^2 \tag{14}\]</div>
+<p>\end{align} where <span class="math notranslate nohighlight">\(\eta_a\)</span> [Units of g~cm<span class="math notranslate nohighlight">\(^{-1}\)</span>s<span class="math notranslate nohighlight">\(^{-1}\)</span>] is the atmospheric dynamical viscosity, and <span class="math notranslate nohighlight">\(\Delta v\)</span> [Units of cm~s<span class="math notranslate nohighlight">\(^{-1}\)</span>] is the relative velocity of cloud particles. The variables <span class="math notranslate nohighlight">\(\beta\)</span> and <span class="math notranslate nohighlight">\(E\)</span> are defined as:</p>
+<div class="math notranslate nohighlight">
+\[\beta = 1 + \mathrm{Kn} \left[1.165 + 0.483 \exp \left(\frac{-0.997}{\mathrm{Kn}} \right) \right] \tag{15}\]</div>
+<div class="math notranslate nohighlight">
+\[\begin{split}E = \begin{cases} \mathrm{Kn} &lt; 1, &amp; \max \left[ 0, 1 - 0.42 (\frac{v_\mathrm{dr} \Delta v}{g r_c})^{-0.75} \right] \\ \mathrm{Kn} \leq 1 &amp; 1\end{cases} \tag{16}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathrm{Kn} = l/r_c\)</span> is the Knudsen number, <span class="math notranslate nohighlight">\(l\)</span> [Units of cm] is the mean free path, and <span class="math notranslate nohighlight">\(r_c\)</span> [Units of cm] is the cloud particle radius.</p>
+</section>
+<section id="Adding-New-Species">
+<h3>Adding New Species<a class="headerlink" href="#Adding-New-Species" title="Link to this heading"></a></h3>
+<p>If you want to add a new cloud species add the necessary data to the nimbus/data/cloud_material.csv. If your species has a non-standard vapour pressure, you should mark the ‘all data available’ column as ‘special’ and add the vapour pressure function to the ‘vapor_pressures’ function in ‘nimbus/src/species_database.py’. If you would like to contribute these new species to Nimbus, makes sure to add the references for your data.</p>
+</section>
+</section>
+<section id="Numerics-of-Nimbus">
+<h2>Numerics of Nimbus<a class="headerlink" href="#Numerics-of-Nimbus" title="Link to this heading"></a></h2>
+<p>Nimbus solves the ODEs using the ‘LSODA’ method of the solve_ivp function from SciPy which is based on DLSODES. All the standard settings are:</p>
+<ul class="simple">
+<li><p>use a relative tolerance of <span class="math notranslate nohighlight">\(r_\mathrm{tol} = 10^{-6}\)</span></p></li>
+<li><p>use an absolute tolerance of <span class="math notranslate nohighlight">\(a_\mathrm{tol} = 10^{-25}\)</span></p></li>
+<li><p>set all MMRs below <span class="math notranslate nohighlight">\(10^{-30}\)</span> to 0</p></li>
+<li><p>assume a CCN radius of <span class="math notranslate nohighlight">\(r_\mathrm{CCN} = 10^{-3}\)</span>~<span class="math notranslate nohighlight">\(\mu\)</span>m</p></li>
+</ul>
+<p>To achieve faster run times, the computational domain is limited to pressure layers where <span class="math notranslate nohighlight">\(S &gt; 1\)</span>. To increase computational speed, the evaporation of cloud particle below the cloud layers (<span class="math notranslate nohighlight">\(S &lt; 1\)</span>) is assumed to be instantaneous. To consider multiple cloud materials, Nimbus is run once for each material individually. The gas-phase chemistry affects cloud formation and vice versa. This causes feedback loops which lead to stiff ODEs. To prevent this, Nimbus includes two different
+approaches to calculate cloud structures:</p>
+<ul class="simple">
+<li><p><strong>full</strong> which solves the ODEs in their full complexity, or</p></li>
+<li><p><strong>iterative</strong> which assumes a fixed cloud particle radius that is re-calculated between iterations. The radius is smoothed using an 8th order polynomial to prevent numerical artifacts. Iterations are run until either a fixed number of iterations are reached (typically 10), or the maximum relative difference for all MMRs within all pressure layers is less than <span class="math notranslate nohighlight">\(10^{-3}\)</span>.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Install_And_Quick_Start.html" class="btn btn-neutral float-left" title="Installation and Quick Start" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Tutorials.html" class="btn btn-neutral float-right" title="Tutorials" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sven Kiefer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

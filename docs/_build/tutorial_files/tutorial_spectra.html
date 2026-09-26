@@ -1,0 +1,429 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Optical properties of clouds &mdash; Nimbus 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Influx of Material" href="tutorial_influx.html" />
+    <link rel="prev" title="Post processed clouds on top of an atmospheric model" href="tutorial_basic.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Nimbus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Install_And_Quick_Start.html">Installation and Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Physics_of_Nimbus.html">Physics of Nimbus</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../Tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Install_And_Quick_Start.html">Quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_basic.html">Postprocessed Clouds</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Opacities and Spectra</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Optical-properties-calculation">Optical properties calculation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_influx.html">Material Influx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_fudge.html">Setting Physics and Numerics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_output.html">Output of Nimbus</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/Kiefersv/Nimbus">Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Nimbus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../Tutorials.html">Tutorials</a></li>
+      <li class="breadcrumb-item active">Optical properties of clouds</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorial_files/tutorial_spectra.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Optical-properties-of-clouds">
+<h1>Optical properties of clouds<a class="headerlink" href="#Optical-properties-of-clouds" title="Link to this heading"></a></h1>
+<p>Nimbus includes optical property calculations which are based on Virga (<a class="reference external" href="https://doi.org/10.3847/1538-3881/ae29e5">Batalha et al. 2026</a>). Here we show how cloud opacities can be calculated and show how they can be integrated into Picaso for radiative transfer calculations. Before we start, we need a nimbus cloud structure. We use the example from the <a class="reference internal" href="tutorial_basic.html"><span class="doc">basic tutorial</span></a>. If anything in here does not make sense to you check out this tutorial first.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">nimbus</span><span class="w"> </span><span class="kn">import</span> <span class="n">Nimbus</span>
+
+<span class="n">planet_gravity</span> <span class="o">=</span> <span class="mi">3100</span>  <span class="c1"># in cm/s^2</span>
+<span class="n">planet_mmw</span> <span class="o">=</span> <span class="mf">2.34</span>  <span class="c1"># mean molecular weight of the planet in amu</span>
+<span class="n">cloud_species</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'SiO2'</span><span class="p">,</span> <span class="s1">'MgSiO3'</span><span class="p">]</span>  <span class="c1"># name of the cloud species</span>
+<span class="n">cloud_species_mmr</span> <span class="o">=</span> <span class="p">[</span><span class="mf">3e-3</span><span class="p">,</span> <span class="mf">5e-4</span><span class="p">]</span>  <span class="c1"># in [g/g] and same order as cloud_species</span>
+<span class="n">cloud_species_cant_nucleate</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'MgSiO3'</span><span class="p">]</span>  <span class="c1"># species which cannot nucleate</span>
+
+<span class="c1"># ==== read in the tp profile</span>
+<span class="n">tpname</span> <span class="o">=</span> <span class="s1">'t1500g316f2_m0.0_co1.0.pt'</span>
+<span class="n">tp_profile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">tpname</span><span class="p">,</span> <span class="n">skip_header</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># ==== prepare data for Nimbus</span>
+<span class="n">pressures</span> <span class="o">=</span> <span class="n">tp_profile</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># in bars</span>
+<span class="n">temperatures</span> <span class="o">=</span> <span class="n">tp_profile</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>  <span class="c1"># in K</span>
+<span class="n">kzz</span> <span class="o">=</span> <span class="mf">1e10</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">temperatures</span><span class="p">)</span>  <span class="c1"># in cm2/s</span>
+
+<span class="c1"># ==== Set up Nimbus object</span>
+<span class="n">nimb</span> <span class="o">=</span> <span class="n">Nimbus</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s1">'working/'</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># ==== Set up Nimbus atmosphere structure</span>
+<span class="n">nimb</span><span class="o">.</span><span class="n">set_up_atmosphere</span><span class="p">(</span>
+    <span class="n">temperatures</span><span class="p">,</span> <span class="n">pressures</span><span class="p">,</span> <span class="n">kzz</span><span class="p">,</span> <span class="n">planet_mmw</span><span class="p">,</span>
+    <span class="n">planet_gravity</span><span class="p">,</span> <span class="n">cloud_species</span><span class="p">,</span> <span class="n">cloud_species_mmr</span><span class="p">,</span>
+    <span class="n">ignore_as_nucleator</span><span class="o">=</span><span class="n">cloud_species_cant_nucleate</span>
+<span class="p">)</span>
+
+<span class="c1"># ==== Run Nimbus</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">nimb</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">typ</span><span class="o">=</span><span class="s1">'full'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+===========================================================
+                   Welcome to Nimbus
+===========================================================
+[INFO] For questions contact: kiefersv.mail@gmail.com
+[INFO] Settings selected:
+       -&gt; working directory: working/
+       -&gt; verbose: True
+       -&gt; analytic plots: False
+[INFO] Atmosphere set up with:
+       -&gt; pressure range: 6.37e+01 - 1.78e-04 bar
+       -&gt; temperature range: 3.77e+03 - 7.52e+02 K
+       -&gt; Kzz range at t=0: 1.00e+10 - 1.00e+10 cm2/s
+       -&gt; Mean molecular weight: 2.34e+00 amu
+       -&gt; Gravity: 3.10e+03 cm/s2
+       -&gt; SiO2 deep MMR: 3.00e-03 g/g
+       -&gt; MgSiO3 deep MMR: 5.00e-04 g/g
+[INFO] Computation function call
+[WARN] Solver set up automatically. Use set_up_solver() for more control.
+[INFO] Solver set up.
+[INFO] Computation started
+[INFO] Cloud structures completed in 88.29s (1 iterations).
+[INFO] Saved run under tag: last_run
+</pre></div></div>
+</div>
+<section id="Optical-properties-calculation">
+<h2>Optical properties calculation<a class="headerlink" href="#Optical-properties-calculation" title="Link to this heading"></a></h2>
+<p>To calculate the optical properties, <a class="reference external" href="https://github.com/d-attaway/MieNet">MieNet</a> is needed (<a href="#id1"><span class="problematic" id="id2">`Attaway et al. 2026 &lt;&gt;`__</span></a>). If you have not already, please download the source code from git and install it following their instructions. Once this library installed, getting the optical properties is straight forward:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ds</span> <span class="o">=</span> <span class="n">nimb</span><span class="o">.</span><span class="n">picaso_formater</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Not doing sublayer as cloud deck at the bottom of pressure grid
+</pre></div></div>
+</div>
+<p>Doing full opacity calculations every time you perform a cloud structure takes a long time. It is therefore recommended that you either use the AI Networks availables wihtin MieNet, or to produce opacity grids. This significantly improves the computation time. For both, follow the tutorials of MieNet. Once you have downladed all necessary AI files, or generated your own grids, you can use them within Nimbus:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ds_ai</span> <span class="o">=</span> <span class="n">nimb</span><span class="o">.</span><span class="n">picaso_formater</span><span class="p">(</span><span class="n">mie_type</span><span class="o">=</span><span class="s1">'AI'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+E0000 00:00:1790367481.997916 1832289 cuda_platform.cc:52] failed call to cuInit: INTERNAL: CUDA error: Failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Not doing sublayer as cloud deck at the bottom of pressure grid
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ds_grid</span> <span class="o">=</span> <span class="n">nimb</span><span class="o">.</span><span class="n">picaso_formater</span><span class="p">(</span><span class="n">mie_type</span><span class="o">=</span><span class="s1">'grid'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Not doing sublayer as cloud deck at the bottom of pressure grid
+</pre></div></div>
+</div>
+<p>As you can see, in this test the different techniques needed:</p>
+<ul class="simple">
+<li><p>Full: 99 seconds</p></li>
+<li><p>AI: 7</p></li>
+<li><p>Grid: 0.5 seconds</p></li>
+</ul>
+<p>The output can now be used for any radiative transfer model. However, if you are using PICASO, there is a dedicated parser function available that will structure the opacities in the PICASO format.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_cloud</span> <span class="o">=</span> <span class="n">nimb</span><span class="o">.</span><span class="n">picaso_formater</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Not doing sublayer as cloud deck at the bottom of pressure grid
+</pre></div></div>
+</div>
+<p>You can also give this function pre-calculated opacity files from nimbus to speed up calculations. Just use the argument ‘opt_ds=ds’. Once you have the df_cloud you can use it however you like within PICASO, here we show a simple example to plot an emission spectrum. If you would like to learn more about what PICASO can do, check out the <a class="reference external" href="https://natashabatalha.github.io/picaso/">documentation</a>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">picaso</span><span class="w"> </span><span class="kn">import</span> <span class="n">justdoit</span> <span class="k">as</span> <span class="n">jdip</span>
+
+<span class="c1"># ==== Convert temperature structure to PICASO format</span>
+<span class="n">planet_mass</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># in Jupiter mass</span>
+<span class="n">planet_radius</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># in Jupiter radius</span>
+<span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">'pressure'</span><span class="p">:</span> <span class="n">pressures</span><span class="p">,</span>
+    <span class="s1">'temperature'</span><span class="p">:</span> <span class="n">temperatures</span>
+<span class="p">}</span>
+
+<span class="c1"># ==== Convert chemistry to PICASO format</span>
+<span class="n">chem_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'H2'</span><span class="p">,</span> <span class="s1">'H'</span><span class="p">,</span> <span class="s1">'VO'</span><span class="p">,</span> <span class="s1">'TiO'</span><span class="p">,</span> <span class="s1">'CO2'</span><span class="p">,</span> <span class="s1">'He'</span><span class="p">,</span> <span class="s1">'H2O'</span><span class="p">,</span> <span class="s1">'CH4'</span><span class="p">,</span> <span class="s1">'CO'</span><span class="p">]</span>
+<span class="n">chem</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chem_list</span><span class="p">):</span>
+    <span class="n">d</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tp_profile</span><span class="p">[:,</span> <span class="mi">4</span><span class="o">+</span><span class="n">n</span><span class="p">]</span>
+
+<span class="c1"># ==== save everything as a pandas frame</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">d</span><span class="p">)</span>
+
+<span class="c1"># ==== Create PICASO class and set it up</span>
+<span class="n">opa</span> <span class="o">=</span> <span class="n">jdip</span><span class="o">.</span><span class="n">opannection</span><span class="p">(</span><span class="n">wave_range</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
+<span class="n">case1</span> <span class="o">=</span> <span class="n">jdip</span><span class="o">.</span><span class="n">inputs</span><span class="p">(</span><span class="n">calculation</span><span class="o">=</span><span class="s1">'browndwarf'</span><span class="p">)</span>
+<span class="n">case1</span><span class="o">.</span><span class="n">phase_angle</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">case1</span><span class="o">.</span><span class="n">gravity</span><span class="p">(</span>
+    <span class="n">mass</span><span class="o">=</span><span class="n">planet_mass</span><span class="p">,</span> <span class="n">mass_unit</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s1">'M_jup'</span><span class="p">),</span>
+    <span class="n">radius</span><span class="o">=</span><span class="n">planet_radius</span><span class="p">,</span> <span class="n">radius_unit</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="s1">'R_jup'</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># ==== Add clouds and atmospheric structure</span>
+<span class="n">case1</span><span class="o">.</span><span class="n">atmosphere</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
+<span class="n">case1</span><span class="o">.</span><span class="n">clouds</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df_cloud</span><span class="p">)</span>
+
+<span class="c1"># ==== Calculate emission spectra</span>
+<span class="n">e_df</span> <span class="o">=</span> <span class="n">case1</span><span class="o">.</span><span class="n">spectrum</span><span class="p">(</span><span class="n">opa</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">calculation</span><span class="o">=</span><span class="s1">'thermal'</span><span class="p">)</span>
+
+<span class="c1"># ==== Regrid output</span>
+<span class="n">emis_wavn</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">emis_fp</span> <span class="o">=</span> <span class="n">e_df</span><span class="p">[</span><span class="s1">'wavenumber'</span><span class="p">],</span> <span class="n">e_df</span><span class="p">[</span><span class="s1">'fpfs_thermal'</span><span class="p">],</span> <span class="n">e_df</span><span class="p">[</span><span class="s1">'thermal'</span><span class="p">]</span>
+<span class="n">emis_wavn_bin</span><span class="p">,</span> <span class="n">emis_fp_bin</span> <span class="o">=</span> <span class="n">jdip</span><span class="o">.</span><span class="n">mean_regrid</span><span class="p">(</span><span class="n">emis_wavn</span><span class="p">,</span> <span class="n">emis_fp</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+
+<span class="c1"># ==== plot the specturm</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">emis_wavn_bin</span><span class="p">,</span> <span class="n">emis_fp_bin</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">'Wavelength '</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">'Flux'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+=============================================
+              Welcome to MieNet
+=============================================
+[INFO] ANN added:
+   -&gt; Name: FORS_BROWN_DWARF
+   -&gt; Species:  [&#39;TiO2&#39;, &#39;Fe&#39;, &#39;Mg2SiO4&#39;]
+   -&gt; Wavelength: 0.001 to 1000 micron.
+   -&gt; Particle size: 0.000159 to 159 micron.
+[INFO] ANN added:
+   -&gt; Name: ENS_BROWN_DWARF
+   -&gt; Species:  [&#39;TiO2&#39;, &#39;Fe&#39;, &#39;MgSiO3&#39;]
+   -&gt; Wavelength: 0.001 to 1000 micron.
+   -&gt; Particle size: 0.000159 to 159 micron.
+[INFO] ANN added:
+   -&gt; Name: SILICATES
+   -&gt; Species:  [&#39;SiO2&#39;, &#39;MgSiO3&#39;, &#39;Mg2SiO4&#39;]
+   -&gt; Wavelength: 0.001 to 1000 micron.
+   -&gt; Particle size: 0.000159 to 159 micron.
+[INFO] ANN added:
+   -&gt; Name: METEORITE
+   -&gt; Species:  [&#39;SiO2&#39;, &#39;MgSiO3&#39;, &#39;Fe&#39;]
+   -&gt; Wavelength: 0.001 to 1000 micron.
+   -&gt; Particle size: 0.000159 to 159 micron.
+[INFO] Grid added:
+   -&gt; File: /home/kiefersv/Documents/work/MieNet/mienet/../data/grid_mg3sio2.nc
+   -&gt; Species:  [&#39;MgSiO3&#39;, &#39;SiO2&#39;]
+   -&gt; Mixing theory:  LLL
+   -&gt; Wavelength: 0.1 to 100.0 micron.
+   -&gt; Particle size: 0.0 to 1258.93 micron.
+[INFO] Grid added:
+   -&gt; File: /home/kiefersv/Documents/work/MieNet/mienet/../data/grid_mg3kcl.nc
+   -&gt; Species:  [&#39;MgSiO3&#39;, &#39;KCl&#39;]
+   -&gt; Mixing theory:  LLL
+   -&gt; Wavelength: 0.1 to 316.23 micron.
+   -&gt; Particle size: 0.0 to 1258.93 micron.
+[INFO] Grid added:
+   -&gt; File: /home/kiefersv/Documents/work/MieNet/mienet/../data/grid_mg3fe.nc
+   -&gt; Species:  [&#39;MgSiO3&#39;, &#39;Fe&#39;]
+   -&gt; Mixing theory:  LLL
+   -&gt; Wavelength: 0.1 to 316.23 micron.
+   -&gt; Particle size: 0.0 to 1258.93 micron.
+[INFO] Grid added:
+   -&gt; File: /home/kiefersv/Documents/work/MieNet/mienet/../data/grid_mg3nh3.nc
+   -&gt; Species:  [&#39;MgSiO3&#39;, &#39;NH3&#39;]
+   -&gt; Mixing theory:  LLL
+   -&gt; Wavelength: 0.1 to 316.23 micron.
+   -&gt; Particle size: 0.0 to 1258.93 micron.
+[INFO] Grid added:
+   -&gt; File: /home/kiefersv/Documents/work/MieNet/mienet/../data/grid_mg3h2o.nc
+   -&gt; Species:  [&#39;MgSiO3&#39;, &#39;H2O&#39;]
+   -&gt; Mixing theory:  LLL
+   -&gt; Wavelength: 0.1 to 316.23 micron.
+   -&gt; Particle size: 0.0 to 1258.93 micron.
+[INFO] Grid added:
+   -&gt; File: /home/kiefersv/Documents/work/MieNet/mienet/../data/grid_mg3mg4.nc
+   -&gt; Species:  [&#39;MgSiO3&#39;, &#39;Mg2SiO4&#39;]
+   -&gt; Mixing theory:  LLL
+   -&gt; Wavelength: 0.1 to 316.23 micron.
+   -&gt; Particle size: 0.0 to 1258.93 micron.
+[INFO] MieNet successfully initialised
+   -&gt; Data location: /home/kiefersv/Documents/work/MieNet/mienet/../data/
+   -&gt; AAN models available: 4
+   -&gt; Grid models available: 6
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+WARNING: Failed to load Vega spectrum from None; Functionality involving Vega will be severely limited: FileNotFoundError(2, &#39;No such file or directory&#39;) [stsynphot.spectrum]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/tutorial_files_tutorial_spectra_10_2.png" src="../_images/tutorial_files_tutorial_spectra_10_2.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorial_basic.html" class="btn btn-neutral float-left" title="Post processed clouds on top of an atmospheric model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorial_influx.html" class="btn btn-neutral float-right" title="Influx of Material" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sven Kiefer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

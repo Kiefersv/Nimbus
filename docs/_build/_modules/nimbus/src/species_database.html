@@ -1,0 +1,439 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nimbus.src.species_database &mdash; Nimbus 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Nimbus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Install_And_Quick_Start.html">Installation and Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Physics_of_Nimbus.html">Physics of Nimbus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/Kiefersv/Nimbus">Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Nimbus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../nimbus.html">nimbus</a></li>
+      <li class="breadcrumb-item active">nimbus.src.species_database</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for nimbus.src.species_database</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">This file contains all functions to load and assign data specific to gas-phase and cloud</span>
+<span class="sd">material species.</span>
+<span class="sd">"""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">root_scalar</span>
+
+<span class="c1"># =======================================================================================</span>
+<span class="c1">#  Data read in</span>
+<span class="c1"># =======================================================================================</span>
+<span class="c1"># this step is done here to improve computational runtimes</span>
+<div class="viewcode-block" id="data_file_load">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.data_file_load">[docs]</a>
+<span class="n">data_file_load</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span> <span class="o">+</span> <span class="s1">'/../data/chem/cloud_material.csv'</span></div>
+
+<div class="viewcode-block" id="raw_data">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.raw_data">[docs]</a>
+<span class="n">raw_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">data_file_load</span><span class="p">))))</span></div>
+
+<span class="c1"># loop over all species to initialise</span>
+<div class="viewcode-block" id="default_cloud_material_data">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.default_cloud_material_data">[docs]</a>
+<span class="n">default_cloud_material_data</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]):</span>
+    <span class="c1"># skip header</span>
+    <span class="k">if</span> <span class="n">s</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">continue</span>
+    <span class="c1"># get all data</span>
+    <span class="n">default_cloud_material_data</span><span class="p">[</span><span class="n">spec</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">'data_complete'</span><span class="p">:</span> <span class="n">raw_data</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+        <span class="s1">'surface_tension_A'</span><span class="p">:</span> <span class="n">raw_data</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+        <span class="s1">'surface_tension_B'</span><span class="p">:</span> <span class="n">raw_data</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="s1">'solar_mmr'</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">4</span><span class="p">]),</span>
+        <span class="s1">'solid_density'</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">5</span><span class="p">]),</span>
+        <span class="s1">'monomer_radius'</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">6</span><span class="p">]),</span>
+        <span class="s1">'molecular_weight'</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">7</span><span class="p">]),</span>
+        <span class="s1">'pvap_base'</span><span class="p">:</span> <span class="n">raw_data</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>
+        <span class="s1">'pvap_prefactor'</span><span class="p">:</span> <span class="n">raw_data</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span>
+        <span class="s1">'pvap_A'</span><span class="p">:</span> <span class="n">raw_data</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+        <span class="s1">'pvap_B'</span><span class="p">:</span> <span class="n">raw_data</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span>
+        <span class="s1">'pvap_C'</span><span class="p">:</span> <span class="n">raw_data</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span>
+        <span class="s1">'pvap_D'</span><span class="p">:</span> <span class="n">raw_data</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">13</span><span class="p">],</span>
+        <span class="s1">'pvap_E'</span><span class="p">:</span> <span class="n">raw_data</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">14</span><span class="p">],</span>
+        <span class="s1">'pvap_F'</span><span class="p">:</span> <span class="n">raw_data</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">15</span><span class="p">],</span>
+    <span class="p">}</span>
+<span class="c1"># read in gibbs free energies (currently unused but available)</span>
+<div class="viewcode-block" id="gibbs_janaf">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.gibbs_janaf">[docs]</a>
+<span class="n">gibbs_janaf</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span> <span class="o">+</span> <span class="s1">'/../data/Gibbs/ggchem.nc'</span>
+<span class="p">)</span> <span class="o">*</span> <span class="mf">1e10</span></div>
+
+
+<div class="viewcode-block" id="DataBase">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Storage of physical properties. Information on the stored variables:</span>
+<span class="sd">     - Surface tension [erg cm^-2] parameters in the form:</span>
+<span class="sd">       surface_tension_A + surface_tension_B * T</span>
+<span class="sd">     - solar_mmr: Expected mass mixing ratio at solar metalicity</span>
+<span class="sd">     - solid_density: Density of the solid material [g/cm3]</span>
+<span class="sd">     - monomer_radius: Radius of a single gas-phase molecule [cm]</span>
+<span class="sd">     - molecular_weight: Mass of a single gas-phase molecule [g]</span>
+<span class="sd">     - Vapor pressure [dyn/cm2] parameters in the form:</span>
+<span class="sd">       pvap_prefactor * pvap_base**(pvap_A/T**2 + pvap_B/T + pvap_C</span>
+<span class="sd">       + pvap_D*T + pvap_E*T**2 + pvap_F*T**2)</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># pysical constants</span>
+<div class="viewcode-block" id="DataBase.rgas">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.rgas">[docs]</a>
+    <span class="n">rgas</span> <span class="o">=</span> <span class="mf">8.3143e7</span>  <span class="c1"># Gas constant [erg/mol/K]</span></div>
+
+<div class="viewcode-block" id="DataBase.avog">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.avog">[docs]</a>
+    <span class="n">avog</span> <span class="o">=</span> <span class="mf">6.02e23</span>  <span class="c1"># avogadro constant [1/mol]</span></div>
+
+<div class="viewcode-block" id="DataBase.kb">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.kb">[docs]</a>
+    <span class="n">kb</span> <span class="o">=</span> <span class="n">rgas</span> <span class="o">/</span> <span class="n">avog</span>  <span class="c1"># boltzmann constant [erg/K]</span></div>
+
+<div class="viewcode-block" id="DataBase.pf">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.pf">[docs]</a>
+    <span class="n">pf</span> <span class="o">=</span> <span class="mi">1000000</span>  <span class="c1"># Reference pressure [dyn / cm2]</span></div>
+
+<div class="viewcode-block" id="DataBase.kjpmol_to_ergpmol">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.kjpmol_to_ergpmol">[docs]</a>
+    <span class="n">kjpmol_to_ergpmol</span> <span class="o">=</span> <span class="mf">1e10</span>  <span class="c1"># conversion factor</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># ==== Read in of parametrised cloud properties and basic values ================</span>
+        <span class="c1"># open the cloud material data file and read it</span>
+        <span class="k">if</span> <span class="n">data_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span> <span class="o">=</span> <span class="n">default_cloud_material_data</span>
+        <span class="c1"># ==== Read in of Gibbs free energies ===============================================</span>
+<div class="viewcode-block" id="DataBase.gibbs_janaf">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.gibbs_janaf">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gibbs_janaf</span> <span class="o">=</span> <span class="n">gibbs_janaf</span></div>
+
+
+    <span class="c1"># =======================================================================================</span>
+    <span class="c1">#   Quality of life functions</span>
+    <span class="c1"># =======================================================================================</span>
+<div class="viewcode-block" id="DataBase.list_species">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.list_species">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_species</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" Return all available species """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DataBase.list_complete_species">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.list_complete_species">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_complete_species</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" Return all available species """</span>
+        <span class="n">specs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">'data_complete'</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">'no'</span><span class="p">:</span>
+                <span class="n">specs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">specs</span></div>
+
+
+    <span class="c1"># =======================================================================================</span>
+    <span class="c1">#   Simple physical properties calculation (derived not read in)</span>
+    <span class="c1"># =======================================================================================</span>
+<div class="viewcode-block" id="DataBase.monomer_mass">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.monomer_mass">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">monomer_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" Return m_species [g]"""</span>
+        <span class="n">r1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'monomer_radius'</span><span class="p">]</span>
+        <span class="n">rho</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'solid_density'</span><span class="p">]</span>
+        <span class="k">return</span> <span class="mi">4</span><span class="o">/</span><span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">r1</span><span class="o">**</span><span class="mi">3</span> <span class="o">*</span> <span class="n">rho</span></div>
+
+
+<div class="viewcode-block" id="DataBase.specific_gas_constant">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.specific_gas_constant">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">specific_gas_constant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" Return R_spec [erg/g/K]"""</span>
+        <span class="n">mw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'molecular_weight'</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rgas</span> <span class="o">/</span> <span class="n">mw</span></div>
+
+
+<div class="viewcode-block" id="DataBase.condensation_temperature">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.condensation_temperature">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">condensation_temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="n">pressure</span><span class="p">,</span> <span class="n">metallicity</span><span class="p">,</span> <span class="n">mmw</span><span class="p">,</span> <span class="n">mmr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" Return temperature [K] at which species condenses"""</span>
+        <span class="c1"># ==== check if pressure is an array</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pressure</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="n">pres</span> <span class="o">=</span> <span class="p">[</span><span class="n">pressure</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pres</span> <span class="o">=</span> <span class="n">pressure</span>
+
+        <span class="c1"># ==== find tvap for each p</span>
+        <span class="n">tvap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">pre</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pres</span><span class="p">):</span>
+            <span class="c1"># minimisation function</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">minf</span><span class="p">(</span><span class="n">tt</span><span class="p">):</span>
+<span class="w">                </span><span class="sd">""" minimisation function """</span>
+                <span class="n">mw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_weight</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+                <span class="n">pvap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vapor_pressures</span><span class="p">(</span><span class="n">species</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">metallicity</span><span class="p">)</span>
+                <span class="n">pvap</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">pvap</span><span class="p">,</span> <span class="mf">1e-30</span><span class="p">)</span>
+                <span class="n">p1</span> <span class="o">=</span>  <span class="n">mmr</span> <span class="o">*</span> <span class="n">mmw</span> <span class="o">/</span> <span class="n">mw</span> <span class="o">*</span> <span class="n">pre</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">pvap</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">p1</span><span class="p">)</span>
+            <span class="n">uplim</span> <span class="o">=</span> <span class="mf">1e6</span>
+            <span class="k">if</span> <span class="n">species</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'H2O'</span><span class="p">]:</span>
+                <span class="n">uplim</span> <span class="o">=</span> <span class="mf">1e3</span>
+            <span class="n">tvap</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">root_scalar</span><span class="p">(</span><span class="n">minf</span><span class="p">,</span> <span class="n">bracket</span><span class="o">=</span><span class="p">[</span><span class="mf">1e1</span><span class="p">,</span> <span class="n">uplim</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s1">'brentq'</span><span class="p">)</span><span class="o">.</span><span class="n">root</span>
+
+        <span class="c1"># ==== return condensation temperature</span>
+        <span class="k">return</span> <span class="n">tvap</span></div>
+
+
+    <span class="c1"># =======================================================================================</span>
+    <span class="c1">#   Simple getter functions of physical properties</span>
+    <span class="c1"># =======================================================================================</span>
+<div class="viewcode-block" id="DataBase.solar_mmr">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.solar_mmr">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solar_mmr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="n">metallicity</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" Solar MMR [g/g] """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'solar_mmr'</span><span class="p">]</span> <span class="o">*</span> <span class="n">metallicity</span></div>
+
+
+<div class="viewcode-block" id="DataBase.monomer_radius">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.monomer_radius">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">monomer_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" Return r_species [cm] """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'monomer_radius'</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DataBase.molecular_weight">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.molecular_weight">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">molecular_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" return mu_species [amu] """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'molecular_weight'</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DataBase.solid_density">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.solid_density">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solid_density</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" Return rho_species [g/cm3] """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'solid_density'</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DataBase.surface_tension">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.surface_tension">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">surface_tension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="n">temp</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" Return sigma_species(temp) [erg/cm2] """</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'surface_tension_A'</span><span class="p">]</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'surface_tension_B'</span><span class="p">]</span>
+        <span class="c1"># check if data is available</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="s1">'x'</span> <span class="ow">or</span> <span class="n">b</span> <span class="o">==</span> <span class="s1">'x'</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No surface tension available for "</span> <span class="o">+</span> <span class="n">species</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="n">temp</span></div>
+
+
+<div class="viewcode-block" id="DataBase.gibbs_free_energy">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.gibbs_free_energy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gibbs_free_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="n">temp</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" Return G_species(temp) [erg] """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gibbs_janaf</span><span class="p">[</span><span class="n">species</span><span class="p">]</span><span class="o">.</span><span class="n">interp</span><span class="p">({</span><span class="s2">"temp_"</span> <span class="o">+</span> <span class="n">species</span><span class="p">:</span> <span class="n">temp</span><span class="p">})</span><span class="o">.</span><span class="n">values</span></div>
+
+
+    <span class="c1"># =======================================================================================</span>
+    <span class="c1">#   Complex physical properties calculation (derived not read in)</span>
+    <span class="c1"># =======================================================================================</span>
+<div class="viewcode-block" id="DataBase.vapor_pressures">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/species_database/index.html#nimbus.DataBase.vapor_pressures">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">vapor_pressures</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">metalicity</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Data according to Lee et al. 2018 (A&amp;A 614, A126)</span>
+
+<span class="sd">        :param species: Name of species, see below for supported</span>
+<span class="sd">        :param temp: Temperature in Kelvin, can be float or array</span>
+<span class="sd">        :param metalicity: metalicity, optional (only used by few pvaps)</span>
+<span class="sd">        :return:</span>
+<span class="sd">            pvap : vapor pressure</span>
+<span class="sd">        """</span>
+
+        <span class="c1"># short hand notation</span>
+        <span class="n">mh</span> <span class="o">=</span> <span class="n">metalicity</span>
+
+        <span class="c1"># Check if temp is an array, make it one if not</span>
+        <span class="n">isarray</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">temp</span><span class="p">])</span>
+            <span class="n">isarray</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># if all data is available, just read it in</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'data_complete'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'yes'</span><span class="p">:</span>
+
+            <span class="c1"># get base of vapour pressure exponent</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'pvap_base'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'10'</span><span class="p">:</span>
+                <span class="n">base</span> <span class="o">=</span> <span class="mi">10</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'pvap_base'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'exp'</span><span class="p">:</span>
+                <span class="n">base</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># get factors</span>
+            <span class="n">pref</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'pvap_prefactor'</span><span class="p">])</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'pvap_A'</span><span class="p">])</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'pvap_B'</span><span class="p">])</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'pvap_C'</span><span class="p">])</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'pvap_D'</span><span class="p">])</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'pvap_E'</span><span class="p">])</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'pvap_F'</span><span class="p">])</span>
+
+            <span class="c1"># calculate vapor pressure using data from file</span>
+            <span class="n">pvap</span> <span class="o">=</span> <span class="n">pref</span><span class="o">*</span><span class="n">base</span><span class="o">**</span><span class="p">(</span><span class="n">a</span><span class="o">/</span><span class="n">temp</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">b</span><span class="o">/</span><span class="n">temp</span> <span class="o">+</span> <span class="n">c</span> <span class="o">+</span> <span class="n">d</span><span class="o">*</span><span class="n">temp</span> <span class="o">+</span> <span class="n">e</span><span class="o">*</span><span class="n">temp</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">f</span><span class="o">*</span><span class="n">temp</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+
+        <span class="c1"># if there is a special case, treat it uniquely below</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_material_data</span><span class="p">[</span><span class="n">species</span><span class="p">][</span><span class="s1">'data_complete'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'special'</span><span class="p">:</span>
+            <span class="c1"># many special cases have casese which require arryfication</span>
+            <span class="n">pvap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">species</span> <span class="o">==</span> <span class="s1">'C'</span><span class="p">:</span>
+                <span class="n">pvap</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">3.27860e1</span> <span class="o">-</span> <span class="mf">8.65139e4</span> <span class="o">/</span> <span class="p">(</span><span class="n">temp</span> <span class="o">+</span> <span class="mf">4.80395e-1</span><span class="p">))</span>
+
+            <span class="k">elif</span> <span class="n">species</span> <span class="o">==</span> <span class="s1">'CH4'</span><span class="p">:</span>
+                <span class="n">pvap</span><span class="p">[:]</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="mf">3.9895</span> <span class="o">-</span> <span class="mf">443.028</span> <span class="o">/</span> <span class="p">(</span><span class="n">temp</span> <span class="o">-</span> <span class="mf">0.49</span><span class="p">))</span> <span class="o">*</span> <span class="mf">1e6</span>
+
+            <span class="k">elif</span> <span class="n">species</span> <span class="o">==</span> <span class="s1">'Fe'</span><span class="p">:</span>
+                <span class="n">pvap</span><span class="p">[</span><span class="n">temp</span> <span class="o">&gt;</span> <span class="mf">1800.0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">9.86</span> <span class="o">-</span> <span class="mf">37120.0</span> <span class="o">/</span> <span class="n">temp</span><span class="p">[</span><span class="n">temp</span> <span class="o">&gt;</span> <span class="mf">1800.0</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e6</span>
+                <span class="n">pvap</span><span class="p">[</span><span class="n">temp</span> <span class="o">&lt;</span> <span class="mf">1800.0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">15.71</span> <span class="o">-</span> <span class="mf">47664.0</span> <span class="o">/</span> <span class="n">temp</span><span class="p">[</span><span class="n">temp</span> <span class="o">&lt;</span> <span class="mf">1800.0</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e6</span>
+
+            <span class="c1"># elif species == 'Ni':</span>
+            <span class="c1">#     pvap[:] = 10.0**(11.98183-16808.435/(temp - 188.71))</span>
+
+            <span class="k">elif</span> <span class="n">species</span> <span class="o">==</span> <span class="s1">'H2O'</span><span class="p">:</span>
+                <span class="n">temp_c</span> <span class="o">=</span> <span class="n">temp</span> <span class="o">-</span> <span class="mf">273.16</span>
+                <span class="n">pvap</span><span class="p">[</span><span class="n">temp_c</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">6111.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="mf">23.036</span><span class="o">*</span><span class="n">temp_c</span><span class="p">[</span><span class="n">temp_c</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span>
+                                                  <span class="o">-</span> <span class="n">temp_c</span><span class="p">[</span><span class="n">temp_c</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mf">333.7</span><span class="p">)</span>
+                                                 <span class="o">/</span> <span class="p">(</span><span class="n">temp_c</span><span class="p">[</span><span class="n">temp_c</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">279.82</span><span class="p">))</span>
+                <span class="n">pvap</span><span class="p">[</span><span class="n">temp_c</span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">6112.1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="mf">18.729</span><span class="o">*</span><span class="n">temp_c</span><span class="p">[</span><span class="n">temp_c</span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">]</span>
+                                                   <span class="o">-</span> <span class="n">temp_c</span><span class="p">[</span><span class="n">temp_c</span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mf">227.3</span><span class="p">)</span>
+                                                  <span class="o">/</span> <span class="p">(</span><span class="n">temp_c</span><span class="p">[</span><span class="n">temp_c</span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">257.87</span><span class="p">))</span>
+
+            <span class="k">elif</span> <span class="n">species</span> <span class="o">==</span> <span class="s1">'H2S'</span><span class="p">:</span> <span class="c1"># Stull(1947)</span>
+                <span class="n">pvap</span><span class="p">[:]</span> <span class="o">=</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="p">(</span><span class="mf">4.52887</span> <span class="o">-</span> <span class="mf">958.587</span> <span class="o">/</span> <span class="p">(</span><span class="n">temp</span> <span class="o">-</span> <span class="mf">0.539</span><span class="p">))</span> <span class="o">*</span> <span class="mf">1e6</span>
+                <span class="n">pvap</span><span class="p">[</span><span class="n">temp</span><span class="o">&lt;</span><span class="mf">212.8</span><span class="p">]</span> <span class="o">=</span> <span class="mf">10.0</span><span class="o">**</span><span class="p">(</span><span class="mf">4.43681</span> <span class="o">-</span> <span class="mf">829.439</span> <span class="o">/</span> <span class="p">(</span><span class="n">temp</span><span class="p">[</span><span class="n">temp</span><span class="o">&lt;</span><span class="mf">212.8</span><span class="p">]</span> <span class="o">-</span> <span class="mf">25.412</span><span class="p">))</span> <span class="o">*</span> <span class="mf">1e6</span>
+                <span class="n">pvap</span><span class="p">[</span><span class="n">temp</span><span class="o">&lt;</span><span class="mi">30</span><span class="p">]</span> <span class="o">=</span> <span class="mf">10.0</span><span class="o">**</span><span class="p">(</span><span class="mf">4.43681</span> <span class="o">-</span> <span class="mf">829.439</span> <span class="o">/</span> <span class="p">(</span><span class="mf">30.0</span> <span class="o">-</span> <span class="mf">25.412</span><span class="p">))</span> <span class="o">*</span> <span class="mf">1e6</span>
+
+            <span class="k">elif</span> <span class="n">species</span> <span class="o">==</span> <span class="s1">'S2'</span><span class="p">:</span>
+                <span class="n">pvap</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">16.1</span> <span class="o">-</span> <span class="mf">14000.0</span> <span class="o">/</span> <span class="n">temp</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e6</span>
+                <span class="n">pvap</span><span class="p">[</span><span class="n">temp</span><span class="o">&lt;</span><span class="mf">413.0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">27.0</span> <span class="o">-</span> <span class="mf">18500.0</span> <span class="o">/</span> <span class="n">temp</span><span class="p">[</span><span class="n">temp</span><span class="o">&lt;</span><span class="mf">413.0</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e6</span>
+
+            <span class="k">elif</span> <span class="n">species</span> <span class="o">==</span> <span class="s1">'S8'</span><span class="p">:</span>
+                <span class="n">pvap</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">9.6</span> <span class="o">-</span> <span class="mf">7510.0</span> <span class="o">/</span> <span class="n">temp</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e6</span>
+                <span class="n">pvap</span><span class="p">[</span><span class="n">temp</span><span class="o">&lt;</span><span class="mf">413.0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">20.0</span> <span class="o">-</span> <span class="mf">11800.0</span> <span class="o">/</span> <span class="n">temp</span><span class="p">[</span><span class="n">temp</span><span class="o">&lt;</span><span class="mf">413.0</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e6</span>
+
+            <span class="k">elif</span> <span class="n">species</span> <span class="o">==</span> <span class="s1">'SiO2'</span><span class="p">:</span>
+                <span class="c1"># this vapor pressure includes a metalicity correction</span>
+                <span class="n">pvap</span> <span class="o">=</span> <span class="mf">10.0</span><span class="o">**</span><span class="p">(</span><span class="mf">13.168</span> <span class="o">-</span> <span class="mi">28265</span><span class="o">/</span><span class="n">temp</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">mh</span><span class="p">))</span><span class="o">*</span><span class="mf">1e6</span>  <span class="c1"># SiO + H2O -&gt; SiO2[s] + H2</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'The species "'</span> <span class="o">+</span> <span class="n">species</span> <span class="o">+</span> <span class="s1">'" is flagged as special, but no '</span>
+                                                          <span class="s1">'case handling is provided.'</span><span class="p">)</span>
+
+        <span class="c1"># if neither is the case, data is missing</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Data for nucleating species "'</span> <span class="o">+</span> <span class="n">species</span> <span class="o">+</span> <span class="s1">'" not complete.'</span><span class="p">)</span>
+
+        <span class="c1"># If temp was not an array, return float</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">isarray</span><span class="p">:</span>
+            <span class="n">pvap</span> <span class="o">=</span> <span class="n">pvap</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">pvap</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sven Kiefer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

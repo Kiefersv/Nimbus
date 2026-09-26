@@ -1,0 +1,461 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nimbus.src.data_storage &mdash; Nimbus 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Nimbus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Install_And_Quick_Start.html">Installation and Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Physics_of_Nimbus.html">Physics of Nimbus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/Kiefersv/Nimbus">Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Nimbus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../nimbus.html">nimbus</a></li>
+      <li class="breadcrumb-item active">nimbus.src.data_storage</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for nimbus.src.data_storage</h1><div class="highlight"><pre>
+<span></span><span class="sd">""" Functions to sotre and load data """</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.atmosphere_physics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mass_to_radius</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.atmosphere</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_up_atmosphere</span>
+
+<div class="viewcode-block" id="save_run">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/data_storage/index.html#nimbus.src.data_storage.save_run">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sol</span><span class="p">,</span> <span class="n">save_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Save the run as xarray</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    self : Nimbus class</span>
+<span class="sd">        Nimbus object</span>
+<span class="sd">    sol : solve_ivp object</span>
+<span class="sd">        Solution of the run that should be saved.</span>
+<span class="sd">    save_file : str</span>
+<span class="sd">        Name of file to save to.</span>
+<span class="sd">    tag : str</span>
+<span class="sd">        Internal tag to remember run.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ds : xarray.Dataset</span>
+<span class="sd">        Xarray dataset containing the run</span>
+
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_rg</span><span class="p">:</span>
+        <span class="c1"># ==== set up dataset stuff</span>
+        <span class="n">coordinates</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">'iteration'</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span><span class="p">)),</span>
+            <span class="s1">'pressure'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span> <span class="o">*</span> <span class="mf">1e-6</span><span class="p">,</span>
+            <span class="s1">'species'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">co</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'species'</span><span class="p">,</span> <span class="s1">'iteration'</span><span class="p">,</span> <span class="s1">'pressure'</span><span class="p">]</span>
+        <span class="n">co2</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'species'</span><span class="p">,</span> <span class="s1">'pressure'</span><span class="p">]</span>
+
+        <span class="c1"># ==== initialise variables</span>
+        <span class="n">gas_mmr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">solid_mmr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">nuc_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">acc_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">saturation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">n1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">total_mmr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">ncl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">rg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">all_kzz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">run</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span><span class="p">):</span>
+            <span class="n">xrun</span> <span class="o">=</span> <span class="n">run</span><span class="o">.</span><span class="n">y</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+            <span class="c1"># calculate the physics</span>
+            <span class="n">xrun</span><span class="p">[</span><span class="n">xrun</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ode_minimum_mmr</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ode_minimum_mmr</span>
+            <span class="n">total_mmr</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">xrun</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">xn</span> <span class="o">=</span> <span class="n">xrun</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># cloud number density mmr</span>
+            <span class="n">ncl</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="n">xn</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_ccn</span>  <span class="c1"># cloud particle number density [1/cm3]</span>
+            <span class="n">rg</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rg_history</span><span class="p">[</span><span class="n">r</span><span class="p">]</span>
+            <span class="n">all_kzz</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kzz</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tend</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">):</span>
+                <span class="c1"># gas-phase number density [1/cm3]</span>
+                <span class="n">n1</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="n">xrun</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
+                <span class="c1"># accretion rate [1/cm3/s]</span>
+                <span class="n">acc_rate</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acc_rate</span><span class="p">(</span><span class="n">rg</span><span class="p">[</span><span class="n">r</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">,</span> <span class="n">n1</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">r</span><span class="p">],</span> <span class="n">ncl</span><span class="p">[</span><span class="n">r</span><span class="p">],</span> <span class="n">s</span><span class="p">)</span>
+                <span class="c1"># nucleation rate [1/cm3/s]</span>
+                <span class="n">nuc_rate</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nuc_rate</span><span class="p">(</span><span class="n">n1</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">r</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+                <span class="n">gas_mmr</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="n">xrun</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">solid_mmr</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="n">xrun</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">pvap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">vapor_pressures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mh</span><span class="p">)</span>
+                <span class="n">saturation</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="n">pvap</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mw</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmw</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">'gas_mmr'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">gas_mmr</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'cloud_mmr'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">solid_mmr</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'nucleation_rate'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">nuc_rate</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'growth_rate'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">acc_rate</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'cloud_number_density'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">ncl</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'gas_number_density'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">gas_mmr</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'cloud_radius'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">rg</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'temperature'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">),</span>
+            <span class="s1">'rhoatmo'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span><span class="p">),</span>
+            <span class="s1">'Kzz'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">all_kzz</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'saturation_mmr'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">saturation</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'all_gas_mmr'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">gas_mmr</span><span class="p">),</span>
+            <span class="s1">'all_cloud_mmr'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">solid_mmr</span><span class="p">),</span>
+            <span class="s1">'all_nucleation_rate'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">nuc_rate</span><span class="p">),</span>
+            <span class="s1">'all_growth_rate'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">acc_rate</span><span class="p">),</span>
+            <span class="s1">'all_cloud_number_density'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">ncl</span><span class="p">),</span>
+            <span class="s1">'all_gas_number_density'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">gas_mmr</span><span class="p">),</span>
+            <span class="s1">'all_cloud_radius'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">rg</span><span class="p">),</span>
+            <span class="s1">'all_temperature'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">[</span><span class="mi">2</span><span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">),</span>
+            <span class="s1">'all_rhoatmo'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">[</span><span class="mi">2</span><span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span><span class="p">),</span>
+            <span class="s1">'all_Kzz'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">all_kzz</span><span class="p">),</span>
+            <span class="s1">'all_saturation_mmr'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">saturation</span><span class="p">),</span>
+        <span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># ==== check how many times were successfully calculated</span>
+        <span class="n">tstep_done</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sol</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:])</span>
+
+        <span class="c1"># ==== set up dataset stuff</span>
+        <span class="n">coordinates</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">'time'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaltimes</span><span class="p">[:</span><span class="n">tstep_done</span><span class="p">],</span>
+            <span class="s1">'pressure'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span> <span class="o">*</span> <span class="mf">1e-6</span><span class="p">,</span>
+            <span class="s1">'species'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">co</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'species'</span><span class="p">,</span> <span class="s1">'time'</span><span class="p">,</span> <span class="s1">'pressure'</span><span class="p">]</span>
+        <span class="n">co2</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'species'</span><span class="p">,</span> <span class="s1">'pressure'</span><span class="p">]</span>
+
+        <span class="c1"># ==== initialise variables</span>
+        <span class="n">gas_mmr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="p">,</span> <span class="n">tstep_done</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">solid_mmr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="p">,</span> <span class="n">tstep_done</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">nuc_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="p">,</span> <span class="n">tstep_done</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">acc_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="p">,</span> <span class="n">tstep_done</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">saturation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="p">,</span> <span class="n">tstep_done</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">n1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="p">,</span> <span class="n">tstep_done</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">total_mmr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">tstep_done</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">ncl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">tstep_done</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">rg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">tstep_done</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="n">all_kzz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">tstep_done</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tstep_done</span><span class="p">):</span>
+            <span class="n">xrun</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">y</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+            <span class="c1"># calculate the physics</span>
+            <span class="n">xrun</span><span class="p">[</span><span class="n">xrun</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ode_minimum_mmr</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ode_minimum_mmr</span>
+            <span class="n">xtot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">xrun</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">total_mmr</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">xtot</span>
+            <span class="n">rhotot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">xrun</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">rhop</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="n">xtot</span>
+            <span class="n">xn</span> <span class="o">=</span> <span class="n">xrun</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># cloud number density mmr</span>
+            <span class="n">ncl</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">xn</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_ccn</span>  <span class="c1"># cloud particle number density [1/cm3]</span>
+            <span class="n">rg</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">mass_to_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xrun</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">xtot</span><span class="p">,</span> <span class="n">rhotot</span><span class="p">)</span>
+            <span class="n">all_kzz</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kzz</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">evaltimes</span><span class="p">[</span><span class="n">t</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">):</span>
+                <span class="n">n1</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">xrun</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>  <span class="c1"># gas-phase number density [1/cm3]</span>
+                <span class="c1"># ==== assign the values</span>
+                <span class="c1"># accretion rate [1/cm3/s]</span>
+                <span class="n">acc_rate</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acc_rate</span><span class="p">(</span><span class="n">rg</span><span class="p">[</span><span class="n">t</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">,</span> <span class="n">n1</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">t</span><span class="p">],</span> <span class="n">ncl</span><span class="p">[</span><span class="n">t</span><span class="p">],</span> <span class="n">s</span><span class="p">)</span>
+                <span class="n">nuc_rate</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nuc_rate</span><span class="p">(</span><span class="n">n1</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">t</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>  <span class="c1"># nucleation rate [1/cm3/s]</span>
+                <span class="n">gas_mmr</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">xrun</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">solid_mmr</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">xrun</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">pvap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">vapor_pressures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mh</span><span class="p">)</span>
+                <span class="n">saturation</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">pvap</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mw</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmw</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">'gas_mmr'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">gas_mmr</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'total_cloud_mmr'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">total_mmr</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'cloud_mmr'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">solid_mmr</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'nucleation_rate'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">nuc_rate</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'growth_rate'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">acc_rate</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'cloud_number_density'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">ncl</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'gas_number_density'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">gas_mmr</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'cloud_radius'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">rg</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'temperature'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">),</span>
+            <span class="s1">'rhoatmo'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span><span class="p">),</span>
+            <span class="s1">'Kzz'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">all_kzz</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'saturation_mmr'</span><span class="p">:</span> <span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">saturation</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s1">'all_gas_mmr'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">gas_mmr</span><span class="p">),</span>
+            <span class="s1">'all_total_cloud_mmr'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">total_mmr</span><span class="p">),</span>
+            <span class="s1">'all_cloud_mmr'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">solid_mmr</span><span class="p">),</span>
+            <span class="s1">'all_nucleation_rate'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">nuc_rate</span><span class="p">),</span>
+            <span class="s1">'all_growth_rate'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">acc_rate</span><span class="p">),</span>
+            <span class="s1">'all_cloud_number_density'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">ncl</span><span class="p">),</span>
+            <span class="s1">'all_gas_number_density'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">gas_mmr</span><span class="p">),</span>
+            <span class="s1">'all_cloud_radius'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">rg</span><span class="p">),</span>
+            <span class="s1">'all_temperature'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">[</span><span class="mi">2</span><span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">),</span>
+            <span class="s1">'all_rhoatmo'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">[</span><span class="mi">2</span><span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span><span class="p">),</span>
+            <span class="s1">'all_Kzz'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">all_kzz</span><span class="p">),</span>
+            <span class="s1">'all_saturation_mmr'</span><span class="p">:</span> <span class="p">(</span><span class="n">co</span><span class="p">,</span> <span class="n">saturation</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="c1"># ==== set attributies</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">timeout</span> <span class="o">=</span> <span class="s2">"None"</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tfailed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tfailed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tfailed</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">tfailed</span> <span class="o">=</span> <span class="s2">"None"</span>
+
+    <span class="c1"># ==== remember solver settings</span>
+    <span class="n">sets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tend</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tsteps</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ode_rtol</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ode_atol</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ode_minimum_mmr</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">r_ccn</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cs_mol</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps_k</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">r1</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rho_ccn</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rg_fit_deg</span><span class="p">,</span>
+    <span class="p">])</span>
+
+    <span class="c1"># ==== How data is stored</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
+        <span class="n">data_vars</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+        <span class="n">coords</span><span class="o">=</span><span class="n">coordinates</span><span class="p">,</span>
+        <span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">'species'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">,</span>
+            <span class="s1">'mmw'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmw</span><span class="p">,</span>
+            <span class="s1">'gravity'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">gravity</span><span class="p">,</span>
+            <span class="s1">'metalicity'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mh</span><span class="p">,</span>
+            <span class="s1">'deep_mmr'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">deep_gas_mmr</span><span class="p">,</span>
+            <span class="s1">'fsed_init'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsed</span><span class="p">,</span>
+            <span class="s1">'ignore_as_nucleator'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ian</span><span class="p">,</span>
+            <span class="s1">'total_iterations'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">loop_nr</span><span class="p">,</span>
+            <span class="s1">'tstart'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">,</span>
+            <span class="s1">'tend'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tend</span><span class="p">,</span>
+            <span class="s1">'tsteps'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tsteps</span><span class="p">,</span>
+            <span class="s1">'tfailed'</span><span class="p">:</span> <span class="n">tfailed</span><span class="p">,</span>
+            <span class="s1">'ode_rtol'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ode_rtol</span><span class="p">,</span>
+            <span class="s1">'ode_atol'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ode_atol</span><span class="p">,</span>
+            <span class="s1">'ode_minimum_mmr'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ode_minimum_mmr</span><span class="p">,</span>
+            <span class="s1">'static_rg'</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">static_rg</span><span class="p">),</span>
+            <span class="s1">'r_ccn'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_ccn</span> <span class="p">,</span>
+            <span class="s1">'cs_mol'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs_mol</span><span class="p">,</span>
+            <span class="s1">'eps_k'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps_k</span><span class="p">,</span>
+            <span class="s1">'rg_fit_deg'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rg_fit_deg</span><span class="p">,</span>
+            <span class="s1">'timeout'</span><span class="p">:</span> <span class="n">timeout</span><span class="p">,</span>
+            <span class="s1">'Did the run finish?'</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">complete</span><span class="p">),</span>
+            <span class="s1">'y_last'</span><span class="p">:</span> <span class="n">sol</span><span class="o">.</span><span class="n">y</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+            <span class="s1">'settings'</span><span class="p">:</span> <span class="n">sets</span><span class="p">,</span>
+            <span class="s1">'solver_type'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+
+    <span class="c1"># ==== store data in Nimbus class</span>
+    <span class="c1"># define the tag</span>
+    <span class="k">if</span> <span class="n">tag</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="s1">'last_run'</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds</span>
+
+    <span class="c1"># ==== Print info</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'[INFO] Saved run under tag: '</span> <span class="o">+</span> <span class="n">tag</span><span class="p">)</span>
+
+    <span class="c1"># ==== save data to file if a save file is given</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">save_file</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)):</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">save_file</span> <span class="o">+</span> <span class="s1">'.nc'</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'       -&gt; File name: '</span> <span class="o">+</span> <span class="n">save_file</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ds</span></div>
+
+
+<div class="viewcode-block" id="set_up_from_previous_run">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/data_storage/index.html#nimbus.src.data_storage.set_up_from_previous_run">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_up_from_previous_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">load_from_tag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ds_prev</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Set initial conditions to last time step of a previous run and set up atmosphere</span>
+<span class="sd">    identical to this run.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    self : Nimbus class</span>
+<span class="sd">        Nimbus object</span>
+<span class="sd">    tag : str, optional</span>
+<span class="sd">        Name to store data in Nimbus.</span>
+<span class="sd">    file_name : str</span>
+<span class="sd">        Name of the file to load from working directory.</span>
+<span class="sd">    load_from_tag : str</span>
+<span class="sd">        Load the corresponding dataset from ds.results</span>
+<span class="sd">    ds_prev : xarray.Dataset</span>
+<span class="sd">        Xarray dataset from previous run</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># ==== if no tag is given use file name</span>
+    <span class="k">if</span> <span class="n">tag</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="s1">'last_run'</span>
+
+    <span class="c1"># ==== Load previous run</span>
+    <span class="k">if</span> <span class="n">load_from_tag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">file_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">ds_prev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">ds_prev</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"[ERROR] Either tag or file_name must be specified to set up "</span>
+                         <span class="s2">"from previous run."</span><span class="p">)</span>
+    <span class="c1"># load results into Nimbus</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds</span>
+
+    <span class="c1"># ==== set up atmosphere from stored properties</span>
+    <span class="n">set_up_atmosphere</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">[</span><span class="s1">'temperature'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">ds</span><span class="p">[</span><span class="s1">'pressure'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">ds</span><span class="p">[</span><span class="s1">'Kzz'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'mmw'</span><span class="p">],</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'gravity'</span><span class="p">],</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'species'</span><span class="p">],</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'deep_mmr'</span><span class="p">],</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'fsed_init'</span><span class="p">],</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'metalicity'</span><span class="p">],</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'ignore_as_nucleator'</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="c1"># ==== set initial conditions to last step of previous run</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">yin_store</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'y_last'</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">isset_initialisation</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># set initialisation flag</span>
+
+    <span class="c1"># ==== set settings</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'solver_type'</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">static_rg</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'static_rg'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'True'</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tstart</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'settings'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tend</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'settings'</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tsteps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'settings'</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ode_rtol</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'settings'</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ode_atol</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'settings'</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ode_minimum_mmr</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'settings'</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">r_ccn</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'settings'</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">cs_mol</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'settings'</span><span class="p">][</span><span class="mi">7</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">eps_k</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'settings'</span><span class="p">][</span><span class="mi">8</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">r1</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'settings'</span><span class="p">][</span><span class="mi">9</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">rho_ccn</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'settings'</span><span class="p">][</span><span class="mi">10</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">rg_fit_deg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'settings'</span><span class="p">][</span><span class="mi">11</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="load_previous_run">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/data_storage/index.html#nimbus.src.data_storage.load_previous_run">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_previous_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ds_prev</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Load previously saved Nimbus runs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    self : Nimbus class</span>
+<span class="sd">        Nimbus object.</span>
+<span class="sd">    tag : str, optional</span>
+<span class="sd">        Name to store data in Nimbus.</span>
+<span class="sd">    file_name : str</span>
+<span class="sd">        Name of the file to load from working directory.</span>
+<span class="sd">    ds_prev : xarray.Dataset</span>
+<span class="sd">        Xarray dataset from previous run</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># ==== if no tag is given use file name</span>
+    <span class="k">if</span> <span class="n">tag</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="s1">'last_run'</span>
+
+    <span class="c1"># ==== Print info</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'[INFO] Loaded previous run with tag: '</span> <span class="o">+</span> <span class="n">tag</span><span class="p">)</span>
+
+    <span class="c1"># ==== Load previous run</span>
+    <span class="k">if</span> <span class="n">file_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'       -&gt; File name: '</span> <span class="o">+</span> <span class="n">file_name</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">ds_prev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">ds_prev</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'       -&gt; loaded from xarray.Dataset'</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"[ERROR] Either file_name must be specified to set up "</span>
+                         <span class="s2">"from previous run or ds_prev must be given."</span><span class="p">)</span>
+
+    <span class="c1"># load results into Nimbus</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds</span>
+
+    <span class="c1"># return results</span>
+    <span class="k">return</span> <span class="n">ds</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sven Kiefer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,294 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nimbus.src.solver &mdash; Nimbus 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Nimbus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Install_And_Quick_Start.html">Installation and Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Physics_of_Nimbus.html">Physics of Nimbus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/Kiefersv/Nimbus">Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Nimbus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../nimbus.html">nimbus</a></li>
+      <li class="breadcrumb-item active">nimbus.src.solver</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for nimbus.src.solver</h1><div class="highlight"><pre>
+<span></span><span class="sd">""" All set-up functionalities of NIMBUS """</span>
+<span class="c1"># pylint: disable=C0301</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.atmosphere_physics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mass_to_radius</span>
+
+<div class="viewcode-block" id="set_initial_condidtions">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/solver/index.html#nimbus.src.solver.set_initial_condidtions">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_initial_condidtions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Set initial conditions of the atmosphere. The current initial conditions assume no</span>
+<span class="sd">    cloud particles in the cloud layers and a saturated vapour. Below the cloud layer,</span>
+<span class="sd">    the deep MMR is assumed. This has proven to be a generally acceptable choice.</span>
+<span class="sd">    However, improvements could be made here.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    self : Nimbus class</span>
+<span class="sd">        Nimbus object</span>
+<span class="sd">    """</span>
+    <span class="c1"># ==== Initialise array, and set all values to the minimum value</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ode_minimum_mmr</span>
+
+    <span class="c1"># ==== loop over the materials</span>
+    <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">deep</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">deep_gas_mmr</span><span class="p">):</span>
+        <span class="c1"># calculate vapour mmr and set it everywhere</span>
+        <span class="n">pvap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">vapor_pressures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mh</span><span class="p">)</span>
+        <span class="n">mvap</span> <span class="o">=</span> <span class="n">pvap</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mw</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmw</span>
+        <span class="c1"># we want slight supersaturation</span>
+        <span class="n">mvap</span> <span class="o">*=</span> <span class="mf">1.1</span>
+        <span class="c1"># assign vapour limit throughout the atmosphere</span>
+        <span class="n">x0</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">mvap</span><span class="p">,</span> <span class="n">deep</span><span class="p">)</span>
+
+    <span class="c1"># ==== set flag to true</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">isset_initialisation</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="c1"># ==== return initial conditions</span>
+    <span class="k">return</span> <span class="n">x0</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="set_up_solver">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/solver/index.html#nimbus.src.solver.set_up_solver">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_up_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Set up the solver of Nimbus. This can only be run after atmospheric initialisation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    self : Nimbus class</span>
+<span class="sd">        Nimbus object to set up</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># ==== Check if atmosphere is set up</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isset_atmosphere</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Call set_up_atmosphere before set_up_solver."</span><span class="p">)</span>
+
+    <span class="c1"># ==== Solver</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fex</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Function to be solved by solve_ivp</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : float</span>
+<span class="sd">            time [s]</span>
+<span class="sd">        x : ndarray</span>
+<span class="sd">            Mass mixing ratios of the form:</span>
+<span class="sd">            [xv1(p1), ..., xv1(pN), xc1(p1), ..., xc1(pN),</span>
+<span class="sd">             xv2(p1), ..., xv2(pN), xc2(p1), ..., xc2(pN),</span>
+<span class="sd">             xn(p1), ..., xn(pN)]</span>
+
+<span class="sd">        Return</span>
+<span class="sd">        ------</span>
+<span class="sd">        dfdt : ndarray</span>
+<span class="sd">            change of MMRs with time [g/cm3/s]</span>
+<span class="sd">        """</span>
+
+        <span class="c1"># ==== Read in the input ========================================================</span>
+        <span class="n">xw</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># reshape array</span>
+        <span class="c1"># prevent underflow of values</span>
+        <span class="n">xw</span><span class="p">[</span><span class="n">xw</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ode_minimum_mmr</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ode_minimum_mmr</span>
+        <span class="c1"># prevent overflow of values</span>
+        <span class="n">xw</span><span class="p">[</span><span class="n">xw</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="c1"># define output array</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">))</span>
+        <span class="c1"># total mass &amp; density</span>
+        <span class="n">xtot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">xw</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">rhotot</span> <span class="o">=</span> <span class="n">xtot</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">xw</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">rhop</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># ==== Check timeout condition ==================================================</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span>
+                <span class="c1"># remember that run did not complete</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">complete</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="c1"># remember time when it failed</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tfailed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tfailed</span> <span class="o">=</span> <span class="n">t</span>
+                <span class="k">return</span> <span class="n">dx</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+        <span class="c1"># ==== calculate physical parameters ============================================</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_rg</span><span class="p">:</span>  <span class="c1"># use static rg</span>
+            <span class="n">rg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rg</span>  <span class="c1"># cloud particle radius [cm]</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># calculate rg on the fly</span>
+            <span class="n">rg</span> <span class="o">=</span> <span class="n">mass_to_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xw</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">xtot</span><span class="p">,</span> <span class="n">rhotot</span><span class="p">)</span>  <span class="c1"># cloud particle radius [cm]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rg</span> <span class="o">=</span> <span class="n">rg</span>  <span class="c1"># safe rg for outside of function</span>
+        <span class="n">ncl</span> <span class="o">=</span> <span class="n">xw</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_ccn</span>  <span class="c1"># cloud particle number density [1/cm3]</span>
+        <span class="n">vsed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vsed</span><span class="p">(</span><span class="n">rg</span><span class="p">,</span> <span class="n">rhotot</span><span class="p">)</span>  <span class="c1"># settling velocity [cm/s]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_atmos_struct</span><span class="p">()</span>   <span class="c1"># Update atmosphere</span>
+
+        <span class="c1"># ==== Rate calculations ========================================================</span>
+        <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">):</span>
+            <span class="n">n1</span> <span class="o">=</span> <span class="n">xw</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>  <span class="c1"># gas-phase number density [1/cm3]</span>
+            <span class="n">acc_r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acc_rate</span><span class="p">(</span><span class="n">rg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">,</span> <span class="n">n1</span><span class="p">,</span> <span class="n">ncl</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>  <span class="c1"># accretion rate [1/cm3/s]</span>
+            <span class="n">nuc_r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nuc_rate</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>  <span class="c1"># nucleation rate [1/cm3/s]</span>
+            <span class="n">co_r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coag_rate</span><span class="p">(</span><span class="n">rg</span><span class="p">,</span> <span class="n">ncl</span><span class="p">,</span> <span class="n">vsed</span><span class="p">,</span> <span class="n">rhotot</span><span class="p">)</span>  <span class="c1"># coagulation and coalescence [1/cm3/s]</span>
+
+            <span class="c1"># ==== source terms</span>
+            <span class="n">acc</span> <span class="o">=</span> <span class="n">acc_r</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span>
+            <span class="n">nuc</span> <span class="o">=</span> <span class="n">nuc_r</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_ccn</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span>
+            <span class="n">coag</span> <span class="o">=</span> <span class="n">co_r</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_ccn</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span>
+            <span class="n">dx</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="o">-</span> <span class="n">acc</span> <span class="o">-</span> <span class="n">nuc</span>
+            <span class="n">dx</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">acc</span> <span class="o">+</span> <span class="n">nuc</span>
+            <span class="n">dx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">nuc</span> <span class="o">+</span> <span class="n">coag</span>
+
+        <span class="c1"># ==== Diffusion terms ==========================================================</span>
+        <span class="n">f1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dz_mid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">f2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kzz_mid</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo_mid</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dz_mid</span>
+        <span class="n">f3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dz</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">dx</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kzz</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">f1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">xw</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">dx</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">0</span>
+            <span class="n">dx</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">xw</span><span class="p">[</span><span class="n">s</span><span class="p">]))</span> <span class="o">/</span> <span class="n">f3</span>
+
+        <span class="c1"># ==== Advection terms ==========================================================</span>
+        <span class="n">f4</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span> <span class="o">*</span> <span class="n">vsed</span>
+        <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">):</span>
+            <span class="n">dx</span><span class="p">[</span><span class="n">s</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">f1</span> <span class="o">*</span> <span class="n">vsed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">xw</span><span class="p">[</span><span class="n">s</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">dx</span><span class="p">[</span><span class="n">s</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">((</span><span class="n">f4</span> <span class="o">*</span> <span class="n">xw</span><span class="p">[</span><span class="n">s</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">f3</span>
+        <span class="n">dx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">f1</span> <span class="o">*</span> <span class="n">vsed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">xw</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">dx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">((</span><span class="n">f4</span> <span class="o">*</span> <span class="n">xw</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">f3</span>
+
+        <span class="c1"># ===== additional influx =======================================================</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dx</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+
+        <span class="c1"># ==== Finalsing output =========================================================</span>
+        <span class="c1"># immediately evaporate all cloud particles below the cloud</span>
+        <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_sat</span><span class="p">:</span>
+                <span class="c1"># calculate vapour pressure curve</span>
+                <span class="n">pvap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">vapor_pressures</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mh</span><span class="p">)</span>
+                <span class="c1"># calculate partial pressure</span>
+                <span class="n">n1</span> <span class="o">=</span> <span class="n">xw</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>  <span class="c1"># deep particle number density</span>
+                <span class="n">p1</span> <span class="o">=</span> <span class="n">n1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">kb</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span>  <span class="c1"># deep partial pressure</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">/</span> <span class="n">pvap</span> <span class="o">&gt;=</span> <span class="mi">1</span>  <span class="c1"># mask where vapour can condense</span>
+                <span class="c1"># updated the below cloud mask</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
+            <span class="c1"># add cloud particles to the gas phase below the cloud limit</span>
+            <span class="n">dx</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span><span class="p">[</span><span class="n">s</span><span class="p">]]</span> <span class="o">+=</span> <span class="n">dx</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span><span class="p">[</span><span class="n">s</span><span class="p">]]</span>
+            <span class="c1"># set all cloud mmrs values below the vapour pressure to zero</span>
+            <span class="n">dx</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span><span class="p">[</span><span class="n">s</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># remove cloud particles where there is no cloud mass</span>
+        <span class="n">dx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># set number density below cloud to 0</span>
+        <span class="c1"># the lowest cell represents the deep interior and is not touched</span>
+        <span class="n">dx</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># print progress information</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+            <span class="n">prog</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tend</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_rg</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\r</span><span class="s1">[INFO] Loop '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loop_nr</span><span class="p">)</span> <span class="o">+</span> <span class="s1">''</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">it_str</span>
+                      <span class="o">+</span> <span class="s1">' || Current loop progress '</span>
+                      <span class="o">+</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prog</span><span class="si">:</span><span class="s2">05.2f</span><span class="si">}</span><span class="s2">% [log10(t) = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">t</span><span class="p">),</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">]    "</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">''</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\r</span><span class="s1">[INFO] Current progress '</span>
+                      <span class="o">+</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prog</span><span class="si">:</span><span class="s2">05.2f</span><span class="si">}</span><span class="s2">% [log10(t) = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">t</span><span class="p">),</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">]    "</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">''</span><span class="p">)</span>
+
+        <span class="c1"># ==== Return time derivative ===================================================</span>
+        <span class="k">return</span> <span class="n">dx</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+    <span class="c1"># ==== Set the functions</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">fex</span> <span class="o">=</span> <span class="n">fex</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">isset_solver</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'[INFO] Solver set up.'</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sven Kiefer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

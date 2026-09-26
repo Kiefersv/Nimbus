@@ -1,0 +1,461 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nimbus.src.atmosphere &mdash; Nimbus 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Nimbus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Install_And_Quick_Start.html">Installation and Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Physics_of_Nimbus.html">Physics of Nimbus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/Kiefersv/Nimbus">Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Nimbus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../nimbus.html">nimbus</a></li>
+      <li class="breadcrumb-item active">nimbus.src.atmosphere</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for nimbus.src.atmosphere</h1><div class="highlight"><pre>
+<span></span><span class="sd">""" All set-up functionalities of NIMBUS """</span>
+<span class="c1"># pylint: disable=R0913,E0402,R0915</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">root_scalar</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.atmosphere_physics</span><span class="w"> </span><span class="kn">import</span> <span class="n">define_atmosphere_physics</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.species_database</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.subfunctions</span><span class="w"> </span><span class="kn">import</span> <span class="n">aoftf</span>
+
+<div class="viewcode-block" id="set_up_atmosphere">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/atmosphere/index.html#nimbus.set_up_atmosphere">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_up_atmosphere</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">pressure</span><span class="p">,</span> <span class="n">kzz</span><span class="p">,</span> <span class="n">mmw</span><span class="p">,</span> <span class="n">gravity</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">deep_mmr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fsed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">metalicity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ignore_as_nucleator</span><span class="o">=</span><span class="p">[],</span>
+                      <span class="n">minimum_computational_pressure</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Set up the atmospheric structure of the simulation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    self : Nimbus class</span>
+<span class="sd">        Nimbus object that is set up</span>
+<span class="sd">    temperature : np.array</span>
+<span class="sd">        Temperature in Kelvin.</span>
+<span class="sd">    pressure : np.array</span>
+<span class="sd">        Pressure in bar.</span>
+<span class="sd">    kzz : np.array or function kzz(p, t)</span>
+<span class="sd">        Diffusion coefficient in cm2/s.</span>
+<span class="sd">    mmw : np.array</span>
+<span class="sd">        Mean molecular weight in amu.</span>
+<span class="sd">    gravity : np.array</span>
+<span class="sd">        Gravity in cm/s2</span>
+<span class="sd">    species: np.array, optional</span>
+<span class="sd">        Cloud particle specie (currently only 1 is supported).</span>
+<span class="sd">    deep_mmr: np.array, optional</span>
+<span class="sd">        Mass mixing ratio of the cloud specie in the deep atmosphere.</span>
+<span class="sd">    fsed : np.array, optional</span>
+<span class="sd">        Initial settling parameter (defines cloud particle size).</span>
+<span class="sd">    metalicity : np.array or float, optional</span>
+<span class="sd">        metalicity of atmosphere (used for certain pvaps)</span>
+<span class="sd">    ignore_as_nucleator : List[str]</span>
+<span class="sd">        Species which should not be considered to nucleate</span>
+<span class="sd">    minimum_computational_pressure : float, optional</span>
+<span class="sd">        Minimum pressure until which the clouds should be fully calculated.</span>
+
+<span class="sd">    """</span>
+
+    <span class="c1"># ==== Open a database</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">DataBase</span><span class="p">()</span>  <span class="c1"># open the data storage</span>
+
+    <span class="c1"># ==== Check if species are given, if not, calculate internally ====================</span>
+    <span class="k">if</span> <span class="n">species</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'[WARN] Species are set automatically. This is not recommended. '</span>
+                  <span class="s1">'Please use the list of species provided as a starting point to '</span>
+                  <span class="s1">'curate your own list.'</span><span class="p">)</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_cloud_species</span><span class="p">(</span>
+            <span class="n">temperature</span><span class="p">,</span> <span class="n">pressure</span><span class="p">,</span> <span class="n">mmw</span><span class="o">=</span><span class="n">mmw</span><span class="p">,</span> <span class="n">metalicity</span><span class="o">=</span><span class="n">metalicity</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mute</span>
+        <span class="p">)</span>
+        <span class="n">deep_mmr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">db</span><span class="o">.</span><span class="n">solar_mmr</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">metalicity</span><span class="p">)</span> <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">deep_mmr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"[ERROR] Deep MMR is missing."</span><span class="p">)</span>
+
+    <span class="c1"># ==== Initialise all cloud species =================================================</span>
+    <span class="c1"># Note: Each species gets an index according to the input order. Until the output,</span>
+    <span class="c1"># only the index is used to identify the species.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">species</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">species</span> <span class="o">=</span> <span class="p">[</span><span class="n">species</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deep_gas_mmr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">deep_mmr</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">species</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">species</span> <span class="o">=</span> <span class="n">species</span>
+        <span class="c1"># if given as dict, transform to ordered list</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">deep_mmr</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">deep_mmr</span> <span class="o">=</span> <span class="p">[</span><span class="n">deep_mmr</span><span class="p">[</span><span class="n">spec</span><span class="p">]</span> <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">species</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deep_gas_mmr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">deep_mmr</span><span class="p">)</span>
+
+    <span class="c1"># ==== Size and shpae of inputs</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">sz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">nspec</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">)</span>
+
+    <span class="c1"># ==== Setting input parameters</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">=</span> <span class="n">temperature</span>  <span class="c1"># temperature profile [K]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pres</span> <span class="o">=</span> <span class="n">pressure</span><span class="o">*</span><span class="mf">1e6</span>  <span class="c1"># pressure profile, convert from bar to [dyn/cm2]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">kzz</span> <span class="o">=</span> <span class="n">aoftf</span><span class="p">(</span><span class="n">kzz</span><span class="p">)</span>  <span class="c1"># mixing coefficient [cm2/s]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mmw</span> <span class="o">=</span> <span class="n">mmw</span>  <span class="c1"># mean molecular weight [amu]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">gravity</span> <span class="o">=</span> <span class="n">gravity</span>  <span class="c1"># gravity [cm/s2]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">fsed</span> <span class="o">=</span> <span class="n">fsed</span>  <span class="c1"># (initial) settling parameter [None]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mh</span> <span class="o">=</span> <span class="n">metalicity</span>  <span class="c1"># metalicity relative to solar (not log!) []</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ian</span> <span class="o">=</span> <span class="n">ignore_as_nucleator</span>  <span class="c1"># these species will not nucleate</span>
+    <span class="k">if</span> <span class="n">minimum_computational_pressure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mcp</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># use internal computational domain</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mcp</span> <span class="o">=</span> <span class="n">minimum_computational_pressure</span><span class="o">*</span><span class="mf">1e6</span>  <span class="c1"># min p to which clouds stay condensed</span>
+
+    <span class="c1"># ==== Set nucleation rate, accretion rate, and settling velocity</span>
+    <span class="n">define_atmosphere_physics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="c1"># ==== read in information from species database</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">db</span>  <span class="c1"># remember the class</span>
+    <span class="c1"># ==== Assign material information</span>
+    <span class="c1"># density of cloud material [g/cm3]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">rhop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">db</span><span class="o">.</span><span class="n">solid_density</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span> <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">])</span>
+    <span class="c1"># cloud material molecular weight [amu]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">db</span><span class="o">.</span><span class="n">molecular_weight</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span> <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">])</span>
+    <span class="c1"># monomer mass [g]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">m1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">db</span><span class="o">.</span><span class="n">monomer_mass</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span> <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">])</span>
+    <span class="c1"># specific gas constant</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">rgas_spec_cloud</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">db</span><span class="o">.</span><span class="n">specific_gas_constant</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span> <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">])</span>
+
+    <span class="c1"># ==== calculate pressure grid</span>
+    <span class="c1"># grid coordiantes</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="p">)</span>  <span class="c1"># pressure grid in natural logarithm</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logp_mid</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logp</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">logp</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>  <span class="c1"># midpoints</span>
+    <span class="c1"># pressure grid bin size</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">dlogp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logp</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">dlogp</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logp</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">logp</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">dlogp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">logp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">dlogp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">logp</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+    <span class="c1"># midpoints bin size</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">dlogp_mid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logp</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">logp</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># ==== Derive physical properties</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">m_ccn</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_ccn</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rho_ccn</span>  <span class="c1"># ccn mass [g]</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">kzz_mid</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">""" Kzz at log midpoint value """</span>
+        <span class="n">_kzz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kzz</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">_kzz</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">_kzz</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">kzz_mid</span> <span class="o">=</span> <span class="n">kzz_mid</span>
+
+    <span class="c1"># ==== pre-compute constant values</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">calc_atmos_struct</span><span class="p">()</span>
+
+    <span class="c1"># ==== find pressure levels which are supersaturated</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sz</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>  <span class="c1"># mask to evaporate nc</span>
+    <span class="c1"># immediately evaporate all cloud particles below the cloud</span>
+    <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">):</span>
+        <span class="c1"># calculate vapour pressure curve</span>
+        <span class="n">pvap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">vapor_pressures</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mh</span><span class="p">)</span>
+        <span class="c1"># calculate partial pressure</span>
+        <span class="n">n1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deep_gas_mmr</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>  <span class="c1"># deep particle number density</span>
+        <span class="n">p1</span> <span class="o">=</span> <span class="n">n1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">kb</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span>  <span class="c1"># deep partial pressure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">/</span> <span class="n">pvap</span> <span class="o">&gt;=</span> <span class="mi">1</span>  <span class="c1"># mask where vapour can condense</span>
+        <span class="c1"># updated the below cloud mask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
+    <span class="c1"># Now enforce the minimum computational pressure</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mcp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mask_min_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mcp</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_sat</span><span class="p">[:,</span> <span class="n">mask_min_p</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+    <span class="c1"># ==== Calculate initial radius</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">rg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="p">):</span>
+        <span class="c1"># minimisation function</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">vsed_f</span><span class="p">(</span><span class="n">rg</span><span class="p">):</span>
+            <span class="n">v_c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vsed</span><span class="p">(</span><span class="n">rg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rho_ccn</span><span class="p">)[</span><span class="n">i</span><span class="p">]</span>  <span class="c1"># settling veloctity</span>
+            <span class="n">vk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsed</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">kzz</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="p">)[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>  <span class="c1"># fsed velocity</span>
+            <span class="k">return</span> <span class="n">vk</span> <span class="o">-</span> <span class="n">v_c</span>
+        <span class="c1"># call of minimisation function with optimised initial condiaitons</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rg</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">root_scalar</span><span class="p">(</span><span class="n">vsed_f</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">r1</span> <span class="o">*</span> <span class="mf">1e2</span><span class="p">)</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_ccn</span><span class="p">)</span>
+
+    <span class="c1"># ==== Confirm that atmosphere has been set up</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">isset_atmosphere</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="c1"># ==== Print current setup</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'[INFO] Atmosphere set up with:'</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'       -&gt; pressure range: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span><span class="si">:</span><span class="s1">.2e</span><span class="si">}</span><span class="s1"> - </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span><span class="si">:</span><span class="s1">.2e</span><span class="si">}</span><span class="s1"> bar'</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'       -&gt; temperature range: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">)</span><span class="si">:</span><span class="s1">.2e</span><span class="si">}</span><span class="s1"> - </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">)</span><span class="si">:</span><span class="s1">.2e</span><span class="si">}</span><span class="s1"> K'</span><span class="p">)</span>
+        <span class="n">kval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kzz</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'       -&gt; Kzz range at t=0: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">kval</span><span class="p">)</span><span class="si">:</span><span class="s1">.2e</span><span class="si">}</span><span class="s1"> - </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">kval</span><span class="p">)</span><span class="si">:</span><span class="s1">.2e</span><span class="si">}</span><span class="s1"> cm2/s'</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'       -&gt; Mean molecular weight: </span><span class="si">{</span><span class="n">mmw</span><span class="si">:</span><span class="s1">.2e</span><span class="si">}</span><span class="s1"> amu'</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'       -&gt; Gravity: </span><span class="si">{</span><span class="n">gravity</span><span class="si">:</span><span class="s1">.2e</span><span class="si">}</span><span class="s1"> cm/s2'</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nspec</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'       -&gt; '</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">' deep MMR: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">deep_gas_mmr</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="si">:</span><span class="s1">.2e</span><span class="si">}</span><span class="s1"> g/g'</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mcp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'       -&gt; Minimum computational pressure: '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mcp</span><span class="o">*</span><span class="mf">1e-6</span><span class="p">)</span> <span class="o">+</span> <span class="s1">' bar'</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="set_up_influx">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/atmosphere/index.html#nimbus.set_up_influx">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_up_influx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">influx_function</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Set up the top of atmosphere source function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    self : Nimbus class</span>
+<span class="sd">        Nimbus object that is set up</span>
+<span class="sd">    influx_function : Function</span>
+<span class="sd">        def top_function(nimbus, pressure, temperature, time):</span>
+<span class="sd">            nimbus : Nimbus class</span>
+<span class="sd">                Current nimbus class</span>
+<span class="sd">            pressure : np.ndarray[N]</span>
+<span class="sd">                pressure structure</span>
+<span class="sd">            temperature : np.ndarray[N]</span>
+<span class="sd">                temperature structure</span>
+<span class="sd">            time : float</span>
+<span class="sd">                current time (can be unused if constant)</span>
+<span class="sd">            return : np.ndarray[3, N]</span>
+<span class="sd">                the influx of gas-phase material at index 0, solid cloud material at</span>
+<span class="sd">                index 1, and cloud particles at index 2. Index 1 should in general be</span>
+<span class="sd">                all zeros.</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tf</span> <span class="o">=</span> <span class="n">influx_function</span>
+
+    <span class="c1"># ==== Print current setup</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mute</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'[INFO] Top of atmosphere influx function added'</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isset_atmosphere</span><span class="p">:</span>
+            <span class="n">eval_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tend</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">tsteps</span><span class="p">)</span>
+            <span class="n">expl</span> <span class="o">=</span> <span class="n">influx_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">,</span> <span class="n">eval_times</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">'       -&gt; Max '</span> <span class="o">+</span> <span class="n">spec</span> <span class="o">+</span> <span class="s1">' gas influx: '</span>
+                      <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">expl</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">' g/cm3/s'</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">'       -&gt; Max '</span> <span class="o">+</span> <span class="n">spec</span> <span class="o">+</span> <span class="s1">' cloud influx: '</span>
+                      <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">expl</span><span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">' g/cm3/s'</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'       -&gt; Max CCN influx: '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">expl</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">' g/cm3/s'</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="calc_atmos_struct">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/atmosphere/index.html#nimbus.calc_atmos_struct">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calc_atmos_struct</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">""" This function performs atmospheric calculation updates """</span>
+
+    <span class="c1"># ==== Derive physical properties</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">natmo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">kb</span>  <span class="c1"># total gas-phase number density [1/cm3]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmw</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pres</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rgas</span>  <span class="c1"># atmospheric density [g/cm]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rgas</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmw</span><span class="p">))</span>
+    <span class="n">lmfpfac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs_mol</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">lmfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmw</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">avog</span> <span class="o">/</span> <span class="n">lmfpfac</span>  <span class="c1"># mean free path length [cm]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rgas</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">gravity</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmw</span>  <span class="c1"># scale height [cm]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rgas</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmw</span><span class="p">)</span>  <span class="c1"># sound speed [cm/s]</span>
+    <span class="c1"># derivatives to be used later</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">dz</span> <span class="o">=</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">rgas</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmw</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">gravity</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dlogp</span>
+
+    <span class="c1"># ==== mid-point values (see above for explenation of values)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo_mid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logp_mid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">temp_mid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logp_mid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">dz_mid</span> <span class="o">=</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">rgas</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_mid</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmw</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">gravity</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dlogp_mid</span></div>
+
+
+<div class="viewcode-block" id="_find_cloud_species">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/atmosphere/index.html#nimbus._find_cloud_species">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_cloud_species</span><span class="p">(</span><span class="n">temperature</span><span class="p">,</span> <span class="n">pressure</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mmw</span><span class="o">=</span><span class="mf">2.34</span><span class="p">,</span>
+                        <span class="n">mmr_cloudspecies</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">metallicity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">create_analytic_plots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">plot_save_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    This function returns a list of species that should be considered as</span>
+<span class="sd">    condensation species.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    temperature : np.ndarray[N]</span>
+<span class="sd">        temperature structure of the atmosphere [K]</span>
+<span class="sd">    pressure : np.ndarray[N]</span>
+<span class="sd">        pressure structure of the atmosphere [dyn/cm2]</span>
+<span class="sd">    species : list[str], optional</span>
+<span class="sd">        species to consider, if None, all available species are used</span>
+<span class="sd">    mmw : float, optional</span>
+<span class="sd">        mean molecular weight of the atmosphere</span>
+<span class="sd">    mmr_cloudspecies : float or np.ndarray[N], optional</span>
+<span class="sd">        cloud species mmr. An upper estimate is useful here.</span>
+<span class="sd">    metallicity : float, optional</span>
+<span class="sd">        metallicity of the atmosphere</span>
+<span class="sd">    verbose : bool, optional</span>
+<span class="sd">        If true, prints about the species selected will be produced</span>
+<span class="sd">    create_analytic_plots : bool, optional</span>
+<span class="sd">        If true, produces a plot showing the condensation temperature curves</span>
+<span class="sd">    plot_save_file : str, None</span>
+<span class="sd">        If None, plot is shown, if file name given, plot is saved under that name</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    species_out : List[str]</span>
+<span class="sd">        list of species that should be considered</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># ==== Initialisation</span>
+    <span class="c1"># information</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'[INFO] The following cloud species might form clouds:'</span><span class="p">)</span>
+    <span class="c1"># database of thermodynamic data of the cloud forming species</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">DataBase</span><span class="p">()</span>  <span class="c1"># open the data storage</span>
+    <span class="c1"># check all species if not any specific is given</span>
+    <span class="k">if</span> <span class="n">species</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">list_complete_species</span><span class="p">()</span>
+    <span class="c1"># empty list for output</span>
+    <span class="n">species_out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># check if specific mmrs are given or just a float</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mmr_cloudspecies</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="n">mmr</span> <span class="o">=</span> <span class="p">[</span><span class="n">mmr_cloudspecies</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">species</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mmr</span> <span class="o">=</span> <span class="n">mmr_cloudspecies</span>
+
+    <span class="c1"># ==== Check species</span>
+    <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">species</span><span class="p">):</span>
+        <span class="n">pvap</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">vapor_pressures</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">metallicity</span><span class="p">)</span>
+        <span class="n">pvap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">pvap</span><span class="p">,</span> <span class="mf">1e-200</span><span class="p">)</span>
+        <span class="c1"># partial pressure of cloud forming species</span>
+        <span class="n">mw</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">molecular_weight</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>  <span class="c1"># mass of monomer</span>
+        <span class="n">p1</span> <span class="o">=</span>  <span class="n">mmr</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">*</span> <span class="n">mmw</span> <span class="o">/</span> <span class="n">mw</span> <span class="o">*</span> <span class="n">pressure</span>
+        <span class="c1"># saturation ratio</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">/</span> <span class="n">pvap</span>
+        <span class="c1"># add species if it is above at any point in the atmosphere above 1 (so it</span>
+        <span class="c1"># can condense) and below 1 (so it is not already fully condensed throughout</span>
+        <span class="c1"># the atmosphere)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">s</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">s</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">species_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'       -&gt; </span><span class="si">{</span><span class="n">spec</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+
+    <span class="c1"># ==== if analytic plots are anabled, print the structure</span>
+    <span class="k">if</span> <span class="n">create_analytic_plots</span><span class="p">:</span>
+        <span class="c1"># plotting style</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s1">'log'</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">pressure</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">pressure</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mf">1e-6</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'Temperature [K]'</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'Pressure [Bar]'</span><span class="p">)</span>
+        <span class="c1"># plot the tp-profile</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">temperature</span><span class="p">,</span> <span class="n">pressure</span><span class="o">*</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'k'</span><span class="p">)</span>
+        <span class="c1"># plot temperature curves for saturation of species</span>
+        <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">species_out</span><span class="p">):</span>
+            <span class="n">tvap</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">condensation_temperature</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">pressure</span><span class="p">,</span> <span class="n">metallicity</span><span class="p">,</span> <span class="n">mmw</span><span class="p">,</span> <span class="n">mmr</span><span class="p">[</span><span class="n">s</span><span class="p">])</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tvap</span><span class="p">,</span> <span class="n">pressure</span><span class="o">*</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">spec</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">cm</span><span class="o">.</span><span class="n">tab20</span><span class="p">(</span><span class="n">s</span><span class="o">/</span><span class="mi">20</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+        <span class="c1"># either save or show plot</span>
+        <span class="k">if</span> <span class="n">plot_save_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_save_file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="c1"># ==== return the list of possible species</span>
+    <span class="k">return</span> <span class="n">species_out</span></div>
+
+
+<div class="viewcode-block" id="find_cloud_species">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/atmosphere/index.html#nimbus.find_cloud_species">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_cloud_species</span><span class="p">(</span><span class="n">temperature</span><span class="p">,</span> <span class="n">pressure</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mmw</span><span class="o">=</span><span class="mf">2.34</span><span class="p">,</span>
+                        <span class="n">mmr_cloudspecies</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">metallicity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">create_analytic_plots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">plot_save_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Outside wrapper function that converts pressure to cgs.</span>
+<span class="sd">    See _find_clod_species() for more details.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">_find_cloud_species</span><span class="p">(</span>
+        <span class="n">temperature</span><span class="p">,</span> <span class="n">pressure</span><span class="o">*</span><span class="mf">1e6</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="n">mmw</span><span class="p">,</span> <span class="n">mmr_cloudspecies</span><span class="p">,</span> <span class="n">metallicity</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span>
+        <span class="n">create_analytic_plots</span><span class="p">,</span> <span class="n">plot_save_file</span>
+    <span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sven Kiefer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

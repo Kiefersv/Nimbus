@@ -1,0 +1,84 @@
+nimbus.src.plotter
+==================
+
+.. py:module:: nimbus.src.plotter
+
+.. autoapi-nested-parse::
+
+   Functions for diagnostic plotting 
+
+   ..
+       !! processed by numpydoc !!
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   nimbus.src.plotter.RGAS
+   nimbus.src.plotter.AVOG
+   nimbus.src.plotter.KB
+   nimbus.src.plotter.PF
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   nimbus.src.plotter.plot_full_structure
+
+
+Module Contents
+---------------
+
+.. py:data:: RGAS
+   :value: 83143000.0
+
+
+.. py:data:: AVOG
+   :value: 6.02e+23
+
+
+.. py:data:: KB
+   :value: 1.3811129568106312e-16
+
+
+.. py:data:: PF
+   :value: 1000000
+
+
+.. py:function:: plot_full_structure(self, y, title='')
+
+   
+   Plot the cloud structure.
+
+
+   :Parameters:
+
+       **self** : Nimbus class
+           Nimbus object
+
+       **y** : np.array
+           solution of solve ivp
+
+       **title** : str
+           Title for the plot
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

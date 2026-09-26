@@ -1,0 +1,233 @@
+nimbus.src.atmosphere
+=====================
+
+.. py:module:: nimbus.src.atmosphere
+
+.. autoapi-nested-parse::
+
+   All set-up functionalities of NIMBUS 
+
+   ..
+       !! processed by numpydoc !!
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   nimbus.src.atmosphere.set_up_atmosphere
+   nimbus.src.atmosphere.set_up_influx
+   nimbus.src.atmosphere.calc_atmos_struct
+   nimbus.src.atmosphere._find_cloud_species
+   nimbus.src.atmosphere.find_cloud_species
+
+
+Module Contents
+---------------
+
+.. py:function:: set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=None, deep_mmr=None, fsed=1, metalicity=1, ignore_as_nucleator=[], minimum_computational_pressure=None)
+
+   
+   Set up the atmospheric structure of the simulation.
+
+
+   :Parameters:
+
+       **self** : Nimbus class
+           Nimbus object that is set up
+
+       **temperature** : np.array
+           Temperature in Kelvin.
+
+       **pressure** : np.array
+           Pressure in bar.
+
+       **kzz** : np.array or function kzz(p, t)
+           Diffusion coefficient in cm2/s.
+
+       **mmw** : np.array
+           Mean molecular weight in amu.
+
+       **gravity** : np.array
+           Gravity in cm/s2
+
+       **species: np.array, optional**
+           Cloud particle specie (currently only 1 is supported).
+
+       **deep_mmr: np.array, optional**
+           Mass mixing ratio of the cloud specie in the deep atmosphere.
+
+       **fsed** : np.array, optional
+           Initial settling parameter (defines cloud particle size).
+
+       **metalicity** : np.array or float, optional
+           metalicity of atmosphere (used for certain pvaps)
+
+       **ignore_as_nucleator** : List[str]
+           Species which should not be considered to nucleate
+
+       **minimum_computational_pressure** : float, optional
+           Minimum pressure until which the clouds should be fully calculated.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: set_up_influx(self, influx_function)
+
+   
+   Set up the top of atmosphere source function.
+
+
+   :Parameters:
+
+       **self** : Nimbus class
+           Nimbus object that is set up
+
+       **influx_function** : Function
+           def top_function(nimbus, pressure, temperature, time):
+               nimbus : Nimbus class
+                   Current nimbus class
+               pressure : np.ndarray[N]
+                   pressure structure
+               temperature : np.ndarray[N]
+                   temperature structure
+               time : float
+                   current time (can be unused if constant)
+               return : np.ndarray[3, N]
+                   the influx of gas-phase material at index 0, solid cloud material at
+                   index 1, and cloud particles at index 2. Index 1 should in general be
+                   all zeros.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: calc_atmos_struct(self)
+
+   
+   This function performs atmospheric calculation updates 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: _find_cloud_species(temperature, pressure, species=None, mmw=2.34, mmr_cloudspecies=0.01, metallicity=1, verbose=True, create_analytic_plots=True, plot_save_file=None)
+
+   
+   This function returns a list of species that should be considered as
+   condensation species.
+
+
+   :Parameters:
+
+       **temperature** : np.ndarray[N]
+           temperature structure of the atmosphere [K]
+
+       **pressure** : np.ndarray[N]
+           pressure structure of the atmosphere [dyn/cm2]
+
+       **species** : list[str], optional
+           species to consider, if None, all available species are used
+
+       **mmw** : float, optional
+           mean molecular weight of the atmosphere
+
+       **mmr_cloudspecies** : float or np.ndarray[N], optional
+           cloud species mmr. An upper estimate is useful here.
+
+       **metallicity** : float, optional
+           metallicity of the atmosphere
+
+       **verbose** : bool, optional
+           If true, prints about the species selected will be produced
+
+       **create_analytic_plots** : bool, optional
+           If true, produces a plot showing the condensation temperature curves
+
+       **plot_save_file** : str, None
+           If None, plot is shown, if file name given, plot is saved under that name
+
+
+
+   :Returns:
+
+       **species_out** : List[str]
+           list of species that should be considered
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: find_cloud_species(temperature, pressure, species=None, mmw=2.34, mmr_cloudspecies=0.01, metallicity=1, verbose=True, create_analytic_plots=True, plot_save_file=None)
+
+   
+   Outside wrapper function that converts pressure to cgs.
+   See _find_clod_species() for more details.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

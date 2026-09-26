@@ -1,0 +1,46 @@
+nimbus.src
+==========
+
+.. py:module:: nimbus.src
+
+.. autoapi-nested-parse::
+
+   
+   init function 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/nimbus/src/atmosphere/index
+   /autoapi/nimbus/src/atmosphere_physics/index
+   /autoapi/nimbus/src/compute/index
+   /autoapi/nimbus/src/data_storage/index
+   /autoapi/nimbus/src/plotter/index
+   /autoapi/nimbus/src/solver/index
+   /autoapi/nimbus/src/species_database/index
+   /autoapi/nimbus/src/spectra/index
+   /autoapi/nimbus/src/subfunctions/index
+
+

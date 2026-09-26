@@ -1,0 +1,397 @@
+nimbus.src.species_database
+===========================
+
+.. py:module:: nimbus.src.species_database
+
+.. autoapi-nested-parse::
+
+   This file contains all functions to load and assign data specific to gas-phase and cloud
+   material species.
+
+   ..
+       !! processed by numpydoc !!
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   nimbus.src.species_database.data_file_load
+   nimbus.src.species_database.raw_data
+   nimbus.src.species_database.default_cloud_material_data
+   nimbus.src.species_database.gibbs_janaf
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   nimbus.src.species_database.DataBase
+
+
+Module Contents
+---------------
+
+.. py:data:: data_file_load
+
+.. py:data:: raw_data
+
+.. py:data:: default_cloud_material_data
+
+.. py:data:: gibbs_janaf
+
+.. py:class:: DataBase(data_file=None)
+
+   
+   Storage of physical properties. Information on the stored variables:
+    - Surface tension [erg cm^-2] parameters in the form:
+      surface_tension_A + surface_tension_B * T
+    - solar_mmr: Expected mass mixing ratio at solar metalicity
+    - solid_density: Density of the solid material [g/cm3]
+    - monomer_radius: Radius of a single gas-phase molecule [cm]
+    - molecular_weight: Mass of a single gas-phase molecule [g]
+    - Vapor pressure [dyn/cm2] parameters in the form:
+      pvap_prefactor * pvap_base**(pvap_A/T**2 + pvap_B/T + pvap_C
+      + pvap_D*T + pvap_E*T**2 + pvap_F*T**2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:attribute:: rgas
+      :value: 83143000.0
+
+
+
+   .. py:attribute:: avog
+      :value: 6.02e+23
+
+
+
+   .. py:attribute:: kb
+      :value: 1.3811129568106312e-16
+
+
+
+   .. py:attribute:: pf
+      :value: 1000000
+
+
+
+   .. py:attribute:: kjpmol_to_ergpmol
+      :value: 10000000000.0
+
+
+
+   .. py:attribute:: gibbs_janaf
+
+
+   .. py:method:: list_species()
+
+      
+      Return all available species 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: list_complete_species()
+
+      
+      Return all available species 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: monomer_mass(species)
+
+      
+      Return m_species [g]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: specific_gas_constant(species)
+
+      
+      Return R_spec [erg/g/K]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: condensation_temperature(species, pressure, metallicity, mmw, mmr)
+
+      
+      Return temperature [K] at which species condenses
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: solar_mmr(species, metallicity=1)
+
+      
+      Solar MMR [g/g] 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: monomer_radius(species)
+
+      
+      Return r_species [cm] 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: molecular_weight(species)
+
+      
+      return mu_species [amu] 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: solid_density(species)
+
+      
+      Return rho_species [g/cm3] 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: surface_tension(species, temp)
+
+      
+      Return sigma_species(temp) [erg/cm2] 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: gibbs_free_energy(species, temp)
+
+      
+      Return G_species(temp) [erg] 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: vapor_pressures(species, temp, metalicity=1)
+
+      
+      Data according to Lee et al. 2018 (A&A 614, A126)
+
+      :param species: Name of species, see below for supported
+      :param temp: Temperature in Kelvin, can be float or array
+      :param metalicity: metalicity, optional (only used by few pvaps)
+      :return:
+          pvap : vapor pressure
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+

@@ -5,13 +5,13 @@ from time import time
 import numpy as np
 from scipy.integrate import solve_ivp
 
-from .plotter import plot_initial_conditions, plot_full_structure
+from .plotter import plot_full_structure
 from .solver import set_initial_condidtions, set_up_solver
 from .data_storage import save_run
 from .atmosphere_physics import mass_to_radius
 
-def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
-            save_file=None, tag=None):
+def compute(self, typ='full', rel_dif_in_mmr=1e-3, max_iterations=None,
+            save_file=None, tag=None, timeout=None, update_saturation_pressure=None):
     """
     Compute the cloud structure.
 
@@ -19,9 +19,9 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
     ----------
     typ : str, optional
         This parameter determines the stopping creterion. Options are:
-            - 'convergence': run itteratively until convergence (see rel_dif_in_mmr)
-            - 'iterate': use a fixed number of itterations (see itterations)
-            - 'full': fully time dependent simulation with variable radius
+         - 'convergence': run itteratively until convergence (see rel_dif_in_mmr)
+         - 'iterate': use a fixed number of itterations (see itterations)
+         - 'full': fully time dependent simulation with variable radius
     rel_dif_in_mmr : float, optional
         Convergence criterion given as maximum change in the relative MMR between
         itterations. Only used if typ = 'iterate'.
@@ -34,14 +34,26 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
         Save the results under the given name as xarray dataset.
     tag : str, optional
         Save the run internally under the given tag.
+    timeout : float, optional
+        Time after which the solver will stop to proceed. If none is given, solver will
+        continue until it is done
+    update_saturation_pressure : bool, optional
+        If True, the cloud base pressure of each material is dynamically calculated.
 
-    Return
-    ------
+    Returns
+    -------
     ds : xarray.Dataset
         Returns the result as an xarray dataset
     """
 
     # ==== Preparations =================================================================
+    if not self.mute:
+        print('[INFO] Computation function call')
+
+    # set the saturation pressure calculation if given
+    if update_saturation_pressure is not None:
+        self.update_sat = update_saturation_pressure
+
     # ==== set up settings specific for the evaluation typ
     self.it_str = ''
     if typ == 'convergence':
@@ -50,20 +62,27 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
         if max_iterations is None:
             max_iterations = 50  # default number of max_iterations
             if not self.mute:
-                print('[INFO] Max itterations set to 50')
-    elif typ == 'iterate':
+                print('       -> Max itterations set to 50')
+    elif typ in ['iterate', 'iter']:
         self.static_rg = True  # keep radius constant in each itteration
         if max_iterations is None:
             max_iterations = 10  # default number of itterations
             if not self.mute:
-                print('[INFO] Number of itterations set to 10')
+                print('       -> Number of itterations set to 10')
         self.it_str = '/' + str(max_iterations)
     elif typ == 'full':
         self.static_rg = False  # allow for a variable radius
         max_iterations = 1  # this value is not used
     else:
         raise ValueError("[ERROR] Compute type unkown. Please select one of the "
-                         "following: 'convergence', 'itterate', 'full'.")
+                         "following: 'convergence', 'iterate', 'full'.")
+
+    # ==== set timeout if given
+    if timeout is not None:
+        self.timeout = timeout
+        self.start_time = time()
+        if not self.mute:
+            print('       -> Timeout set to {} seconds.'.format(timeout))
 
     # additionally check itterations
     if max_iterations < 1:
@@ -81,22 +100,22 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
     self.evaltimes = np.logspace(np.log10(self.tstart), np.log10(self.tend), self.tsteps)
 
 
-    # check if solver is setup, and do set up if necessary
+    # check if solver is set up, and do set up if necessary
     if not self.isset_solver:
         if not self.mute:
             print('[WARN] Solver set up automatically. '
                   'Use set_up_solver() for more control.')
-        set_up_solver()
+        self.set_up_solver()
         self.isset_solver = True
 
     # initial conditions
-    yin = set_initial_condidtions(self)  # load initial conditions
-    # plot initial conditions
-    if self.do_plots:
-        plot_initial_conditions(self, yin)
+    if not self.isset_initialisation:
+        yin = set_initial_condidtions(self)  # load initial conditions
+    else:
+        yin = self.yin_store
 
     # Variables to save intermediate results
-    self.rg_history = np.zeros((len(self.pres), self.itterations + 2))
+    self.rg_history = []
     self.all_runs = []
     # remember the number of itterations
     t = 1
@@ -110,9 +129,9 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
 
     # print info
     if not self.mute:
-        print('\r[INFO] Computation started ...', end='')
+        print('\r[INFO] Computation started')
 
-    # ==== Itterate over static rg
+    # ==== 1) Itterate over static rg
     # This loop iterates of cloud particle size. In each loop, rg is held constant
     # and updated at the end of the loop.
     if self.static_rg:
@@ -128,7 +147,7 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
 
             # ==== call the solver
             sol = solve_ivp(
-                self.fex, [self.tstart, self.tend], yin, method='LSODA',
+                self.fex, [self.tstart, self.tend], yin, method=self.solver_type,
                 rtol=self.ode_rtol, atol=self.ode_atol, t_eval=self.evaltimes
             )
             self.all_runs.append(sol)
@@ -136,25 +155,30 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             # ==== prepare next run
             yin = sol.y[:, -1]  # set initial conditions to last run
             # calculate acutal radius from output
-            rg = mass_to_radius(self, sol.y[self.sz * 2:, -1],
-                                sol.y[self.sz:self.sz * 2, -1])
+            xrun = yin.reshape((self.nspec*2 + 1, self.sz))
+            # calculate the physics
+            xrun[xrun < self.ode_minimum_mmr] = self.ode_minimum_mmr
+            xtot = np.sum(xrun[1::2], axis=0)
+            rhotot = np.sum(xrun[1::2]*self.rhop[:, np.newaxis], axis=0)/xtot
+            rg = mass_to_radius(self, xrun[-1], xtot, rhotot)
             # find out if there are enough data points for full polynomial degree
             deg_fit = self.rg_fit_deg
-            if sum(self.mask_psupsat) - 1 < self.rg_fit_deg:
+            if sum(self.mask_sat[-1]) - 1 < self.rg_fit_deg:
                 # This results in a preciese fit, but keep minimum of 1 degree
-                deg_fit = np.maximum(1, sum(self.mask_psupsat) - 1)
+                deg_fit = np.maximum(1, sum(self.mask_sat[-1]) - 1)
                 if deg_warn_flag:
                     deg_warn_flag = False
             # create a polnom fit to the cloud particle radius to prevent sudden changes
-            fit = np.polyval(np.polyfit(np.log10(self.pres[self.mask_psupsat]),
-                                        np.log10(rg[self.mask_psupsat]),
+            fit = np.polyval(np.polyfit(np.log10(self.pres[self.mask_sat[-1]]),
+                                        np.log10(rg[self.mask_sat[-1]]),
                                         deg=deg_fit),
                              np.log10(self.pres))
             rg = 10 ** np.maximum(np.minimum(fit, 50), -50)  # prevent extreme values
             rg = 10 ** ((np.log10(rg) + np.log10(self.rg)) / 2)
             self.rg = np.maximum(rg, self.r_ccn)
+            self.rg_history.append(self.rg)
 
-            # ==== analytic cloud structure plot (a bit messy, not gonna lie)
+            # ==== analytic cloud structure plot
             if self.do_plots:
                 plot_full_structure(self, sol.y, str(t))
 
@@ -179,7 +203,7 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
             # ==== incremment itterations and start new loop
             t += 1
 
-    # ==== Calculate rg on the fly
+    # ==== 2) Calculate rg on the fly
     else:
         # ==== preparations
         self.rg_history = self.rg  # remember input radius
@@ -188,13 +212,19 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
 
         # ==== call the solver
         sol = solve_ivp(
-            self.fex, [self.tstart, self.tend], yin, method='LSODA',
-            rtol=self.ode_rtol, atol=self.ode_atol, t_eval=self.evaltimes
+            self.fex, [self.tstart, self.tend], yin, method=self.solver_type,
+            rtol=self.ode_rtol, atol=self.ode_atol, t_eval=self.evaltimes,
+            max_step=self.ode_max_dt
         )
 
         # ==== analytic cloud structure plot (a bit messy, not gonna lie)
         if self.do_plots:
             plot_full_structure(self, sol.y, str(0))
+
+        # ==== Check if run compelted or not
+        if len(self.evaltimes) > len(sol.y[0, :]):
+            self.tfailed = self.evaltimes[len(sol.y[0, :])-1]
+            self.complete = False
 
     # ==== Finish up ====================================================================
     if not self.mute:
@@ -205,6 +235,10 @@ def compute(self, typ='convergence', rel_dif_in_mmr=1e-3, max_iterations=None,
         if not deg_warn_flag:
             print('[WARN] Not enough data points, degree of radius fit '
                   'chagned to: ' + str(deg_fit))
+        if not self.complete:
+            v = round(np.log10(self.tfailed),2)
+            print(f'\r[WARN] Computation timed out at 10^({v}) s simulation time.')
+
     # ==== save data internally
     ds = save_run(self, sol, save_file=save_file, tag=tag)
 

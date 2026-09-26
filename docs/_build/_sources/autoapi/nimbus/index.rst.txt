@@ -1,0 +1,916 @@
+nimbus
+======
+
+.. py:module:: nimbus
+
+.. autoapi-nested-parse::
+
+   
+   init function 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/nimbus/nimbus/index
+   /autoapi/nimbus/src/index
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   nimbus.__author__
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   nimbus.Nimbus
+   nimbus.DataBase
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   nimbus.find_cloud_species
+
+
+Package Contents
+----------------
+
+.. py:class:: Nimbus(working_dir='.', create_analytic_plots=False, verbose=False, mute=False)
+
+   
+   Main class to handle the cloud structure calculation 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:attribute:: rgas
+      :value: 83143000.0
+
+
+
+   .. py:attribute:: avog
+      :value: 6.02e+23
+
+
+
+   .. py:attribute:: kb
+      :value: 1.3811129568106312e-16
+
+
+
+   .. py:attribute:: pf
+      :value: 1000000
+
+
+
+   .. py:attribute:: working_dir
+      :value: './'
+
+
+
+   .. py:attribute:: do_plots
+      :value: False
+
+
+
+   .. py:attribute:: verbose
+      :value: False
+
+
+
+   .. py:attribute:: mute
+      :value: False
+
+
+
+   .. py:attribute:: solver_type
+      :value: 'LSODA'
+
+
+
+   .. py:attribute:: tstart
+      :value: 0.0001
+
+
+
+   .. py:attribute:: tend
+      :value: 1000000000000.0
+
+
+
+   .. py:attribute:: tsteps
+      :value: 200
+
+
+
+   .. py:attribute:: ode_rtol
+      :value: 0.001
+
+
+
+   .. py:attribute:: ode_atol
+      :value: 1e-25
+
+
+
+   .. py:attribute:: ode_max_dt
+
+
+   .. py:attribute:: ode_minimum_mmr
+      :value: 1e-30
+
+
+
+   .. py:attribute:: minimum_nuc_rate
+      :value: 1e-20
+
+
+
+   .. py:attribute:: static_rg
+      :value: True
+
+
+
+   .. py:attribute:: update_sat
+      :value: False
+
+
+
+   .. py:attribute:: r_ccn
+      :value: 1e-07
+
+
+
+   .. py:attribute:: cs_mol
+      :value: 2e-15
+
+
+
+   .. py:attribute:: eps_k
+      :value: 59.7
+
+
+
+   .. py:attribute:: r1
+      :value: 2.001e-08
+
+
+
+   .. py:attribute:: rho_ccn
+      :value: 2.18
+
+
+
+   .. py:attribute:: rg_fit_deg
+      :value: 8
+
+
+
+   .. py:attribute:: results
+
+
+   .. py:attribute:: rg_history
+      :value: None
+
+
+
+   .. py:attribute:: loop_nr
+      :value: 0
+
+
+
+   .. py:attribute:: itterations
+      :value: 0
+
+
+
+   .. py:attribute:: nucleation_efficiency
+      :value: 1
+
+
+
+   .. py:attribute:: growth_efficiency
+      :value: 1
+
+
+
+   .. py:attribute:: sticking_coefficient
+      :value: 1
+
+
+
+   .. py:attribute:: coal_efficiency
+      :value: 1
+
+
+
+   .. py:attribute:: coag_efficiency
+      :value: 1
+
+
+
+   .. py:attribute:: isset_atmosphere
+      :value: False
+
+
+
+   .. py:attribute:: isset_solver
+      :value: False
+
+
+
+   .. py:attribute:: isset_initialisation
+      :value: False
+
+
+
+   .. py:attribute:: isset_transmission_spectrum
+      :value: False
+
+
+
+   .. py:attribute:: isset_emission_spectrum
+      :value: False
+
+
+
+   .. py:attribute:: fex
+      :value: None
+
+
+
+   .. py:attribute:: jac
+      :value: None
+
+
+
+   .. py:attribute:: x0
+      :value: None
+
+
+
+   .. py:attribute:: tf
+      :value: None
+
+
+
+   .. py:attribute:: ds
+      :value: None
+
+
+
+   .. py:attribute:: evaltimes
+      :value: None
+
+
+
+   .. py:attribute:: timeout
+      :value: None
+
+
+
+   .. py:attribute:: tfailed
+      :value: None
+
+
+
+   .. py:attribute:: start_time
+      :value: None
+
+
+
+   .. py:attribute:: complete
+      :value: True
+
+
+
+   .. py:attribute:: yin_store
+      :value: None
+
+
+
+   .. py:attribute:: nuc_rate
+      :value: None
+
+
+
+   .. py:attribute:: acc_rate
+      :value: None
+
+
+
+   .. py:attribute:: evp_rate
+      :value: None
+
+
+
+   .. py:attribute:: coag_rate
+      :value: None
+
+
+
+   .. py:attribute:: vsed
+      :value: None
+
+
+
+   .. py:attribute:: temp
+      :value: None
+
+
+
+   .. py:attribute:: pres
+      :value: None
+
+
+
+   .. py:attribute:: kzz
+      :value: None
+
+
+
+   .. py:attribute:: mmw
+      :value: None
+
+
+
+   .. py:attribute:: gravity
+      :value: None
+
+
+
+   .. py:attribute:: fsed
+      :value: None
+
+
+
+   .. py:attribute:: mh
+      :value: None
+
+
+
+   .. py:attribute:: ian
+      :value: None
+
+
+
+   .. py:attribute:: rhop
+      :value: None
+
+
+
+   .. py:attribute:: mw
+      :value: None
+
+
+
+   .. py:attribute:: m1
+      :value: None
+
+
+
+   .. py:attribute:: rg
+      :value: None
+
+
+
+   .. py:attribute:: rgas_spec_cloud
+      :value: None
+
+
+
+   .. py:attribute:: logp
+      :value: None
+
+
+
+   .. py:attribute:: logp_mid
+      :value: None
+
+
+
+   .. py:attribute:: dlogp
+      :value: None
+
+
+
+   .. py:attribute:: dlogp_mid
+      :value: None
+
+
+
+   .. py:attribute:: kzz_mid
+      :value: None
+
+
+
+   .. py:attribute:: m_ccn
+      :value: None
+
+
+
+   .. py:attribute:: mask_sat_tot
+      :value: None
+
+
+
+   .. py:attribute:: natmo
+      :value: None
+
+
+
+   .. py:attribute:: rhoatmo
+      :value: None
+
+
+
+   .. py:attribute:: vth
+      :value: None
+
+
+
+   .. py:attribute:: lmfp
+      :value: None
+
+
+
+   .. py:attribute:: h
+      :value: None
+
+
+
+   .. py:attribute:: ct
+      :value: None
+
+
+
+   .. py:attribute:: dz
+      :value: None
+
+
+
+   .. py:attribute:: rhoatmo_mid
+      :value: None
+
+
+
+   .. py:attribute:: temp_mid
+      :value: None
+
+
+
+   .. py:attribute:: dz_mid
+      :value: None
+
+
+
+   .. py:method:: test(r)
+
+      
+      test 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: DataBase(data_file=None)
+
+   
+   Storage of physical properties. Information on the stored variables:
+    - Surface tension [erg cm^-2] parameters in the form:
+      surface_tension_A + surface_tension_B * T
+    - solar_mmr: Expected mass mixing ratio at solar metalicity
+    - solid_density: Density of the solid material [g/cm3]
+    - monomer_radius: Radius of a single gas-phase molecule [cm]
+    - molecular_weight: Mass of a single gas-phase molecule [g]
+    - Vapor pressure [dyn/cm2] parameters in the form:
+      pvap_prefactor * pvap_base**(pvap_A/T**2 + pvap_B/T + pvap_C
+      + pvap_D*T + pvap_E*T**2 + pvap_F*T**2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:attribute:: rgas
+      :value: 83143000.0
+
+
+
+   .. py:attribute:: avog
+      :value: 6.02e+23
+
+
+
+   .. py:attribute:: kb
+      :value: 1.3811129568106312e-16
+
+
+
+   .. py:attribute:: pf
+      :value: 1000000
+
+
+
+   .. py:attribute:: kjpmol_to_ergpmol
+      :value: 10000000000.0
+
+
+
+   .. py:attribute:: gibbs_janaf
+
+
+   .. py:method:: list_species()
+
+      
+      Return all available species 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: list_complete_species()
+
+      
+      Return all available species 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: monomer_mass(species)
+
+      
+      Return m_species [g]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: specific_gas_constant(species)
+
+      
+      Return R_spec [erg/g/K]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: condensation_temperature(species, pressure, metallicity, mmw, mmr)
+
+      
+      Return temperature [K] at which species condenses
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: solar_mmr(species, metallicity=1)
+
+      
+      Solar MMR [g/g] 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: monomer_radius(species)
+
+      
+      Return r_species [cm] 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: molecular_weight(species)
+
+      
+      return mu_species [amu] 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: solid_density(species)
+
+      
+      Return rho_species [g/cm3] 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: surface_tension(species, temp)
+
+      
+      Return sigma_species(temp) [erg/cm2] 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: gibbs_free_energy(species, temp)
+
+      
+      Return G_species(temp) [erg] 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: vapor_pressures(species, temp, metalicity=1)
+
+      
+      Data according to Lee et al. 2018 (A&A 614, A126)
+
+      :param species: Name of species, see below for supported
+      :param temp: Temperature in Kelvin, can be float or array
+      :param metalicity: metalicity, optional (only used by few pvaps)
+      :return:
+          pvap : vapor pressure
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:function:: find_cloud_species(temperature, pressure, species=None, mmw=2.34, mmr_cloudspecies=0.01, metallicity=1, verbose=True, create_analytic_plots=True, plot_save_file=None)
+
+   
+   Outside wrapper function that converts pressure to cgs.
+   See _find_clod_species() for more details.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:data:: __author__
+   :value: 'Sven Kiefer'
+
+

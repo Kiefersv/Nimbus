@@ -1,0 +1,59 @@
+nimbus.src.subfunctions
+=======================
+
+.. py:module:: nimbus.src.subfunctions
+
+.. autoapi-nested-parse::
+
+   Functionalities that deal with the coding of Nimbus 
+
+   ..
+       !! processed by numpydoc !!
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   nimbus.src.subfunctions.aoftf
+
+
+Module Contents
+---------------
+
+.. py:function:: aoftf(value)
+
+   
+   AoFtF stands for array_or_function_to_function.
+   Nimbus is fully time-dependent and can therefore either take a static or
+   time-dependent atmospheric structure. Internally, all these variables are handled
+   as functions. Here, an input is checked if it is a function or array. In the latter
+   case it is transformed into a function.
+
+
+   :Parameters:
+
+       **value** : np.ndarray or function
+           ..
+
+
+
+   :Returns:
+
+       function
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

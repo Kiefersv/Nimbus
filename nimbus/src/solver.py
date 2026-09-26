@@ -1,24 +1,40 @@
 """ All set-up functionalities of NIMBUS """
 # pylint: disable=C0301
 
+from time import time
 import numpy as np
-
 from .atmosphere_physics import mass_to_radius
 
 def set_initial_condidtions(self):
     """
-    The current initial conditions assume no cloud particles in the cloud layers and a
-    saturaded vapour. Below the cloud layer, the deep MMR is assumed. This has proven to
-    be a generally accaptable choice. However, improvments could be made here.
-    """
-    # set all values to mimimum of ode solver
-    x0 = np.zeros(3 * self.sz) + self.ode_minimum_mmr
-    # calculate vapour mmr
-    x0[:self.sz] = self.pvap * self.mw / self.pres / self.mmw
-    # assighn deep mmr
-    x0[:self.sz][~self.mask_psupsat] = self.deep_gas_mmr
+    Set initial conditions of the atmosphere. The current initial conditions assume no
+    cloud particles in the cloud layers and a saturated vapour. Below the cloud layer,
+    the deep MMR is assumed. This has proven to be a generally acceptable choice.
+    However, improvements could be made here.
 
-    return x0
+    Parameters
+    ----------
+    self : Nimbus class
+        Nimbus object
+    """
+    # ==== Initialise array, and set all values to the minimum value
+    x0 = np.zeros((self.nspec*2 + 1, self.sz)) + self.ode_minimum_mmr
+
+    # ==== loop over the materials
+    for s, deep in enumerate(self.deep_gas_mmr):
+        # calculate vapour mmr and set it everywhere
+        pvap = self.db.vapor_pressures(self.species[s], self.temp, self.mh)
+        mvap = pvap * self.mw[s] / self.pres / self.mmw
+        # we want slight supersaturation
+        mvap *= 1.1
+        # assign vapour limit throughout the atmosphere
+        x0[s*2] = np.minimum(mvap, deep)
+
+    # ==== set flag to true
+    self.isset_initialisation = True
+
+    # ==== return initial conditions
+    return x0.flatten()
 
 def set_up_solver(self):
     """
@@ -45,7 +61,9 @@ def set_up_solver(self):
             time [s]
         x : ndarray
             Mass mixing ratios of the form:
-            [xv(p1), ..., xv(pN), xc(p1), ..., xc(pN), xn(p1), ..., xn(pN)]
+            [xv1(p1), ..., xv1(pN), xc1(p1), ..., xc1(pN),
+             xv2(p1), ..., xv2(pN), xc2(p1), ..., xc2(pN),
+             xn(p1), ..., xn(pN)]
 
         Return
         ------
@@ -54,94 +72,107 @@ def set_up_solver(self):
         """
 
         # ==== Read in the input ========================================================
-        xw = x.reshape((3, self.sz))  # reshape array
+        xw = x.reshape((self.nspec*2 + 1, self.sz)).copy()  # reshape array
         # prevent underflow of values
         xw[xw < self.ode_minimum_mmr] = self.ode_minimum_mmr
-        xv = xw[0]  # gas-phase mmr
-        xc = xw[1]  # cloud particle mmr
-        xn = xw[2]  # cloud number density mmr
-        # define empty arrays
-        dxv_src = np.zeros_like(xv)
-        dxv_dif = np.zeros_like(xv)
-        dxc_src = np.zeros_like(xc)
-        dxc_dif = np.zeros_like(xc)
-        dxc_adv = np.zeros_like(xc)
-        dxn_src = np.zeros_like(xn)
-        dxn_dif = np.zeros_like(xn)
-        dxn_adv = np.zeros_like(xn)
+        # prevent overflow of values
+        xw[xw > 1] = 1
+        # define output array
+        dx = np.zeros((self.nspec*2 + 1, self.sz))
+        # total mass & density
+        xtot = np.sum(xw[1::2], axis=0)
+        rhotot = xtot/np.sum(xw[1::2]/self.rhop[:, np.newaxis], axis=0)
 
-        # ==== calcualte physical parameters ============================================
+        # ==== Check timeout condition ==================================================
+        if self.timeout is not None:
+            if time() - self.start_time > self.timeout:
+                # remember that run did not complete
+                self.complete = False
+                # remember time when it failed
+                if self.tfailed is None:
+                    self.tfailed = t
+                return dx.flatten()
+
+        # ==== calculate physical parameters ============================================
         if self.static_rg:  # use static rg
             rg = self.rg  # cloud particle radius [cm]
         else: # calculate rg on the fly
-            rg = mass_to_radius(self, xn, xc)  # cloud particle radius [cm]
-            self.rg = rg
-        ncl = xn * self.rhoatmo / self.m_ccn  # cloud particle number density [1/cm3]
-        n1 = xv * self.rhoatmo / self.m1  # gas-phase number density [1/cm3]
+            rg = mass_to_radius(self, xw[-1], xtot, rhotot)  # cloud particle radius [cm]
+            self.rg = rg  # safe rg for outside of function
+        ncl = xw[-1] * self.rhoatmo / self.m_ccn  # cloud particle number density [1/cm3]
+        vsed = self.vsed(rg, rhotot)  # settling velocity [cm/s]
+        self.calc_atmos_struct()   # Update atmosphere
 
-        # ==== Rate calculations
-        acc_rate = self.acc_rate(rg, self.temp, n1, ncl)  # accretion rate [1/cm3/s]
-        nuc_rate = self.nuc_rate(n1, self.temp)  # nucleation rate [1/cm3/s]
-        vsed = self.vsed(rg)  # settling velocity [cm/s]
+        # ==== Rate calculations ========================================================
+        for s, _ in enumerate(self.species):
+            n1 = xw[s*2] * self.rhoatmo / self.m1[s]  # gas-phase number density [1/cm3]
+            acc_r = self.acc_rate(rg, self.temp, n1, ncl, s)  # accretion rate [1/cm3/s]
+            nuc_r = self.nuc_rate(n1, self.temp, s)  # nucleation rate [1/cm3/s]
+            co_r = self.coag_rate(rg, ncl, vsed, rhotot)  # coagulation and coalescence [1/cm3/s]
 
-        # ==== source terms =============================================================
-        dxv_src = - acc_rate * self.m1 / self.rhoatmo - nuc_rate * self.m_ccn / self.rhoatmo
-        dxc_src = acc_rate * self.m1 / self.rhoatmo + nuc_rate * self.m_ccn / self.rhoatmo
-        dxn_src = nuc_rate * self.m_ccn / self.rhoatmo
-
-        # ===== additional top of atmosphere influx ====================================
-        if self.tf is not None:
-            influx = self.tf(self.pres, self.temp, t)
-            dxv_src += influx[0]
-            dxc_src += influx[1]
-            dxn_src += influx[2]
+            # ==== source terms
+            acc = acc_r * self.m1[s] / self.rhoatmo
+            nuc = nuc_r * self.m_ccn / self.rhoatmo
+            coag = co_r * self.m_ccn / self.rhoatmo
+            dx[s*2] += - acc - nuc
+            dx[s*2+1] += acc + nuc
+            dx[-1] += nuc + coag
 
         # ==== Diffusion terms ==========================================================
-        # !!! Note: Rounding errors prevents the definition of prefactors !!!
-        # gas-phase
-        dxv_dif[0] = self.kzz[0] * self.rhoatmo[0] * np.diff(xv[:2])[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
-        dxv_dif[-1] = 0
-        dxv_dif[1:-1] = np.diff(self.kzz_mid * self.rhoatmo_mid * np.diff(xv) / self.dz_mid) / self.dz[1:-1] / self.rhoatmo[1:-1]
-        # cloud material
-        dxc_dif[0] = self.kzz[0] * self.rhoatmo[0] * np.diff(xc[:2])[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
-        dxc_dif[-1] = 0
-        dxc_dif[1:-1] = np.diff(self.kzz_mid * self.rhoatmo_mid * np.diff(xc) / self.dz_mid) / self.dz[1:-1] / self.rhoatmo[1:-1]
-        # cloud particle number density
-        dxn_dif[0] = self.kzz[0] * self.rhoatmo[0] * np.diff(xn[:2])[0] / self.dz_mid[0] / self.dz[0] / self.rhoatmo[0]
-        dxn_dif[-1] = 0
-        dxn_dif[1:-1] = np.diff(self.kzz_mid * self.rhoatmo_mid * np.diff(xn) / self.dz_mid) / self.dz[1:-1] / self.rhoatmo[1:-1]
-
+        f1 = self.rhoatmo[0] / self.dz_mid[0] / self.rhoatmo[0]
+        f2 = self.kzz_mid(t, self.pres) * self.rhoatmo_mid / self.dz_mid
+        f3 = self.dz[1:-1] * self.rhoatmo[1:-1]
+        for s in range(self.nspec*2 + 1):
+            dx[s, 0] += self.kzz(t, self.pres)[0] * f1 * np.diff(xw[s, :2])[0] / self.dz[0]
+            dx[s, -1] += 0
+            dx[s, 1:-1] += np.diff(f2 * np.diff(xw[s])) / f3
 
         # ==== Advection terms ==========================================================
-        # !!! Note: Rounding errors prevents the definition of prefactors !!!
-        # cloud material
-        dxc_adv[0] = self.rhoatmo[0] * xc[0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
-        dxc_adv[-1] = 0
-        dxc_adv[1:-1] = np.diff((self.rhoatmo * vsed * xc)[:-1]) / self.dz[1:-1] / self.rhoatmo[1:-1]
-        # cloud particle number density
-        dxn_adv[0] = self.rhoatmo[0] * xn[0] * vsed[0] / self.dz_mid[0] / self.rhoatmo[0]
-        dxn_adv[-1] = 0
-        dxn_adv[1:-1] = np.diff((self.rhoatmo * vsed * xn)[:-1]) / self.dz[1:-1] / self.rhoatmo[1:-1]
+        f4 = self.rhoatmo * vsed
+        for s, _ in enumerate(self.species):
+            dx[s * 2 + 1, 0] += f1 * vsed[0] * xw[s * 2 + 1, 0]
+            dx[s * 2 + 1, 1:-1] += np.diff((f4 * xw[s * 2 + 1])[:-1]) / f3
+        dx[-1, 0] += f1 * vsed[0] * xw[-1, 0]
+        dx[-1, 1:-1] += np.diff((f4 * xw[-1])[:-1]) / f3
+
+        # ===== additional influx =======================================================
+        if self.tf is not None:
+            dx += self.tf(self, self.pres, self.temp, t)
 
         # ==== Finalsing output =========================================================
-        # combine all parts of the ode
-        dxv = dxv_dif + dxv_src
-        dxc = dxc_dif + dxc_src + dxc_adv
-        dxn = dxn_dif + dxn_src + dxn_adv
-        # set all values below the vapour pressure to zero (speeds up calculation)
-        dxv[~self.mask_psupsat] = 0
-        dxc[~self.mask_psupsat] = 0
-        dxn[~self.mask_psupsat] = 0
-        # combine output
-        dx = np.hstack([dxv, dxc, dxn])
+        # immediately evaporate all cloud particles below the cloud
+        for s, spec in enumerate(self.species):
+            if self.update_sat:
+                # calculate vapour pressure curve
+                pvap = self.db.vapor_pressures(spec, self.temp, self.mh)
+                # calculate partial pressure
+                n1 = xw[s*2] * self.rhoatmo / self.m1[s]  # deep particle number density
+                p1 = n1 * self.kb * self.temp  # deep partial pressure
+                self.mask_sat[s] = p1 / pvap >= 1  # mask where vapour can condense
+                # updated the below cloud mask
+                self.mask_sat[-1] += self.mask_sat[s]
+            # add cloud particles to the gas phase below the cloud limit
+            dx[s*2, ~self.mask_sat[s]] += dx[s*2 + 1, ~self.mask_sat[s]]
+            # set all cloud mmrs values below the vapour pressure to zero
+            dx[s*2 + 1, ~self.mask_sat[s]] = 0
+        # remove cloud particles where there is no cloud mass
+        dx[-1, ~self.mask_sat[-1]] = 0  # set number density below cloud to 0
+        # the lowest cell represents the deep interior and is not touched
+        dx[:, -1] = 0
+
         # print progress information
         if self.verbose and not self.mute:
             prog = np.log10(t)/np.log10(self.tend) * 100
-            print('\r[INFO] Loop ' + str(self.loop_nr) + '' + self.it_str
-                  + ' || Current loop progress ' + f"{prog:05.2f}%", end='')
+            if self.static_rg:
+                print('\r[INFO] Loop ' + str(self.loop_nr) + '' + self.it_str
+                      + ' || Current loop progress '
+                      + f"{prog:05.2f}% [log10(t) = {round(np.log10(t),1)}]    ", end='')
+            else:
+                print('\r[INFO] Current progress '
+                      + f"{prog:05.2f}% [log10(t) = {round(np.log10(t),1)}]    ", end='')
 
-        # ==== Return time derivative
-        return dx
+        # ==== Return time derivative ===================================================
+        return dx.flatten()
 
     # ==== Set the functions
     self.fex = fex

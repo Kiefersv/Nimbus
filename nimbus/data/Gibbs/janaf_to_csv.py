@@ -4,10 +4,9 @@ feel free to add your own. Just make sure you dont mix the gibbs free energies f
 Janaf with others (or be very sure what you are doing).
 """
 
-import re
+from urllib.request import urlopen, Request
 import xarray as xr
 import numpy as np
-from urllib.request import urlopen, Request
 
 # Links to the data, more species can be appended
 species = {
@@ -21,7 +20,7 @@ species = {
 }
 
 # this is the file to append to
-file = 'janaf.nc'
+FILE = 'janaf.nc'
 
 # create dataset
 ds = xr.Dataset(attrs=species)
@@ -39,7 +38,9 @@ for spec in species:
     outs = []
     for line in lines:
         # skip the first two entries
-        if i < 2: i += 1; continue
+        if i < 2:
+            i += 1
+            continue
         # make data into strings
         data = str(line)[2:-4].split(r'\t')
         # delete filler lines
@@ -59,5 +60,4 @@ for spec in species:
     ds[spec] = da
 
 # Save file
-ds.to_netcdf(file)
-
+ds.to_netcdf(FILE)

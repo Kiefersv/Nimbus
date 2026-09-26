@@ -1,0 +1,276 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nimbus.src.atmosphere &mdash; Nimbus 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="nimbus.src.atmosphere_physics" href="../atmosphere_physics/index.html" />
+    <link rel="prev" title="nimbus.src" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Nimbus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../Install_And_Quick_Start.html">Installation and Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Physics_of_Nimbus.html">Physics of Nimbus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/Kiefersv/Nimbus">Github</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">nimbus</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../nimbus/index.html">nimbus.nimbus</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">nimbus.src</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#classes">Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../janaf_to_csv/index.html">janaf_to_csv</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Nimbus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">nimbus</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">nimbus.src</a></li>
+      <li class="breadcrumb-item active">nimbus.src.atmosphere</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/nimbus/src/atmosphere/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-nimbus.src.atmosphere">
+<span id="nimbus-src-atmosphere"></span><h1>nimbus.src.atmosphere<a class="headerlink" href="#module-nimbus.src.atmosphere" title="Link to this heading"></a></h1>
+<p>All set-up functionalities of NIMBUS</p>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#nimbus.src.atmosphere.set_up_atmosphere" title="nimbus.src.atmosphere.set_up_atmosphere"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_up_atmosphere</span></code></a>(self, temperature, pressure, kzz, ...)</p></td>
+<td><p>Set up the atmospheric structure of the simulation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#nimbus.src.atmosphere.set_up_influx" title="nimbus.src.atmosphere.set_up_influx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_up_influx</span></code></a>(self, influx_function)</p></td>
+<td><p>Set up the top of atmosphere source function.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#nimbus.src.atmosphere.calc_atmos_struct" title="nimbus.src.atmosphere.calc_atmos_struct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_atmos_struct</span></code></a>(self)</p></td>
+<td><p>This function performs atmospheric calculation updates</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#nimbus.src.atmosphere._find_cloud_species" title="nimbus.src.atmosphere._find_cloud_species"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_find_cloud_species</span></code></a>(temperature, pressure[, species, ...])</p></td>
+<td><p>This function returns a list of species that should be considered as</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#nimbus.src.atmosphere.find_cloud_species" title="nimbus.src.atmosphere.find_cloud_species"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_cloud_species</span></code></a>(temperature, pressure[, species, ...])</p></td>
+<td><p>Outside wrapper function that converts pressure to cgs.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nimbus.src.atmosphere.set_up_atmosphere">
+<span class="sig-prename descclassname"><span class="pre">nimbus.src.atmosphere.</span></span><span class="sig-name descname"><span class="pre">set_up_atmosphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kzz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gravity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deep_mmr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fsed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metalicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_as_nucleator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimum_computational_pressure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/nimbus/src/atmosphere.html#set_up_atmosphere"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.src.atmosphere.set_up_atmosphere" title="Link to this definition"></a></dt>
+<dd><p>Set up the atmospheric structure of the simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">Nimbus class</span></dt><dd><p>Nimbus object that is set up</p>
+</dd>
+<dt><strong>temperature</strong><span class="classifier">np.array</span></dt><dd><p>Temperature in Kelvin.</p>
+</dd>
+<dt><strong>pressure</strong><span class="classifier">np.array</span></dt><dd><p>Pressure in bar.</p>
+</dd>
+<dt><strong>kzz</strong><span class="classifier">np.array or function kzz(p, t)</span></dt><dd><p>Diffusion coefficient in cm2/s.</p>
+</dd>
+<dt><strong>mmw</strong><span class="classifier">np.array</span></dt><dd><p>Mean molecular weight in amu.</p>
+</dd>
+<dt><strong>gravity</strong><span class="classifier">np.array</span></dt><dd><p>Gravity in cm/s2</p>
+</dd>
+<dt><strong>species: np.array, optional</strong></dt><dd><p>Cloud particle specie (currently only 1 is supported).</p>
+</dd>
+<dt><strong>deep_mmr: np.array, optional</strong></dt><dd><p>Mass mixing ratio of the cloud specie in the deep atmosphere.</p>
+</dd>
+<dt><strong>fsed</strong><span class="classifier">np.array, optional</span></dt><dd><p>Initial settling parameter (defines cloud particle size).</p>
+</dd>
+<dt><strong>metalicity</strong><span class="classifier">np.array or float, optional</span></dt><dd><p>metalicity of atmosphere (used for certain pvaps)</p>
+</dd>
+<dt><strong>ignore_as_nucleator</strong><span class="classifier">List[str]</span></dt><dd><p>Species which should not be considered to nucleate</p>
+</dd>
+<dt><strong>minimum_computational_pressure</strong><span class="classifier">float, optional</span></dt><dd><p>Minimum pressure until which the clouds should be fully calculated.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nimbus.src.atmosphere.set_up_influx">
+<span class="sig-prename descclassname"><span class="pre">nimbus.src.atmosphere.</span></span><span class="sig-name descname"><span class="pre">set_up_influx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">influx_function</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/nimbus/src/atmosphere.html#set_up_influx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.src.atmosphere.set_up_influx" title="Link to this definition"></a></dt>
+<dd><p>Set up the top of atmosphere source function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">Nimbus class</span></dt><dd><p>Nimbus object that is set up</p>
+</dd>
+<dt><strong>influx_function</strong><span class="classifier">Function</span></dt><dd><dl class="simple">
+<dt>def top_function(nimbus, pressure, temperature, time):</dt><dd><dl class="simple">
+<dt>nimbus<span class="classifier">Nimbus class</span></dt><dd><p>Current nimbus class</p>
+</dd>
+<dt>pressure<span class="classifier">np.ndarray[N]</span></dt><dd><p>pressure structure</p>
+</dd>
+<dt>temperature<span class="classifier">np.ndarray[N]</span></dt><dd><p>temperature structure</p>
+</dd>
+<dt>time<span class="classifier">float</span></dt><dd><p>current time (can be unused if constant)</p>
+</dd>
+<dt>return<span class="classifier">np.ndarray[3, N]</span></dt><dd><p>the influx of gas-phase material at index 0, solid cloud material at
+index 1, and cloud particles at index 2. Index 1 should in general be
+all zeros.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nimbus.src.atmosphere.calc_atmos_struct">
+<span class="sig-prename descclassname"><span class="pre">nimbus.src.atmosphere.</span></span><span class="sig-name descname"><span class="pre">calc_atmos_struct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/nimbus/src/atmosphere.html#calc_atmos_struct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.src.atmosphere.calc_atmos_struct" title="Link to this definition"></a></dt>
+<dd><p>This function performs atmospheric calculation updates</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nimbus.src.atmosphere._find_cloud_species">
+<span class="sig-prename descclassname"><span class="pre">nimbus.src.atmosphere.</span></span><span class="sig-name descname"><span class="pre">_find_cloud_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.34</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmr_cloudspecies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metallicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_analytic_plots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_save_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/nimbus/src/atmosphere.html#_find_cloud_species"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.src.atmosphere._find_cloud_species" title="Link to this definition"></a></dt>
+<dd><p>This function returns a list of species that should be considered as
+condensation species.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>temperature</strong><span class="classifier">np.ndarray[N]</span></dt><dd><p>temperature structure of the atmosphere [K]</p>
+</dd>
+<dt><strong>pressure</strong><span class="classifier">np.ndarray[N]</span></dt><dd><p>pressure structure of the atmosphere [dyn/cm2]</p>
+</dd>
+<dt><strong>species</strong><span class="classifier">list[str], optional</span></dt><dd><p>species to consider, if None, all available species are used</p>
+</dd>
+<dt><strong>mmw</strong><span class="classifier">float, optional</span></dt><dd><p>mean molecular weight of the atmosphere</p>
+</dd>
+<dt><strong>mmr_cloudspecies</strong><span class="classifier">float or np.ndarray[N], optional</span></dt><dd><p>cloud species mmr. An upper estimate is useful here.</p>
+</dd>
+<dt><strong>metallicity</strong><span class="classifier">float, optional</span></dt><dd><p>metallicity of the atmosphere</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">bool, optional</span></dt><dd><p>If true, prints about the species selected will be produced</p>
+</dd>
+<dt><strong>create_analytic_plots</strong><span class="classifier">bool, optional</span></dt><dd><p>If true, produces a plot showing the condensation temperature curves</p>
+</dd>
+<dt><strong>plot_save_file</strong><span class="classifier">str, None</span></dt><dd><p>If None, plot is shown, if file name given, plot is saved under that name</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>species_out</strong><span class="classifier">List[str]</span></dt><dd><p>list of species that should be considered</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nimbus.src.atmosphere.find_cloud_species">
+<span class="sig-prename descclassname"><span class="pre">nimbus.src.atmosphere.</span></span><span class="sig-name descname"><span class="pre">find_cloud_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.34</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmr_cloudspecies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metallicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_analytic_plots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_save_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/nimbus/src/atmosphere.html#find_cloud_species"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nimbus.src.atmosphere.find_cloud_species" title="Link to this definition"></a></dt>
+<dd><p>Outside wrapper function that converts pressure to cgs.
+See _find_clod_species() for more details.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="nimbus.src" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../atmosphere_physics/index.html" class="btn btn-neutral float-right" title="nimbus.src.atmosphere_physics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sven Kiefer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

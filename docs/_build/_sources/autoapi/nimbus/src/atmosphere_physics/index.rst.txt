@@ -1,0 +1,86 @@
+nimbus.src.atmosphere_physics
+=============================
+
+.. py:module:: nimbus.src.atmosphere_physics
+
+.. autoapi-nested-parse::
+
+   Functions concerning atmospheric properties. Different functions might be used
+   or added.
+
+   ..
+       !! processed by numpydoc !!
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   nimbus.src.atmosphere_physics.define_atmosphere_physics
+   nimbus.src.atmosphere_physics.mass_to_radius
+
+
+Module Contents
+---------------
+
+.. py:function:: define_atmosphere_physics(self)
+
+   
+   Set up all functions that handle the microphysics of cloud formation. This includes:
+       - Nucleation rate (Available: MCNT)
+       - Growth rate (Available: SW)
+   :param self: Nimbus class object
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: mass_to_radius(self, xn, xc, rhop)
+
+   
+   Calculate cloud particle radius from mass
+
+
+   :Parameters:
+
+       **xn** : np.ndarray
+           Cloud particle number density in mass mixing ratio [g/g]
+
+       **xc** : np.ndarray
+           Cloud particle mass mixing ratio [g/g]
+
+
+
+   :Returns:
+
+       **radius** : np.ndarray
+           Cloud particle radius [cm]
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

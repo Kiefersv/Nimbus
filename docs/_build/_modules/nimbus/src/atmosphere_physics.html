@@ -1,0 +1,382 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nimbus.src.atmosphere_physics &mdash; Nimbus 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Nimbus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Install_And_Quick_Start.html">Installation and Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Physics_of_Nimbus.html">Physics of Nimbus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/Kiefersv/Nimbus">Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Nimbus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../nimbus.html">nimbus</a></li>
+      <li class="breadcrumb-item active">nimbus.src.atmosphere_physics</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for nimbus.src.atmosphere_physics</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">Functions concerning atmospheric properties. Different functions might be used</span>
+<span class="sd">or added.</span>
+<span class="sd">"""</span>
+<span class="c1"># pylint: disable=R0914</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<div class="viewcode-block" id="define_atmosphere_physics">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/atmosphere_physics/index.html#nimbus.src.atmosphere_physics.define_atmosphere_physics">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">define_atmosphere_physics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Set up all functions that handle the microphysics of cloud formation. This includes:</span>
+<span class="sd">        - Nucleation rate (Available: MCNT)</span>
+<span class="sd">        - Growth rate (Available: SW)</span>
+<span class="sd">    :param self: Nimbus class object</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># ===================================================================================</span>
+    <span class="c1">#  Nucleation rates</span>
+    <span class="c1"># ===================================================================================</span>
+    <span class="c1"># Note: all nucleation rate functions must be of the form f(n1, temp, s) and</span>
+    <span class="c1"># have the follwing header:</span>
+    <span class="c1"># """</span>
+    <span class="c1"># :param n1: number density of cloud forming material [1/cm3]</span>
+    <span class="c1"># :param temp: temperature [K]</span>
+    <span class="c1"># :param s: species index</span>
+    <span class="c1">#</span>
+    <span class="c1"># :return: accretion rate [1/cm3]</span>
+    <span class="c1"># """</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_nuc_rate_mini_cloud</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        This nucleation rate was taken from Elsie Lee's mini cloud:</span>
+<span class="sd">        Citation: https://academic.oup.com/mnras/article/524/2/2918/7221353</span>
+<span class="sd">        Link: https://github.com/ELeeAstro/mini_cloud</span>
+
+<span class="sd">        :param n1: number density of cloud forming material [1/cm3]</span>
+<span class="sd">        :param temp: temperature [K]</span>
+<span class="sd">        :return:</span>
+<span class="sd">        """</span>
+
+        <span class="c1"># ==== check if species nucleats</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ian</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">temp</span><span class="p">),))</span>
+
+        <span class="c1"># ==== Physical parameters</span>
+        <span class="n">pvap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">vapor_pressures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mh</span><span class="p">)</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">surface_tension</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">)</span>
+
+        <span class="c1"># ==== Hard coded values</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># sticking coefficient []</span>
+        <span class="n">nf</span> <span class="o">=</span> <span class="mf">5.0</span>  <span class="c1"># MCNT factor []</span>
+
+        <span class="c1"># ==== Physical parameters</span>
+        <span class="n">p1</span> <span class="o">=</span> <span class="n">n1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">kb</span> <span class="o">*</span> <span class="n">temp</span>  <span class="c1"># partial pressure [dyne/cm2]</span>
+        <span class="n">sat</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">/</span> <span class="n">pvap</span>  <span class="c1"># saturation []</span>
+        <span class="n">f_nuc_hom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="n">valid</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">n1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">pvap</span><span class="p">)</span> <span class="o">&amp;</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">p1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">sat</span><span class="p">)</span> <span class="o">&amp;</span>
+            <span class="p">(</span><span class="n">n1</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pvap</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">sig</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">sat</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">valid</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">f_nuc_hom</span>
+
+        <span class="n">ln_ss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sat</span><span class="p">[</span><span class="n">valid</span><span class="p">])</span>  <span class="c1"># log of supersaturation []</span>
+        <span class="n">f0</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">r1</span> <span class="o">**</span> <span class="mi">2</span>  <span class="c1"># colisional corsssection [cm2]</span>
+        <span class="n">kbt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kb</span> <span class="o">*</span> <span class="n">temp</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>  <span class="c1"># shorthand notation</span>
+        <span class="n">theta_inf</span> <span class="o">=</span> <span class="p">(</span><span class="n">f0</span> <span class="o">*</span> <span class="n">sig</span><span class="p">[</span><span class="n">valid</span><span class="p">])</span> <span class="o">/</span> <span class="n">kbt</span>  <span class="c1"># theta inf [?]</span>
+
+        <span class="c1"># ==== Calcualte cirtical cluster size</span>
+        <span class="n">n_inf</span> <span class="o">=</span> <span class="p">(((</span><span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">theta_inf</span><span class="p">)</span> <span class="o">/</span> <span class="n">ln_ss</span><span class="p">)</span> <span class="o">**</span> <span class="mi">3</span>
+        <span class="n">q_inf</span> <span class="o">=</span> <span class="p">(</span><span class="n">nf</span> <span class="o">/</span> <span class="n">n_inf</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">n_star</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">n_inf</span><span class="o">/</span><span class="mf">8.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">q_inf</span><span class="p">)</span>
+                                      <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">q_inf</span><span class="p">)</span><span class="o">**</span><span class="mi">3</span>
+        <span class="n">n_star</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mf">1.00001</span><span class="p">,</span> <span class="n">n_star</span><span class="p">)</span>  <span class="c1"># make sure Nstar-1 is not below 0</span>
+        <span class="n">n_star_1</span> <span class="o">=</span> <span class="n">n_star</span> <span class="o">-</span> <span class="mf">1.0</span>  <span class="c1"># shorthand notation</span>
+
+        <span class="c1"># ==== Gibbs free energy approximation</span>
+        <span class="n">dg_rt</span> <span class="o">=</span> <span class="n">theta_inf</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_star_1</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_star_1</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">nf</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">)))</span>
+
+        <span class="c1"># ==== Zeldovich factor</span>
+        <span class="n">zel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">theta_inf</span> <span class="o">/</span> <span class="p">(</span><span class="mf">9.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">n_star_1</span><span class="o">**</span><span class="p">(</span><span class="mf">4.0</span><span class="o">/</span><span class="mf">3.0</span><span class="p">)))</span>
+                      <span class="o">*</span> <span class="p">((</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">nf</span><span class="o">/</span><span class="n">n_star_1</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">))</span>
+                      <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">nf</span><span class="o">/</span><span class="n">n_star_1</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">))</span><span class="o">**</span><span class="mi">3</span><span class="p">))</span>
+
+        <span class="c1"># ==== growth rate</span>
+        <span class="n">tau_gr</span> <span class="o">=</span> <span class="p">((</span><span class="n">f0</span> <span class="o">*</span> <span class="n">n_star</span><span class="o">**</span><span class="p">(</span><span class="mf">2.0</span><span class="o">/</span><span class="mf">3.0</span><span class="p">))</span> <span class="o">*</span> <span class="n">alpha</span>
+                  <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">kbt</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mw</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">avog</span><span class="p">))</span> <span class="o">*</span> <span class="n">n1</span><span class="p">[</span><span class="n">valid</span><span class="p">])</span>
+
+        <span class="c1"># ==== everything together gives the nucleaiton rate</span>
+        <span class="n">exponent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="o">-</span><span class="mf">300.0</span><span class="p">,</span> <span class="n">n_star_1</span> <span class="o">*</span> <span class="n">ln_ss</span> <span class="o">-</span> <span class="n">dg_rt</span><span class="p">)</span>
+        <span class="n">f_nuc_valid</span> <span class="o">=</span> <span class="n">n1</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span> <span class="o">*</span> <span class="n">tau_gr</span> <span class="o">*</span> <span class="n">zel</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">exponent</span><span class="p">)</span>
+
+        <span class="c1"># ==== Remove nans and other problems</span>
+        <span class="c1"># Note: We only check here the legality of the saturation input to</span>
+        <span class="c1"># allow for a vecotrised input</span>
+        <span class="n">f_nuc_hom</span><span class="p">[</span><span class="n">sat</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_nuc_rate</span>
+        <span class="n">f_nuc_hom</span><span class="p">[</span><span class="n">f_nuc_hom</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_nuc_rate</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_nuc_rate</span>
+
+        <span class="c1"># ==== fudge with nucleation rate (No fudge: self.nuc_rate_fudge = 1)</span>
+        <span class="n">f_nuc_valid</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nucleation_efficiency</span>
+
+        <span class="n">f_nuc_hom</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">f_nuc_valid</span><span class="p">,</span> <span class="n">nan</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">neginf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">f_nuc_hom</span>
+
+    <span class="c1"># ===================================================================================</span>
+    <span class="c1">#  Accretion rates</span>
+    <span class="c1"># ===================================================================================</span>
+    <span class="c1"># Note: all nucleation rate functions must be of the form f(rg, temp, n1, ncl) and</span>
+    <span class="c1"># have the follwing header:</span>
+    <span class="c1"># """</span>
+    <span class="c1"># :param rg: cloud particle size [cm]</span>
+    <span class="c1"># :param temp: temperature [K]</span>
+    <span class="c1"># :param n1: number density of cloud forming material [1/cm3]</span>
+    <span class="c1"># :param ncl: cloud particle number density [1/cm3]</span>
+    <span class="c1">#</span>
+    <span class="c1"># :return: accretion rate [1/cm3]</span>
+    <span class="c1"># """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_acc_rate_mini_cloud</span><span class="p">(</span><span class="n">rg</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">n1</span><span class="p">,</span> <span class="n">ncl</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Accretion rate following Lee (2023):</span>
+<span class="sd">        Citation: https://doi.org/10.1093/mnras/stad2037</span>
+<span class="sd">        Link: https://github.com/ELeeAstro/mini_cloud</span>
+<span class="sd">        """</span>
+
+        <span class="c1"># ==== Physical parameters</span>
+        <span class="n">p1</span> <span class="o">=</span> <span class="n">n1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">kb</span> <span class="o">*</span> <span class="n">temp</span>  <span class="c1"># partial pressure [dyne/cm2]</span>
+        <span class="n">pvap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">vapor_pressures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mh</span><span class="p">)</span>
+        <span class="n">rvv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rgas</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mw</span><span class="p">[</span><span class="n">s</span><span class="p">]))</span>  <span class="c1"># rel vel of vapour [cm/s]</span>
+
+        <span class="c1"># ==== Gaseous diffusion constant</span>
+        <span class="n">d0</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">r1</span>
+        <span class="n">diff_const</span> <span class="o">=</span> <span class="p">(</span><span class="mf">5.0</span><span class="o">/</span><span class="p">(</span><span class="mf">16.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">avog</span> <span class="o">*</span> <span class="n">d0</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span><span class="p">)</span> <span class="o">*</span>
+                      <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">rgas</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmw</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span>
+                              <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mw</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmw</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">mw</span><span class="p">[</span><span class="n">s</span><span class="p">]))</span>
+
+        <span class="c1"># ==== Accreation rate in two limits</span>
+        <span class="c1"># high knudsen number limit</span>
+        <span class="n">dmdt_high</span> <span class="o">=</span> <span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">rg</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n1</span> <span class="o">*</span> <span class="n">ncl</span> <span class="o">*</span> <span class="n">rvv</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">pvap</span><span class="o">/</span><span class="n">p1</span><span class="p">)</span>
+        <span class="n">dmdt_high</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sticking_coefficient</span>
+        <span class="c1"># low knudsen number limit</span>
+        <span class="n">dmdt_low</span> <span class="o">=</span> <span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">rg</span> <span class="o">*</span> <span class="n">n1</span> <span class="o">*</span> <span class="n">ncl</span> <span class="o">*</span> <span class="n">diff_const</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">pvap</span><span class="o">/</span><span class="n">p1</span><span class="p">)</span>
+        <span class="c1"># interpolate</span>
+        <span class="n">val_low</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">dmdt_low</span><span class="p">,</span> <span class="mf">1e-200</span><span class="p">)</span>
+        <span class="n">val_high</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">dmdt_high</span><span class="p">,</span> <span class="mf">1e-200</span><span class="p">)</span>
+        <span class="n">fx</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">val_low</span><span class="o">/</span><span class="n">val_high</span><span class="p">)))</span>
+        <span class="n">fx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="mf">1e-200</span><span class="p">)</span>
+        <span class="n">fx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">dmdt</span> <span class="o">=</span> <span class="n">val_low</span> <span class="o">*</span> <span class="n">fx</span> <span class="o">+</span> <span class="n">val_high</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">fx</span><span class="p">)</span>
+        <span class="n">dmdt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">dmdt</span><span class="p">)</span>
+        <span class="n">dmdt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">dmdt</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># ==== fudge with growth rate (No fudge: self.nuc_rate_fudge = 1)</span>
+        <span class="n">dmdt</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">growth_efficiency</span>
+
+        <span class="k">return</span> <span class="n">dmdt</span>
+
+    <span class="c1"># ===================================================================================</span>
+    <span class="c1">#  Settling velocity</span>
+    <span class="c1"># ===================================================================================</span>
+    <span class="c1"># Note: all settling velocity functions must be of the form f()</span>
+    <span class="c1"># """</span>
+    <span class="c1"># Settling velocity of cloud particles</span>
+    <span class="c1">#</span>
+    <span class="c1"># :param rg: cloud particle size [cm]</span>
+    <span class="c1"># :return: terminal cloud particle settling velocity [cm/s]</span>
+    <span class="c1"># """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_vsed_exolyn</span><span class="p">(</span><span class="n">rg</span><span class="p">,</span> <span class="n">rhop</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Settling velocity taken from ExoLyn (Huang et al. 2024):</span>
+<span class="sd">        Citation:  	https://doi.org/10.1051/0004-6361/202451112</span>
+<span class="sd">        Link: https://github.com/helonghuangastro/exolyn</span>
+<span class="sd">        """</span>
+        <span class="n">vsed</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gravity</span> <span class="o">*</span> <span class="n">rg</span> <span class="o">*</span> <span class="n">rhop</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vth</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhoatmo</span><span class="p">)</span> <span class="o">*</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">rg</span> <span class="o">/</span> <span class="p">(</span><span class="mi">9</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmfp</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">vsed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">vsed</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vsed</span>
+
+    <span class="c1"># # ===================================================================================</span>
+    <span class="c1"># #  Coagulation and Coalescence Rate</span>
+    <span class="c1"># # ===================================================================================</span>
+    <span class="c1"># Note: all nucleation rate functions must be of the form f(rg, ncl, vsed, rhotot) and</span>
+    <span class="c1"># have the following header:</span>
+    <span class="c1"># """</span>
+    <span class="c1"># :param rg: cloud particle size [cm]</span>
+    <span class="c1"># :param ncl: cloud particle number density [1/cm3]</span>
+    <span class="c1"># :param vsed: settling velocity [cm/s]</span>
+    <span class="c1"># :param rhotot: total solid cloud particle density [g/cm3]</span>
+    <span class="c1">#</span>
+    <span class="c1"># :return: accretion rate [1/cm3]</span>
+    <span class="c1"># """</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_coag_mini_cloud</span><span class="p">(</span><span class="n">rg</span><span class="p">,</span> <span class="n">ncl</span><span class="p">,</span> <span class="n">vsed</span><span class="p">,</span> <span class="n">rhotot</span><span class="p">):</span>
+
+        <span class="c1"># ==== Atmospheric parameters</span>
+        <span class="c1"># atmospheric viscosity (dyne s/cm^2) from VIRGA</span>
+        <span class="c1"># EQN B2 in A &amp; M 2001, originally from Rosner+2000</span>
+        <span class="c1"># Rosner, D. E. 2000, Transport Processes in Chemically Reacting Flow Systems</span>
+        <span class="c1"># (Dover: Mineola)</span>
+        <span class="n">visc</span> <span class="o">=</span> <span class="p">(</span><span class="mf">5.</span> <span class="o">/</span> <span class="mf">16.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">kb</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mmw</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">avog</span><span class="p">))</span> <span class="o">/</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cs_mol</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.22</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps_k</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.16</span><span class="p">)))</span>
+        <span class="c1"># Knudsen number</span>
+        <span class="n">Kn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmfp</span><span class="o">/</span><span class="n">rg</span>
+        <span class="c1"># cloud particle mass</span>
+        <span class="n">m_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">4</span><span class="o">/</span><span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">rg</span><span class="o">**</span><span class="mi">3</span> <span class="o">*</span> <span class="n">rhotot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_ccn</span><span class="p">)</span>
+        <span class="c1"># Cunningham slip factor (Kim et al. 2005)</span>
+        <span class="n">Kn_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">Kn</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">)</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="n">Kn_b</span><span class="o">*</span><span class="p">(</span><span class="mf">1.165</span> <span class="o">+</span> <span class="mf">0.483</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.997</span><span class="o">/</span><span class="n">Kn_b</span><span class="p">))</span>
+        <span class="c1"># Particle diffusion rate</span>
+        <span class="n">D_r</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kb</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="o">*</span><span class="n">beta</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">6.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">visc</span><span class="o">*</span><span class="n">rg</span><span class="p">)</span>
+        <span class="c1"># Thermal velocity limit rate</span>
+        <span class="n">V_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="mf">8.0</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">kb</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">m_c</span><span class="p">))</span>
+        <span class="c1"># Moran (2022) method using diffusive Knudsen number</span>
+        <span class="n">Knd</span> <span class="o">=</span> <span class="p">(</span><span class="mf">8.0</span><span class="o">*</span><span class="n">D_r</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">V_r</span><span class="o">*</span><span class="n">rg</span><span class="p">)</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mf">8.0</span> <span class="o">*</span> <span class="n">Knd</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># estimate of differential velocity</span>
+        <span class="n">d_vf</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">vsed</span>
+        <span class="c1"># calcualte E factor</span>
+        <span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">rg</span><span class="p">)</span>
+        <span class="n">Stk</span> <span class="o">=</span> <span class="p">(</span><span class="n">vsed</span> <span class="o">*</span> <span class="n">d_vf</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gravity</span> <span class="o">*</span> <span class="n">rg</span><span class="p">)</span>
+        <span class="n">E</span><span class="p">[</span><span class="n">E</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">0.42</span><span class="o">*</span><span class="p">(</span><span class="n">Stk</span><span class="p">[</span><span class="n">E</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mf">0.75</span><span class="p">))</span>
+
+        <span class="c1"># ==== Coagulation rate</span>
+        <span class="n">f_coag</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">4.0</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">kb</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="o">*</span><span class="n">beta</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">3.0</span><span class="o">*</span><span class="n">visc</span><span class="p">)</span> <span class="o">*</span> <span class="n">phi</span>
+
+        <span class="c1"># ==== Coalescence rate</span>
+        <span class="n">f_coal</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">rg</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">d_vf</span><span class="o">*</span><span class="n">E</span>
+
+        <span class="c1"># ==== fudge factors (default is 1)</span>
+        <span class="n">f_coag</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coag_efficiency</span>
+        <span class="n">f_coal</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coal_efficiency</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">f_coal</span> <span class="o">+</span> <span class="n">f_coag</span><span class="p">)</span> <span class="o">*</span> <span class="n">ncl</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="c1"># ===================================================================================</span>
+    <span class="c1">#  Set functions</span>
+    <span class="c1"># ===================================================================================</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">nuc_rate</span> <span class="o">=</span> <span class="n">_nuc_rate_mini_cloud</span>  <span class="c1"># nucleation rate</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">acc_rate</span> <span class="o">=</span> <span class="n">_acc_rate_mini_cloud</span>  <span class="c1"># accretion rate</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">coag_rate</span> <span class="o">=</span> <span class="n">_coag_mini_cloud</span>  <span class="c1"># coagulation and coalescence rate</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vsed</span> <span class="o">=</span> <span class="n">_vsed_exolyn</span>  <span class="c1"># terminal settling velocity</span></div>
+
+
+
+<span class="c1"># =======================================================================================</span>
+<span class="c1">#  Fixed functions that don't need to be changed</span>
+<span class="c1"># =======================================================================================</span>
+
+<div class="viewcode-block" id="mass_to_radius">
+<a class="viewcode-back" href="../../../autoapi/nimbus/src/atmosphere_physics/index.html#nimbus.src.atmosphere_physics.mass_to_radius">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mass_to_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xn</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">rhop</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Calculate cloud particle radius from mass</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xn : np.ndarray</span>
+<span class="sd">        Cloud particle number density in mass mixing ratio [g/g]</span>
+<span class="sd">    xc : np.ndarray</span>
+<span class="sd">        Cloud particle mass mixing ratio [g/g]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    radius : np.ndarray</span>
+<span class="sd">        Cloud particle radius [cm]</span>
+<span class="sd">    """</span>
+    <span class="n">mp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">xc</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_ccn</span> <span class="o">/</span> <span class="n">xn</span><span class="p">)</span>  <span class="c1"># cloud particle mass [g]</span>
+    <span class="n">rg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cbrt</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">mp</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">rhop</span><span class="p">))</span> <span class="c1"># cloud particle radius [cm]</span>
+    <span class="n">rg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">rg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_ccn</span><span class="p">)</span>  <span class="c1"># prevent low values</span>
+    <span class="k">return</span> <span class="n">rg</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sven Kiefer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
