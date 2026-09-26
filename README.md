@@ -2,7 +2,7 @@
 ![pylint](https://github.com/Kiefersv/Nimbus/blob/main/.github/workflows/pylint.svg)
 ![python](https://github.com/Kiefersv/Nimbus/blob/main/.github/workflows/python.svg)
 
-![Nimbus logo](https://github.com/Kiefersv/Nimbus/blob/main/social/nimbus_logo.png)
+<img src="https://github.com/Kiefersv/Nimbus/blob/main/social/nimbus_logo.png" alt="Nimbus Logo" width="300px"/>
 
 Welcome to Nimbus
 =================
