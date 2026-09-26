@@ -28,13 +28,13 @@ Credit
 ------
 If you use Nimbus, please cite:
 
-* `Kiefer et al. (2026a) <https://arxiv.org/pdf/2603.13167>`_
-* `Kiefer et al. (2026b) <blank>`_
+* `Kiefer et al. (2026a) <https://iopscience.iop.org/article/10.3847/1538-4357/ae5101>`_
+* `Kiefer et al. (2026b) <https://arxiv.org/abs/2609.08960>`_
 
 If you use the opacity generating functions cite:
 
 * `Batalha et al. (2026) <https://iopscience.iop.org/article/10.3847/1538-3881/ae29e5>`_
-* `Attaway et al. (2026) <blank>`_
+* `Attaway et al. (2026) <https://zenodo.org/records/20516973>`_
 
 Nimbus is based on various previous studies, so please consider citing:
 

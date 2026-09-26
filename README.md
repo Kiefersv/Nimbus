@@ -10,7 +10,7 @@ Nimbus is an open-source, light-weight, micro-physical cloud model at your servi
 
 Credit
 ------
-Nimbus is based on [Kiefer et al. (2026ay)](https://iopscience.iop.org/article/10.3847/1538-4357/ae5101) and [Kiefer et al. (2026b)](https://arxiv.org/abs/2609.08960).
+Nimbus is based on [Kiefer et al. (2026a)](https://iopscience.iop.org/article/10.3847/1538-4357/ae5101) and [Kiefer et al. (2026b)](https://arxiv.org/abs/2609.08960).
 The following people have contributed:
 
 - [Sven Kiefer](https://kiefersv.github.io/)
