@@ -12,7 +12,7 @@ from scipy.optimize import root_scalar
 #  Data read in
 # =======================================================================================
 # this step is done here to improve computational runtimes
-data_file_load = os.path.dirname(__file__) + '/../data/chem/cloud_material.csv'
+data_file_load = os.path.dirname(__file__) + '/cloud_material.csv'
 raw_data = np.array(list(csv.reader(open(data_file_load))))
 # loop over all species to initialise
 default_cloud_material_data = {}
@@ -38,10 +38,10 @@ for s, spec in enumerate(raw_data[:, 0]):
         'pvap_E': raw_data[s, 14],
         'pvap_F': raw_data[s, 15],
     }
-# read in gibbs free energies (currently unused but available)
-gibbs_janaf = xr.open_dataset(
-    os.path.dirname(__file__) + '/../data/Gibbs/ggchem.nc'
-) * 1e10
+# # read in gibbs free energies (currently unused but available)
+# gibbs_janaf = xr.open_dataset(
+#     os.path.dirname(__file__) + '/../data/Gibbs/ggchem.nc'
+# ) * 1e10
 
 class DataBase:
     """
@@ -69,8 +69,8 @@ class DataBase:
         # open the cloud material data file and read it
         if data_file is None:
             self.cloud_material_data = default_cloud_material_data
-        # ==== Read in of Gibbs free energies ===============================================
-        self.gibbs_janaf = gibbs_janaf
+        # # ==== Read in of Gibbs free energies ===============================================
+        # self.gibbs_janaf = gibbs_janaf
 
     # =======================================================================================
     #   Quality of life functions
@@ -156,9 +156,9 @@ class DataBase:
             raise ValueError("No surface tension available for " + species)
         return float(a) + float(b) * temp
 
-    def gibbs_free_energy(self, species, temp):
-        """ Return G_species(temp) [erg] """
-        return self.gibbs_janaf[species].interp({"temp_" + species: temp}).values
+    # def gibbs_free_energy(self, species, temp):
+    #     """ Return G_species(temp) [erg] """
+    #     return self.gibbs_janaf[species].interp({"temp_" + species: temp}).values
 
     # =======================================================================================
     #   Complex physical properties calculation (derived not read in)
