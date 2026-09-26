@@ -1,6 +1,7 @@
 .. figure:: https://raw.githubusercontent.com/Kiefersv/Nimbus/refs/heads/main/social/nimbus_logo.png
    :alt: Nimbus logo
    :align: center
+   :width: 300px
 
 Welcome to Nimbus
 =================
