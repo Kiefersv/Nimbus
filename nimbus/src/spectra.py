@@ -302,7 +302,9 @@ def optical_properties(self, tag=None, ds_prev=None, path_to_opacities=None, sig
             if iz == 0:
                 ibot = 0
         if ibot >= nz - 3:
-            print("Not doing sublayer as cloud deck at the bottom of pressure grid")
+            if not self.mute:
+                print("[Info] Not doing sublayer as cloud deck at the bottom of "
+                      "pressure grid")
         else:
             for arr in [scat_gas, ext_gas, cqs_gas]:
                 arr[ibot + 1, :] = arr[ibot, :] * 0.1

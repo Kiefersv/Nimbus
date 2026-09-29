@@ -9,6 +9,7 @@ from .plotter import plot_full_structure
 from .solver import set_initial_condidtions, set_up_solver
 from .data_storage import save_run
 from .atmosphere_physics import mass_to_radius
+from .subfunctions import warn
 
 def compute(self, typ='full', rel_dif_in_mmr=1e-3, max_iterations=None,
             save_file=None, tag=None, timeout=None, update_saturation_pressure=None):
@@ -86,8 +87,7 @@ def compute(self, typ='full', rel_dif_in_mmr=1e-3, max_iterations=None,
 
     # additionally check itterations
     if max_iterations < 1:
-        if not self.mute:
-            print('[WARN] Itterations cannot be less than 1.')
+        warn(self, 'Itterations cannot be less than 1.')
         max_iterations = 1
         self.it_str = str(max_iterations)
     # remember number of itterations
@@ -102,9 +102,7 @@ def compute(self, typ='full', rel_dif_in_mmr=1e-3, max_iterations=None,
 
     # check if solver is set up, and do set up if necessary
     if not self.isset_solver:
-        if not self.mute:
-            print('[WARN] Solver set up automatically. '
-                  'Use set_up_solver() for more control.')
+        warn(self, 'Solver set up automatically. Use set_up_solver() for more control.')
         self.set_up_solver()
         self.isset_solver = True
 
@@ -195,9 +193,9 @@ def compute(self, typ='full', rel_dif_in_mmr=1e-3, max_iterations=None,
                 if max_mmr < rel_dif_in_mmr:
                     break
                 # break if maximum number of itterations has been reached
-                if t >= self.itterations and not self.mute:
-                    print('[WARN] Maximum itterations reached with '
-                          'precision: ' + str(max_mmr))
+                if t >= self.itterations:
+                    warn(self, 'Maximum itterations reached with precision: '
+                         + str(max_mmr))
                     break
 
             # ==== incremment itterations and start new loop
@@ -233,8 +231,8 @@ def compute(self, typ='full', rel_dif_in_mmr=1e-3, max_iterations=None,
               f'{time() - start_time:.2f}s ({self.loop_nr} iterations).')
         # ==== additional warnings
         if not deg_warn_flag:
-            print('[WARN] Not enough data points, degree of radius fit '
-                  'chagned to: ' + str(deg_fit))
+            warn(self, 'Not enough data points, degree of radius fit '
+                       'chagned to: ' + str(deg_fit))
         if not self.complete:
             v = round(np.log10(self.tfailed),2)
             print(f'\r[WARN] Computation timed out at 10^({v}) s simulation time.')

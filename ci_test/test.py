@@ -210,6 +210,28 @@ def test_asserts():
     with testcase.assertRaises(ValueError):
         obj.compute(typ='WRONG')
 
+    # ==== wrong atmospheric structure
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere(
+            [-1], [1], [1], [1], [1], species=['Fe'], deep_mmr={'Fe': 1}, metalicity=1
+        )
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere(
+            [1], [-1], [1], [1], [1], species=['Fe'], deep_mmr={'Fe': 1}, metalicity=1
+        )
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere(
+            [1], [1], [1], -1, 1, species=['Fe'], deep_mmr={'Fe': 1}, metalicity=1
+        )
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere(
+            [1], [1], [1], 1, -1, species=['Fe'], deep_mmr={'Fe': 1}, metalicity=1
+        )
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere(
+            [1], [1], [1], 1e4, 1, species=['Fe'], deep_mmr={'Fe': 1}, metalicity=-1
+        )
+
     # ==== errors if atmospehre is not setup
     with testcase.assertRaises(ValueError):
         obj.set_up_solver()

@@ -42,3 +42,20 @@ def aoftf(value):
 
     raise ValueError('Atmospheric structure inputs must be either a function '
                      'or array.')
+
+def warn(nimb=None, message=''):
+    """
+    Print warning message
+
+    Parameters
+    ----------
+    nimb : Nimbus class
+    message : str
+        Timestep in seconds. This is a required dummy variable.
+    """
+    # dont print if muted
+    if nimb is not None:
+        if nimb.mute:
+            return
+    # print message
+    print('\033[93m[WARN] ' + message + '\033[0m')

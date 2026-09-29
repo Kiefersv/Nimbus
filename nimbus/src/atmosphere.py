@@ -7,7 +7,7 @@ from scipy.optimize import root_scalar
 
 from .atmosphere_physics import define_atmosphere_physics
 from .species_database import DataBase
-from .subfunctions import aoftf
+from .subfunctions import aoftf, warn
 
 def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=None,
                       deep_mmr=None, fsed=1, metalicity=1, ignore_as_nucleator=[],
@@ -49,10 +49,9 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
 
     # ==== Check if species are given, if not, calculate internally ====================
     if species is None:
-        if not self.mute:
-            print('[WARN] Species are set automatically. This is not recommended. '
-                  'Please use the list of species provided as a starting point to '
-                  'curate your own list.')
+        warn(self, 'Species are set automatically. This is not recommended. '
+                   'Please use the list of species provided as a starting point to '
+                   'curate your own list.')
         species = self.find_cloud_species(
             temperature, pressure, mmw=mmw, metalicity=metalicity, verbose=self.mute
         )
@@ -60,6 +59,52 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
     else:
         if deep_mmr is None:
             raise ValueError("[ERROR] Deep MMR is missing.")
+
+    # ==== Check the validity of the input ==============================================
+    # ==== basic validity and unit checks
+    # check temperatures
+    if isinstance(temperature, list):
+        temperature = np.asarray(temperature)
+    if (temperature <= 0).any():
+        raise ValueError('[ERROR] Negative initial temperatures')
+    # check pressures
+    if isinstance(pressure, list):
+        pressure = np.asarray(pressure)
+    if (pressure <= 0).any():
+        raise ValueError('[ERROR] Negative initial pressures')
+    # check kzz
+    # check for negative pressures
+    if isinstance(kzz, list):
+        kzz = np.asarray(kzz)
+    # check validity of mmw
+    if mmw < 0:
+        raise ValueError('[ERROR] Negative mean molecular weight')
+    if mmw > 1e2:
+        warn(self, 'High mean molecular weight detected. Did you use SI unites '
+                   'instead of cgs?')
+    # check validity of gravity
+    if gravity < 0:
+        raise ValueError('[ERROR] Negative gravity')
+    if gravity < 100:
+        warn(self, 'Low gravity detected. Did you use SI unites '
+                   'instead of cgs?')
+    # check validity of gravity
+    if metalicity < 0:
+        raise ValueError('[ERROR] Negative metalicity')
+
+
+    # ==== sorting and advanced checks
+    # check if pressures are increasing, if not, correct it
+    if (np.diff(pressure) < 0).any():
+        warn(self, 'Pressures are not strictly increasing. This was corrected internally.')
+        sorted = np.argsort(pressure)
+        pressure = pressure[sorted]
+        temperature = temperature[sorted]
+        kzz = kzz[sorted]
+    # check for repeated pressure entries
+    if (np.diff(pressure)*2/(pressure[1:] + pressure[:-1]) < 1e-10).any():
+        raise ValueError('[ERROR] Two pressure values are to close to each other or '
+                         'dublicated.')
 
     # ==== Initialise all cloud species =================================================
     # Note: Each species gets an index according to the input order. Until the output,
