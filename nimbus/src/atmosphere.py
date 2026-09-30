@@ -29,7 +29,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
         Mean molecular weight in amu.
     gravity : np.array
         Gravity in cm/s2
-    species: np.array, optional
+    species: list, optional
         Cloud particle specie (currently only 1 is supported).
     deep_mmr: np.array, optional
         Mass mixing ratio of the cloud specie in the deep atmosphere.
@@ -94,6 +94,9 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
 
 
     # ==== sorting and advanced checks
+    # check same length
+    if len(pressure) != len(temperature):
+        raise ValueError('[ERROR] Pressure and temperature must have same length')
     # check if pressures are increasing, if not, correct it
     if (np.diff(pressure) < 0).any():
         warn(self, 'Pressures are not strictly increasing. This was corrected internally.')
@@ -123,6 +126,15 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
     self.sz = len(pressure)
     self.nspec = len(self.species)
 
+    # check mcp
+    if minimum_computational_pressure is None:
+        self.mcp = [None for _ in range(self.nspec)]  # use internal computational domain
+    elif isinstance(minimum_computational_pressure, float):
+        self.mcp = [minimum_computational_pressure*1e6 for _ in range(self.nspec)]
+    else:
+        # min p to which clouds stay condensed
+        self.mcp = np.asarray(minimum_computational_pressure)*1e6
+
     # ==== Setting input parameters
     self.temp = temperature  # temperature profile [K]
     self.pres = pressure*1e6  # pressure profile, convert from bar to [dyn/cm2]
@@ -132,10 +144,6 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
     self.fsed = fsed  # (initial) settling parameter [None]
     self.mh = metalicity  # metalicity relative to solar (not log!) []
     self.ian = ignore_as_nucleator  # these species will not nucleate
-    if minimum_computational_pressure is None:
-        self.mcp = None  # use internal computational domain
-    else:
-        self.mcp = minimum_computational_pressure*1e6  # min p to which clouds stay condensed
 
     # ==== Set nucleation rate, accretion rate, and settling velocity
     define_atmosphere_physics(self)
@@ -187,10 +195,10 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
         self.mask_sat[s] = p1 / pvap >= 1  # mask where vapour can condense
         # updated the below cloud mask
         self.mask_sat[-1] += self.mask_sat[s]
-    # Now enforce the minimum computational pressure
-    if self.mcp is not None:
-        mask_min_p = self.mcp > self.pres
-        self.mask_sat[:, mask_min_p] = True
+        # Now enforce the minimum computational pressure
+        if self.mcp[s] is not None:
+            mask_min_p = self.mcp[s] > self.pres
+            self.mask_sat[:, mask_min_p] = True
 
 
     # ==== Calculate initial radius
@@ -210,16 +218,20 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
     # ==== Print current setup
     if not self.mute:
         print('[INFO] Atmosphere set up with:')
+        print(f'       -> cloud species: ' + str(self.species))
         print(f'       -> pressure range: {np.max(pressure):.2e} - {np.min(pressure):.2e} bar')
         print(f'       -> temperature range: {np.max(self.temp):.2e} - {np.min(self.temp):.2e} K')
         kval = self.kzz(0, self.pres)
         print(f'       -> Kzz range at t=0: {np.max(kval):.2e} - {np.min(kval):.2e} cm2/s')
-        print(f'       -> Mean molecular weight: {mmw:.2e} amu')
-        print(f'       -> Gravity: {gravity:.2e} cm/s2')
+        print(f'       -> mean molecular weight: {mmw:.2e} amu')
+        print(f'       -> gravity: {gravity:.2e} cm/s2')
+        if len(self.ian) > 0:
+            print(f'       -> not nucleating: ' + str(self.ian))
         for s in range(self.nspec):
             print('       -> ' + self.species[s] + f' deep MMR: {self.deep_gas_mmr[s]:.2e} g/g')
-        if self.mcp is not None:
-            print('       -> Minimum computational pressure: ' + str(self.mcp*1e-6) + ' bar')
+            if self.mcp[0] is not None:
+                print('       -> ' + self.species[s] + ' Minimum computational pressure: '
+                      + str(self.mcp) + ' bar')
 
 
 def set_up_influx(self, influx_function):

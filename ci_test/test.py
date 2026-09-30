@@ -28,7 +28,8 @@ def test_nimbus():
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
                  verbose=True, create_analytic_plots=True)
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+    obj.set_up_atmosphere(temperature[::-1], pressure[::-1], kzz[::-1], mmw, gravity,
+                          species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(typ='iterate', max_iterations=3)
     check(ds, [0.00026518302326593995, 0.002027077714200809, 0.00044025281923456183,
@@ -70,6 +71,15 @@ def test_nimbus():
     check(ds, [0.0001550947737573427, 0.0020263800957963235, 1.1334719687814653e-05,
                13.893025318657784])
 
+    # ==== Test MCP
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True)
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr,
+                          minimum_computational_pressure=1e1)
+    obj.set_up_solver()
+    ds = obj.compute(typ='full')
+    check(ds, [0.0002122269660495013, 0.0018192709076726497, 2.2500592896569624e-05,
+               23.234358676205222])
+
     # ==== timout test
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
@@ -85,7 +95,7 @@ def test_nimbus():
     obj.set_up_influx(inj)
     obj.set_up_solver()
     ds = obj.compute(typ='full')
-    check(ds, [0.001956334984998105, 0.0035141095017851382, 2.750709667060246e-06,
+    check(ds, [0.001956334984998105, 0.0035141095017851387, 2.750709667060246e-06,
                17082.166474858637])
 
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
@@ -231,6 +241,11 @@ def test_asserts():
         obj.set_up_atmosphere(
             [1], [1], [1], 1e4, 1, species=['Fe'], deep_mmr={'Fe': 1}, metalicity=-1
         )
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere(
+            [1, 1], [1, 1], [1, 1], 1e4, 1, species=['Fe'], deep_mmr={'Fe': 1}, metalicity=1
+        )
+
 
     # ==== errors if atmospehre is not setup
     with testcase.assertRaises(ValueError):

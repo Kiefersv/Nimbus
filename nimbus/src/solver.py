@@ -163,13 +163,16 @@ def set_up_solver(self):
         # print progress information
         if self.verbose and not self.mute:
             prog = np.log10(t)/np.log10(self.tend) * 100
+            eval_time = time() - self.start_time
             if self.static_rg:
                 print('\r[INFO] Loop ' + str(self.loop_nr) + '' + self.it_str
                       + ' || Current loop progress '
-                      + f"{prog:05.2f}% [log10(t) = {round(np.log10(t),1)}]    ", end='')
+                      + f"{prog:05.2f}% [log10(t_sim) = {round(np.log10(t),1)}, "
+                        f"t_eval = {int(eval_time)}]    ", end='')
             else:
                 print('\r[INFO] Current progress '
-                      + f"{prog:05.2f}% [log10(t) = {round(np.log10(t),1)}]    ", end='')
+                      + f"{prog:05.2f}% [log10(t_sim) = {round(np.log10(t),1)}, "
+                        f"t_eval = {int(eval_time)}]    ", end='')
 
         # ==== Return time derivative ===================================================
         return dx.flatten()

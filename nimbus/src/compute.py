@@ -79,9 +79,9 @@ def compute(self, typ='full', rel_dif_in_mmr=1e-3, max_iterations=None,
                          "following: 'convergence', 'iterate', 'full'.")
 
     # ==== set timeout if given
+    self.start_time = time()
     if timeout is not None:
         self.timeout = timeout
-        self.start_time = time()
         if not self.mute:
             print('       -> Timeout set to {} seconds.'.format(timeout))
 
@@ -228,14 +228,16 @@ def compute(self, typ='full', rel_dif_in_mmr=1e-3, max_iterations=None,
     if not self.mute:
         # ==== print final informations
         print('\r[INFO] Cloud structures completed in '
-              f'{time() - start_time:.2f}s ({self.loop_nr} iterations).')
+              f'{time() - start_time:.2f}s ({self.loop_nr} iterations). '
+              f'                                ')
         # ==== additional warnings
         if not deg_warn_flag:
             warn(self, 'Not enough data points, degree of radius fit '
                        'chagned to: ' + str(deg_fit))
         if not self.complete:
             v = round(np.log10(self.tfailed),2)
-            print(f'\r[WARN] Computation timed out at 10^({v}) s simulation time.')
+            print(f'\r[WARN] Computation timed out at 10^({v}) s simulation time. '
+                  f'                               ')
 
     # ==== save data internally
     ds = save_run(self, sol, save_file=save_file, tag=tag)
