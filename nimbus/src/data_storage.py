@@ -108,6 +108,7 @@ def save_run(self, sol, save_file=None, tag=None):
         # ==== initialise variables
         gas_mmr = np.zeros((self.nspec, tstep_done, self.sz))
         solid_mmr = np.zeros((self.nspec, tstep_done, self.sz))
+        ccn_mmr = np.zeros((tstep_done, self.sz))
         nuc_rate = np.zeros((self.nspec, tstep_done, self.sz))
         acc_rate = np.zeros((self.nspec, tstep_done, self.sz))
         saturation = np.zeros((self.nspec, tstep_done, self.sz))
@@ -125,6 +126,7 @@ def save_run(self, sol, save_file=None, tag=None):
             rhotot = np.sum(xrun[1::2]*self.rhop[:, np.newaxis], axis=0)/xtot
             xn = xrun[-1]  # cloud number density mmr
             ncl[t] = xn * self.rhoatmo / self.m_ccn  # cloud particle number density [1/cm3]
+            ccn_mmr[t] = xrun[-1]
             rg[t] = mass_to_radius(self, xrun[-1], xtot, rhotot)
             all_kzz[t] = self.kzz(self.evaltimes[t], self.pres)
             for s, _ in enumerate(self.species):
@@ -135,12 +137,14 @@ def save_run(self, sol, save_file=None, tag=None):
                 nuc_rate[s, t] = self.nuc_rate(n1[s, t], self.temp, s)  # nucleation rate [1/cm3/s]
                 gas_mmr[s, t] = xrun[s*2]
                 solid_mmr[s, t] = xrun[s*2 + 1]
+                ccn_mmr[t] = xrun[-1]
                 pvap = self.db.vapor_pressures(self.species[s], self.temp, self.mh)
                 saturation[s, t] = pvap * self.mw[s] / self.pres / self.mmw
         data = {
             'gas_mmr': (co2, gas_mmr[:, -1]),
             'total_cloud_mmr': (co2[1:], total_mmr[-1]),
             'cloud_mmr': (co2, solid_mmr[:, -1]),
+            'ccn_mmr': (co2[1:], ccn_mmr[-1]),
             'nucleation_rate': (co2, nuc_rate[:, -1]),
             'growth_rate': (co2, acc_rate[:, -1]),
             'cloud_number_density': (co2[1:], ncl[-1]),
@@ -153,6 +157,7 @@ def save_run(self, sol, save_file=None, tag=None):
             'all_gas_mmr': (co, gas_mmr),
             'all_total_cloud_mmr': (co[1:], total_mmr),
             'all_cloud_mmr': (co, solid_mmr),
+            'all_ccn_mmr': (co[1:], ccn_mmr),
             'all_nucleation_rate': (co, nuc_rate),
             'all_growth_rate': (co, acc_rate),
             'all_cloud_number_density': (co[1:], ncl),

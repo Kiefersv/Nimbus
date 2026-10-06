@@ -232,7 +232,15 @@ def define_atmosphere_physics(self):
         f_coag *= self.coag_efficiency
         f_coal *= self.coal_efficiency
 
-        return (f_coal + f_coag) * ncl**2
+        # ===== final value
+        val = (f_coal + f_coag) * ncl ** 2
+
+        # ==== numerical security
+        val = np.nan_to_num(val)
+        val[val < self.ode_minimum_mmr] = 0
+
+        # ==== and done
+        return val
 
     # ===================================================================================
     #  Set functions

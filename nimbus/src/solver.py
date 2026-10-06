@@ -139,7 +139,7 @@ def set_up_solver(self):
         if self.tf is not None:
             dx += self.tf(self, self.pres, self.temp, t)
 
-        # ==== Finalsing output =========================================================
+        # ==== Finalizing output =========================================================
         # immediately evaporate all cloud particles below the cloud
         for s, spec in enumerate(self.species):
             if self.update_sat:
@@ -149,6 +149,13 @@ def set_up_solver(self):
                 n1 = xw[s*2] * self.rhoatmo / self.m1[s]  # deep particle number density
                 p1 = n1 * self.kb * self.temp  # deep partial pressure
                 self.mask_sat[s] = p1 / pvap >= 1  # mask where vapour can condense
+                # Now enforce the minimum computational pressure
+                if self.mcp[s] is not None:
+                    mask_min_p = self.mcp[s] > self.pres
+                    self.mask_sat[s, mask_min_p] = True
+                # set all False at top of atmosphere to True
+                first_true = np.argmax(self.mask_sat[s])
+                self.mask_sat[s, :first_true] = True
                 # updated the below cloud mask
                 self.mask_sat[-1] += self.mask_sat[s]
             # add cloud particles to the gas phase below the cloud limit
@@ -170,9 +177,9 @@ def set_up_solver(self):
                       + f"{prog:05.2f}% [log10(t_sim) = {round(np.log10(t),1)}, "
                         f"t_eval = {int(eval_time)}]    ", end='')
             else:
-                print('\r[INFO] Current progress '
+                print('\r[INFO] Progress '
                       + f"{prog:05.2f}% [log10(t_sim) = {round(np.log10(t),1)}, "
-                        f"t_eval = {int(eval_time)}]    ", end='')
+                        f"t_eval = {int(eval_time)}s]    ", end='')
 
         # ==== Return time derivative ===================================================
         return dx.flatten()

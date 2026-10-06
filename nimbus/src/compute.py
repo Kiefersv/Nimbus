@@ -12,7 +12,8 @@ from .atmosphere_physics import mass_to_radius
 from .subfunctions import warn
 
 def compute(self, typ='full', rel_dif_in_mmr=1e-3, max_iterations=None,
-            save_file=None, tag=None, timeout=None, update_saturation_pressure=None):
+            save_file=None, tag=None, timeout=None, update_saturation_pressure=None,
+            evaluation_time_steps=None):
     """
     Compute the cloud structure.
 
@@ -40,6 +41,9 @@ def compute(self, typ='full', rel_dif_in_mmr=1e-3, max_iterations=None,
         continue until it is done
     update_saturation_pressure : bool, optional
         If True, the cloud base pressure of each material is dynamically calculated.
+    evaluation_time_steps : np.ndarray, optional
+        If given, these timesteps are evaluated, otherwise a logscaling with internal
+        parameters is used.
 
     Returns
     -------
@@ -97,12 +101,20 @@ def compute(self, typ='full', rel_dif_in_mmr=1e-3, max_iterations=None,
     start_time = time()
 
     # set timesteps
-    self.evaltimes = np.logspace(np.log10(self.tstart), np.log10(self.tend), self.tsteps)
+    if evaluation_time_steps is None:
+        self.evaltimes = np.logspace(
+            np.log10(self.tstart), np.log10(self.tend), self.tsteps
+        )
+    else:
+        self.evaltimes = evaluation_time_steps
+        self.tstart = self.evaltimes[0]
+        self.tend = self.evaltimes[-1]
+        self.tsteps = len(self.evaltimes)
 
 
     # check if solver is set up, and do set up if necessary
     if not self.isset_solver:
-        warn(self, 'Solver set up automatically. Use set_up_solver() for more control.')
+        warn(self, 'Solver set up automatically.')
         self.set_up_solver()
         self.isset_solver = True
 
@@ -235,9 +247,9 @@ def compute(self, typ='full', rel_dif_in_mmr=1e-3, max_iterations=None,
             warn(self, 'Not enough data points, degree of radius fit '
                        'chagned to: ' + str(deg_fit))
         if not self.complete:
-            v = round(np.log10(self.tfailed),2)
-            print(f'\r[WARN] Computation timed out at 10^({v}) s simulation time. '
-                  f'                               ')
+            v = round(np.log10(self.tfailed), 2)
+            warn(self, f'Computation timed out at 10^({v}) s simulation time. '
+                 '                               ')
 
     # ==== save data internally
     ds = save_run(self, sol, save_file=save_file, tag=tag)

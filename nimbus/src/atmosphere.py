@@ -190,15 +190,17 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
         # calculate vapour pressure curve
         pvap = self.db.vapor_pressures(spec, self.temp, self.mh)
         # calculate partial pressure
-        n1 = self.deep_gas_mmr[s] * self.rhoatmo / self.m1[s]  # deep particle number density
-        p1 = n1 * self.kb * self.temp  # deep partial pressure
+        p1 =  self.deep_gas_mmr[s] * self.mmw / db.molecular_weight(spec) * self.pres
         self.mask_sat[s] = p1 / pvap >= 1  # mask where vapour can condense
-        # updated the below cloud mask
-        self.mask_sat[-1] += self.mask_sat[s]
         # Now enforce the minimum computational pressure
         if self.mcp[s] is not None:
             mask_min_p = self.mcp[s] > self.pres
-            self.mask_sat[:, mask_min_p] = True
+            self.mask_sat[s, mask_min_p] = True
+        # set all False at top of atmosphere to True
+        first_true = np.argmax(self.mask_sat[s])
+        self.mask_sat[s, :first_true] = True
+        # updated the below cloud mask
+        self.mask_sat[-1] += self.mask_sat[s]
 
 
     # ==== Calculate initial radius
@@ -231,7 +233,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
             print('       -> ' + self.species[s] + f' deep MMR: {self.deep_gas_mmr[s]:.2e} g/g')
             if self.mcp[0] is not None:
                 print('       -> ' + self.species[s] + ' Minimum computational pressure: '
-                      + str(self.mcp) + ' bar')
+                      + str(self.mcp[s]) + ' bar')
 
 
 def set_up_influx(self, influx_function):
@@ -264,7 +266,7 @@ def set_up_influx(self, influx_function):
         print('[INFO] Top of atmosphere influx function added')
         if self.isset_atmosphere:
             eval_times = np.logspace(np.log10(self.tstart), np.log10(self.tend), self.tsteps)
-            expl = influx_function(self, self.pres, self.temp, eval_times)
+            expl = influx_function(self, self.pres, self.temp, eval_times[0])
             for s, spec in enumerate(self.species):
                 print('       -> Max ' + spec + ' gas influx: '
                       + str(np.max(expl[s*2])) + ' g/cm3/s')
