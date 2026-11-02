@@ -3,6 +3,7 @@
 import os
 import unittest
 import numpy as np
+from mienet import MieNet
 from nimbus import Nimbus, DataBase, find_cloud_species
 
 # ==== Example values
@@ -81,7 +82,8 @@ def test_nimbus():
                23.234358676205222])
 
     # ==== timout test
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
+                 create_analytic_plots=True)
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(typ='full', timeout=0.001)
@@ -145,6 +147,16 @@ def test_nimbus():
     check(ds, [0.00020227752438271322, 0.0020233274149122917, 8.276826302545698e-06,
                74.42661745020483])
 
+    # ==== set up nimbus with multiple materials, dict input, and ignor nuc
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity,
+                          ['SiO', 'MgSiO3'], {'SiO': 1e-3, 'MgSiO3': 1e-4},
+                          ignore_as_nucleator='MgSiO3')
+    obj.set_up_solver()
+    ds = obj.compute(typ='full')
+    check(ds, [1.0311480169638711e-19, 0.005999999999999857, 0.0005634321626017384,
+               1.3924126755600965e-18])
+
 def test_datastorage():
     """ Unit testing of DataStorage """
     ds = DataBase()
@@ -192,6 +204,17 @@ def test_spectra():
     assert np.isclose(np.sum(df_cloud['w0']), 651.2049009781938)
     assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
 
+    # ==== test alternative inputs
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species2, deepmmr)
+    ds_out = obj.compute(typ='iterate', max_iterations=3)
+    ma = MieNet(use_ai=False)
+    df_cloud = obj.picaso_formater(mie_type='full', nradii=10, ds_prev=ds_out, mieai_object=ma)
+    assert np.isclose(np.sum(df_cloud['opd']), 319.19585100687664)
+    assert np.isclose(np.sum(df_cloud['g0']), 860.9888904345)
+    assert np.isclose(np.sum(df_cloud['w0']), 651.2049009781938)
+    assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
+
     # ==== set up nimbus fully to test timestamps
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species2, deepmmr)
@@ -221,30 +244,25 @@ def test_asserts():
         obj.compute(typ='WRONG')
 
     # ==== wrong atmospheric structure
+    ins = {'species': ['Fe'], 'deep_mmr': {'Fe': 1}, 'metalicity': 1}
     with testcase.assertRaises(ValueError):
-        obj.set_up_atmosphere(
-            [-1], [1], [1], [1], [1], species=['Fe'], deep_mmr={'Fe': 1}, metalicity=1
-        )
+        obj.set_up_atmosphere([-1], [1], [1], [1], [1], **ins)
     with testcase.assertRaises(ValueError):
-        obj.set_up_atmosphere(
-            [1], [-1], [1], [1], [1], species=['Fe'], deep_mmr={'Fe': 1}, metalicity=1
-        )
+        obj.set_up_atmosphere([1], [-1], [1], [1], [1], **ins)
     with testcase.assertRaises(ValueError):
-        obj.set_up_atmosphere(
-            [1], [1], [1], -1, 1, species=['Fe'], deep_mmr={'Fe': 1}, metalicity=1
-        )
+        obj.set_up_atmosphere([1], [1], [1], -1, 1, **ins)
     with testcase.assertRaises(ValueError):
-        obj.set_up_atmosphere(
-            [1], [1], [1], 1, -1, species=['Fe'], deep_mmr={'Fe': 1}, metalicity=1
-        )
+        obj.set_up_atmosphere([1], [1], [1], 1, -1, **ins)
     with testcase.assertRaises(ValueError):
-        obj.set_up_atmosphere(
-            [1], [1], [1], 1e4, 1, species=['Fe'], deep_mmr={'Fe': 1}, metalicity=-1
-        )
+        obj.set_up_atmosphere([1], [1], [1], 1e4, 1,
+                              species=['Fe'], deep_mmr={'Fe': 1}, metalicity=-1)
     with testcase.assertRaises(ValueError):
-        obj.set_up_atmosphere(
-            [1, 1], [1, 1], [1, 1], 1e4, 1, species=['Fe'], deep_mmr={'Fe': 1}, metalicity=1
-        )
+        obj.set_up_atmosphere([1, 1], [1, 1], [1, 1], 1e4, 1, **ins)
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere([1], [1], [1], [1], [1],
+                              species=['Fe'], deep_mmr=None, metalicity=1)
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere([1], [1, 2], [2], 1e4, 1, **ins)
 
 
     # ==== errors if atmospehre is not setup
