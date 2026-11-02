@@ -82,8 +82,8 @@ def test_nimbus():
                23.234358676205222])
 
     # ==== timout test
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
-                 create_analytic_plots=True)
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+                 #create_analytic_plots=True)
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
     ds = obj.compute(typ='full', timeout=0.001)
