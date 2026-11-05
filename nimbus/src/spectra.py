@@ -278,7 +278,7 @@ def optical_properties(self, tag=None, ds_prev=None, path_to_opacities=None, sig
                     qet, qst, cqt = ma.ai_efficiencies(wave_in, radius * 1e4, vmr)
                 else:
                     raise ValueError('Wrong mie type selected: ' + mie_type)
-                cqt = qet * cqt
+                cqt = qst * cqt
                 # remeber the vmrs for the next run
                 vmr_test[1] = vmr_test[0]
 
