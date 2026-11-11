@@ -245,57 +245,57 @@ def test_datastorage():
 #         assert np.isclose(np.sum(df['w0']), sols[d][2])
 #         assert np.isclose(np.sum(df['wavenumber']), sols[d][3])
 
-# def test_asserts():
-#     """ Check asserts throughout all files """
-#     # set up testcase class:
-#     testcase = unittest.TestCase()
-#     # set up nimbus
-#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
-#                  verbose=True, create_analytic_plots=True)
-#
-#     # ==== wrong type
-#     with testcase.assertRaises(ValueError):
-#         obj.compute(typ='WRONG')
-#
-#     # ==== wrong atmospheric structure
-#     ins = {'species': ['Fe'], 'deep_mmr': {'Fe': 1}, 'metalicity': 1}
-#     with testcase.assertRaises(ValueError):
-#         obj.set_up_atmosphere([-1], [1], [1], [1], [1], **ins)
-#     with testcase.assertRaises(ValueError):
-#         obj.set_up_atmosphere([1], [-1], [1], [1], [1], **ins)
-#     with testcase.assertRaises(ValueError):
-#         obj.set_up_atmosphere([1], [1], [1], -1, 1, **ins)
-#     with testcase.assertRaises(ValueError):
-#         obj.set_up_atmosphere([1], [1], [1], 1, -1, **ins)
-#     with testcase.assertRaises(ValueError):
-#         obj.set_up_atmosphere([1], [1], [1], 1e4, 1,
-#                               species=['Fe'], deep_mmr={'Fe': 1}, metalicity=-1)
-#     with testcase.assertRaises(ValueError):
-#         obj.set_up_atmosphere([1, 1], [1, 1], [1, 1], 1e4, 1, **ins)
-#     with testcase.assertRaises(ValueError):
-#         obj.set_up_atmosphere([1], [1], [1], [1], [1],
-#                               species=['Fe'], deep_mmr=None, metalicity=1)
-#     with testcase.assertRaises(ValueError):
-#         obj.set_up_atmosphere([1], [1, 2], [2], 1e4, 1, **ins)
-#
-#
-#     # ==== errors if atmospehre is not setup
-#     with testcase.assertRaises(ValueError):
-#         obj.set_up_solver()
-#
-#     # ==== assertion errors when not at least one input is given
-#     with testcase.assertRaises(ValueError):
-#         obj.load_previous_run()
-#     with testcase.assertRaises(ValueError):
-#         obj.set_up_from_previous_run()
-#
-#     # ==== value errors in database
-#     ds = DataBase()
-#     temp = np.asarray([500])
-#     with testcase.assertRaises(ValueError):
-#         ds.surface_tension('MgO', temp)
-#     with testcase.assertRaises(ValueError):
-#         ds.vapor_pressures('MgO', temp)
+def test_asserts():
+    """ Check asserts throughout all files """
+    # set up testcase class:
+    testcase = unittest.TestCase()
+    # set up nimbus
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
+                 verbose=True, create_analytic_plots=True)
+
+    # ==== wrong type
+    with testcase.assertRaises(ValueError):
+        obj.compute(typ='WRONG')
+
+    # ==== wrong atmospheric structure
+    ins = {'species': ['Fe'], 'deep_mmr': {'Fe': 1}, 'metalicity': 1}
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere([-1], [1], [1], [1], [1], **ins)
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere([1], [-1], [1], [1], [1], **ins)
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere([1], [1], [1], -1, 1, **ins)
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere([1], [1], [1], 1, -1, **ins)
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere([1], [1], [1], 1e4, 1,
+                              species=['Fe'], deep_mmr={'Fe': 1}, metalicity=-1)
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere([1, 1], [1, 1], [1, 1], 1e4, 1, **ins)
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere([1], [1], [1], [1], [1],
+                              species=['Fe'], deep_mmr=None, metalicity=1)
+    with testcase.assertRaises(ValueError):
+        obj.set_up_atmosphere([1], [1, 2], [2], 1e4, 1, **ins)
+
+
+    # ==== errors if atmospehre is not setup
+    with testcase.assertRaises(ValueError):
+        obj.set_up_solver()
+
+    # ==== assertion errors when not at least one input is given
+    with testcase.assertRaises(ValueError):
+        obj.load_previous_run()
+    with testcase.assertRaises(ValueError):
+        obj.set_up_from_previous_run()
+
+    # ==== value errors in database
+    ds = DataBase()
+    temp = np.asarray([500])
+    with testcase.assertRaises(ValueError):
+        ds.surface_tension('MgO', temp)
+    with testcase.assertRaises(ValueError):
+        ds.vapor_pressures('MgO', temp)
 
 # def test_additional_functions():
 #     """ Test helper functions """
