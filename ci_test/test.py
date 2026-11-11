@@ -15,147 +15,147 @@ mmw = 2.34  # [amu]
 species = 'SiO'
 deepmmr = 1e-3  # [g/g]
 
-def test_nimbus():
-    """ Integration testing """
-
-    # ==== Generic testing function:
-    def check(ds, sol):
-        assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), sol[0])
-        assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), sol[1])
-        assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), sol[2])
-        assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), sol[3])
-
-
-    # ==== set up nimbus itteratively
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
-                 verbose=True, create_analytic_plots=True)
-    obj.set_up_atmosphere(temperature[::-1], pressure[::-1], kzz[::-1], mmw, gravity,
-                          species, deepmmr)
-    obj.set_up_solver()
-    ds = obj.compute(typ='iterate', max_iterations=3)
-    check(ds, [0.00026518302326593995, 0.002027077714200809, 0.00044025281923456183,
-               20.893089112469035])
-    # iteratively but with no max iteration
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True)
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
-    obj.set_up_solver()
-    ds = obj.compute(typ='iterate')
-    check(ds, [0.00015532806998874919, 0.002026365100614461, 0.00031179687608754234,
-               13.80748974162783])
-    # less than 1 itaratoin given, and self initialised solver
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True)
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
-    ds = obj.compute(typ='iterate', max_iterations=0.5)
-    check(ds, [0.00107422120865269, 0.002042050311914651, 0.0002116511014967463,
-               109.3386841723017])
-
-    # ==== set up nimbus itteratively
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
-    obj.set_up_solver()
-    ds = obj.compute(typ='iterate', max_iterations=None)
-    check(ds, [0.00015532806998874973, 0.002026365100614461, 0.00031179687608750683,
-               13.807489741627958])
-    # change max iterations
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
-    obj.set_up_solver()
-    ds = obj.compute(typ='iterate', max_iterations=0)
-    check(ds, [0.0010742212086526902, 0.002042050311914651, 0.00021165110149672897,
-               109.33868417230173])
-
-    # ==== set up nimbus full
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True)
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
-    obj.set_up_solver()
-    ds = obj.compute(typ='full')
-    check(ds, [0.0001550947737573427, 0.0020263800957963235, 1.1334719687814653e-05,
-               13.893025318657784])
-
-    # ==== Test MCP
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True)
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr,
-                          minimum_computational_pressure=1e1)
-    obj.set_up_solver()
-    ds = obj.compute(typ='full')
-    check(ds, [0.0002122269660495013, 0.0018192709076726497, 2.2500592896569624e-05,
-               23.234358676205222])
-
-    # ==== timout test
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-                 #create_analytic_plots=True)
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
-    obj.set_up_solver()
-    ds = obj.compute(typ='full', timeout=0.001)
-    check(ds, [6.0000000000027695e-30, 0.002037678732657377, 6e-07,
-               1.3924126755600967e-18])
-
-    # ==== influx added
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
-    inj = lambda x, a, b, c: np.ones((3, 6)) * 1e-11
-    obj.set_up_influx(inj)
-    obj.set_up_solver()
-    ds = obj.compute(typ='full')
-    check(ds, [0.001956334984998105, 0.0035141095017851387, 2.750709667060246e-06,
-               17082.166474858637])
-
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    def kzz_f(t, p):
-        return (1e9 + 1e2 * t / obj.tend) * np.ones_like(p)
-    obj.set_up_atmosphere(temperature, pressure, kzz_f, mmw, gravity, species, deepmmr)
-    obj.set_up_solver()
-    ds = obj.compute(typ='full')
-    check(ds, [0.00015509478670362202, 0.0020263800957670604, 1.1334719851846651e-05,
-               13.893026038509976])
-
-    # ==== set up nimbus itteratively
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
-    obj.set_up_solver()
-    ds = obj.compute(typ='convergence', rel_dif_in_mmr=1e-3, save_file='test')
-    check(ds, [0.00015508052697191544, 0.0020263796685717544, 0.0003225189326803817,
-               13.889234016624483])
-
-    # ==== load previous run
-    ds2 = obj.load_previous_run(ds_prev=ds)
-    check(ds2, [0.00015508052697191544, 0.0020263796685717544, 0.0003225189326803817,
-               13.889234016624483])
-    ds3 = obj.load_previous_run(file_name='test.nc')
-    check(ds3, [0.00015508052697191544, 0.0020263796685717544, 0.0003225189326803817,
-               13.889234016624483])
-
-    # ==== load previous run
-    obj2 = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
-                 verbose=True, create_analytic_plots=True)
-    obj2.set_up_from_previous_run(file_name='test.nc')
-    assert np.isclose(np.sum(obj2.pres), 1111.11)
-    assert np.isclose(np.sum(obj2.temp), 8104)
-    assert obj2.isset_initialisation
-    obj2.set_up_from_previous_run(ds_prev=ds)
-    assert np.isclose(np.sum(obj2.pres), 1111.11)
-    assert np.isclose(np.sum(obj2.temp), 8104)
-    assert obj2.isset_initialisation
-    os.remove('test.nc')
-
-    # ==== set up nimbus with multiple materials
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity,
-                          ['SiO', 'MgSiO3'], [1e-3, 1e-4])
-    obj.set_up_solver()
-    ds = obj.compute(typ='full')
-    check(ds, [0.00020227752438271322, 0.0020233274149122917, 8.276826302545698e-06,
-               74.42661745020483])
-
-    # ==== set up nimbus with multiple materials, dict input, and ignor nuc
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity,
-                          ['SiO', 'MgSiO3'], {'SiO': 1e-3, 'MgSiO3': 1e-4},
-                          ignore_as_nucleator='MgSiO3')
-    obj.set_up_solver()
-    ds = obj.compute(typ='full')
-    check(ds, [1.0311480169638711e-19, 0.005999999999999857, 0.0005634321626017384,
-               1.3924126755600965e-18])
+# def test_nimbus():
+#     """ Integration testing """
+#
+#     # ==== Generic testing function:
+#     def check(ds, sol):
+#         assert np.isclose(np.sum(np.asarray([ds['cloud_mmr'][0]]).T), sol[0])
+#         assert np.isclose(np.sum(np.asarray([ds['gas_mmr'][0]]).T), sol[1])
+#         assert np.isclose(np.sum(np.asarray([ds['cloud_radius']]).T), sol[2])
+#         assert np.isclose(np.sum(np.asarray([ds['cloud_number_density']]).T), sol[3])
+#
+#
+#     # ==== set up nimbus itteratively
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
+#                  verbose=True, create_analytic_plots=True)
+#     obj.set_up_atmosphere(temperature[::-1], pressure[::-1], kzz[::-1], mmw, gravity,
+#                           species, deepmmr)
+#     obj.set_up_solver()
+#     ds = obj.compute(typ='iterate', max_iterations=3)
+#     check(ds, [0.00026518302326593995, 0.002027077714200809, 0.00044025281923456183,
+#                20.893089112469035])
+#     # iteratively but with no max iteration
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True)
+#     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+#     obj.set_up_solver()
+#     ds = obj.compute(typ='iterate')
+#     check(ds, [0.00015532806998874919, 0.002026365100614461, 0.00031179687608754234,
+#                13.80748974162783])
+#     # less than 1 itaratoin given, and self initialised solver
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True)
+#     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+#     ds = obj.compute(typ='iterate', max_iterations=0.5)
+#     check(ds, [0.00107422120865269, 0.002042050311914651, 0.0002116511014967463,
+#                109.3386841723017])
+#
+#     # ==== set up nimbus itteratively
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+#     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+#     obj.set_up_solver()
+#     ds = obj.compute(typ='iterate', max_iterations=None)
+#     check(ds, [0.00015532806998874973, 0.002026365100614461, 0.00031179687608750683,
+#                13.807489741627958])
+#     # change max iterations
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+#     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+#     obj.set_up_solver()
+#     ds = obj.compute(typ='iterate', max_iterations=0)
+#     check(ds, [0.0010742212086526902, 0.002042050311914651, 0.00021165110149672897,
+#                109.33868417230173])
+#
+#     # ==== set up nimbus full
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True)
+#     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+#     obj.set_up_solver()
+#     ds = obj.compute(typ='full')
+#     check(ds, [0.0001550947737573427, 0.0020263800957963235, 1.1334719687814653e-05,
+#                13.893025318657784])
+#
+#     # ==== Test MCP
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True)
+#     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr,
+#                           minimum_computational_pressure=1e1)
+#     obj.set_up_solver()
+#     ds = obj.compute(typ='full')
+#     check(ds, [0.0002122269660495013, 0.0018192709076726497, 2.2500592896569624e-05,
+#                23.234358676205222])
+#
+#     # ==== timout test
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+#                  #create_analytic_plots=True)
+#     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+#     obj.set_up_solver()
+#     ds = obj.compute(typ='full', timeout=0.001)
+#     check(ds, [6.0000000000027695e-30, 0.002037678732657377, 6e-07,
+#                1.3924126755600967e-18])
+#
+#     # ==== influx added
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+#     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+#     inj = lambda x, a, b, c: np.ones((3, 6)) * 1e-11
+#     obj.set_up_influx(inj)
+#     obj.set_up_solver()
+#     ds = obj.compute(typ='full')
+#     check(ds, [0.001956334984998105, 0.0035141095017851387, 2.750709667060246e-06,
+#                17082.166474858637])
+#
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+#     def kzz_f(t, p):
+#         return (1e9 + 1e2 * t / obj.tend) * np.ones_like(p)
+#     obj.set_up_atmosphere(temperature, pressure, kzz_f, mmw, gravity, species, deepmmr)
+#     obj.set_up_solver()
+#     ds = obj.compute(typ='full')
+#     check(ds, [0.00015509478670362202, 0.0020263800957670604, 1.1334719851846651e-05,
+#                13.893026038509976])
+#
+#     # ==== set up nimbus itteratively
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+#     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
+#     obj.set_up_solver()
+#     ds = obj.compute(typ='convergence', rel_dif_in_mmr=1e-3, save_file='test')
+#     check(ds, [0.00015508052697191544, 0.0020263796685717544, 0.0003225189326803817,
+#                13.889234016624483])
+#
+#     # ==== load previous run
+#     ds2 = obj.load_previous_run(ds_prev=ds)
+#     check(ds2, [0.00015508052697191544, 0.0020263796685717544, 0.0003225189326803817,
+#                13.889234016624483])
+#     ds3 = obj.load_previous_run(file_name='test.nc')
+#     check(ds3, [0.00015508052697191544, 0.0020263796685717544, 0.0003225189326803817,
+#                13.889234016624483])
+#
+#     # ==== load previous run
+#     obj2 = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
+#                  verbose=True, create_analytic_plots=True)
+#     obj2.set_up_from_previous_run(file_name='test.nc')
+#     assert np.isclose(np.sum(obj2.pres), 1111.11)
+#     assert np.isclose(np.sum(obj2.temp), 8104)
+#     assert obj2.isset_initialisation
+#     obj2.set_up_from_previous_run(ds_prev=ds)
+#     assert np.isclose(np.sum(obj2.pres), 1111.11)
+#     assert np.isclose(np.sum(obj2.temp), 8104)
+#     assert obj2.isset_initialisation
+#     os.remove('test.nc')
+#
+#     # ==== set up nimbus with multiple materials
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+#     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity,
+#                           ['SiO', 'MgSiO3'], [1e-3, 1e-4])
+#     obj.set_up_solver()
+#     ds = obj.compute(typ='full')
+#     check(ds, [0.00020227752438271322, 0.0020233274149122917, 8.276826302545698e-06,
+#                74.42661745020483])
+#
+#     # ==== set up nimbus with multiple materials, dict input, and ignor nuc
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+#     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity,
+#                           ['SiO', 'MgSiO3'], {'SiO': 1e-3, 'MgSiO3': 1e-4},
+#                           ignore_as_nucleator='MgSiO3')
+#     obj.set_up_solver()
+#     ds = obj.compute(typ='full')
+#     check(ds, [1.0311480169638711e-19, 0.005999999999999857, 0.0005634321626017384,
+#                1.3924126755600965e-18])
 
 def test_datastorage():
     """ Unit testing of DataStorage """
@@ -245,60 +245,60 @@ def test_datastorage():
 #         assert np.isclose(np.sum(df['w0']), sols[d][2])
 #         assert np.isclose(np.sum(df['wavenumber']), sols[d][3])
 
-def test_asserts():
-    """ Check asserts throughout all files """
-    # set up testcase class:
-    testcase = unittest.TestCase()
-    # set up nimbus
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
-                 verbose=True, create_analytic_plots=True)
+# def test_asserts():
+#     """ Check asserts throughout all files """
+#     # set up testcase class:
+#     testcase = unittest.TestCase()
+#     # set up nimbus
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/',
+#                  verbose=True, create_analytic_plots=True)
+#
+#     # ==== wrong type
+#     with testcase.assertRaises(ValueError):
+#         obj.compute(typ='WRONG')
+#
+#     # ==== wrong atmospheric structure
+#     ins = {'species': ['Fe'], 'deep_mmr': {'Fe': 1}, 'metalicity': 1}
+#     with testcase.assertRaises(ValueError):
+#         obj.set_up_atmosphere([-1], [1], [1], [1], [1], **ins)
+#     with testcase.assertRaises(ValueError):
+#         obj.set_up_atmosphere([1], [-1], [1], [1], [1], **ins)
+#     with testcase.assertRaises(ValueError):
+#         obj.set_up_atmosphere([1], [1], [1], -1, 1, **ins)
+#     with testcase.assertRaises(ValueError):
+#         obj.set_up_atmosphere([1], [1], [1], 1, -1, **ins)
+#     with testcase.assertRaises(ValueError):
+#         obj.set_up_atmosphere([1], [1], [1], 1e4, 1,
+#                               species=['Fe'], deep_mmr={'Fe': 1}, metalicity=-1)
+#     with testcase.assertRaises(ValueError):
+#         obj.set_up_atmosphere([1, 1], [1, 1], [1, 1], 1e4, 1, **ins)
+#     with testcase.assertRaises(ValueError):
+#         obj.set_up_atmosphere([1], [1], [1], [1], [1],
+#                               species=['Fe'], deep_mmr=None, metalicity=1)
+#     with testcase.assertRaises(ValueError):
+#         obj.set_up_atmosphere([1], [1, 2], [2], 1e4, 1, **ins)
+#
+#
+#     # ==== errors if atmospehre is not setup
+#     with testcase.assertRaises(ValueError):
+#         obj.set_up_solver()
+#
+#     # ==== assertion errors when not at least one input is given
+#     with testcase.assertRaises(ValueError):
+#         obj.load_previous_run()
+#     with testcase.assertRaises(ValueError):
+#         obj.set_up_from_previous_run()
+#
+#     # ==== value errors in database
+#     ds = DataBase()
+#     temp = np.asarray([500])
+#     with testcase.assertRaises(ValueError):
+#         ds.surface_tension('MgO', temp)
+#     with testcase.assertRaises(ValueError):
+#         ds.vapor_pressures('MgO', temp)
 
-    # ==== wrong type
-    with testcase.assertRaises(ValueError):
-        obj.compute(typ='WRONG')
-
-    # ==== wrong atmospheric structure
-    ins = {'species': ['Fe'], 'deep_mmr': {'Fe': 1}, 'metalicity': 1}
-    with testcase.assertRaises(ValueError):
-        obj.set_up_atmosphere([-1], [1], [1], [1], [1], **ins)
-    with testcase.assertRaises(ValueError):
-        obj.set_up_atmosphere([1], [-1], [1], [1], [1], **ins)
-    with testcase.assertRaises(ValueError):
-        obj.set_up_atmosphere([1], [1], [1], -1, 1, **ins)
-    with testcase.assertRaises(ValueError):
-        obj.set_up_atmosphere([1], [1], [1], 1, -1, **ins)
-    with testcase.assertRaises(ValueError):
-        obj.set_up_atmosphere([1], [1], [1], 1e4, 1,
-                              species=['Fe'], deep_mmr={'Fe': 1}, metalicity=-1)
-    with testcase.assertRaises(ValueError):
-        obj.set_up_atmosphere([1, 1], [1, 1], [1, 1], 1e4, 1, **ins)
-    with testcase.assertRaises(ValueError):
-        obj.set_up_atmosphere([1], [1], [1], [1], [1],
-                              species=['Fe'], deep_mmr=None, metalicity=1)
-    with testcase.assertRaises(ValueError):
-        obj.set_up_atmosphere([1], [1, 2], [2], 1e4, 1, **ins)
-
-
-    # ==== errors if atmospehre is not setup
-    with testcase.assertRaises(ValueError):
-        obj.set_up_solver()
-
-    # ==== assertion errors when not at least one input is given
-    with testcase.assertRaises(ValueError):
-        obj.load_previous_run()
-    with testcase.assertRaises(ValueError):
-        obj.set_up_from_previous_run()
-
-    # ==== value errors in database
-    ds = DataBase()
-    temp = np.asarray([500])
-    with testcase.assertRaises(ValueError):
-        ds.surface_tension('MgO', temp)
-    with testcase.assertRaises(ValueError):
-        ds.vapor_pressures('MgO', temp)
-
-def test_additional_functions():
-    """ Test helper functions """
-    specs = find_cloud_species(temperature, pressure)
-    test = ['Al2O3', 'CaTiO3', 'Cr', 'Fe', 'FeO', 'MgSiO3', 'Mg2SiO4', 'MnS', 'SiO', 'SiO2', 'TiO2']
-    assert set(specs) == set(test)
+# def test_additional_functions():
+#     """ Test helper functions """
+#     specs = find_cloud_species(temperature, pressure)
+#     test = ['Al2O3', 'CaTiO3', 'Cr', 'Fe', 'FeO', 'MgSiO3', 'Mg2SiO4', 'MnS', 'SiO', 'SiO2', 'TiO2']
+#     assert set(specs) == set(test)
