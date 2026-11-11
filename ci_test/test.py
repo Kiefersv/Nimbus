@@ -297,8 +297,8 @@ def test_asserts():
     with testcase.assertRaises(ValueError):
         ds.vapor_pressures('MgO', temp)
 
-# def test_additional_functions():
-#     """ Test helper functions """
-#     specs = find_cloud_species(temperature, pressure)
-#     test = ['Al2O3', 'CaTiO3', 'Cr', 'Fe', 'FeO', 'MgSiO3', 'Mg2SiO4', 'MnS', 'SiO', 'SiO2', 'TiO2']
-#     assert set(specs) == set(test)
+def test_additional_functions():
+    """ Test helper functions """
+    specs = find_cloud_species(temperature, pressure)
+    test = ['Al2O3', 'CaTiO3', 'Cr', 'Fe', 'FeO', 'MgSiO3', 'Mg2SiO4', 'MnS', 'SiO', 'SiO2', 'TiO2']
+    assert set(specs) == set(test)
