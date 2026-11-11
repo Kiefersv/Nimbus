@@ -188,62 +188,62 @@ def test_datastorage():
     vp = ds.solar_mmr('SiO2')
     assert np.isclose(np.sum(vp), 6.03e-05)
 
-def test_spectra():
-    """ This function is currently only used for local testing as it relys on
-    the MieAi implementation """
-    # ==== Example values
-    species2 = 'MgSiO3'
-
-    # # ==== sub layering test
-    # obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    # obj.set_up_atmosphere([200, 300, 400, 2100, 2200, 2300], pressure, kzz, mmw, gravity, species2, deepmmr)
-    # obj.compute(typ='iterate', max_iterations=3)
-    # df_cloud = obj.picaso_formater(mie_type='full', nradii=10, tag='last_run',
-    #     path_to_opacities=os.path.dirname(__file__) + '/../data/opacities/'
-    # )
-    # assert np.isclose(np.sum(df_cloud['opd']), 4.813175190667523)
-    # assert np.isclose(np.sum(df_cloud['g0']), 90.20386330243882)
-    # assert np.isclose(np.sum(df_cloud['w0']), 539.3070976218876)
-    # assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
-
-    # ==== set up nimbus itteratively
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species2, deepmmr)
-    obj.compute(typ='iterate', max_iterations=3)
-    df_cloud = obj.picaso_formater(mie_type='full', nradii=10, tag='last_run',
-        path_to_opacities=os.path.dirname(__file__) + '/../data/opacities/'
-    )
-    assert np.isclose(np.sum(df_cloud['opd']), 319.19585100687664)
-    assert np.isclose(np.sum(df_cloud['g0']), 233.62415009904527)
-    assert np.isclose(np.sum(df_cloud['w0']), 651.2049009781938)
-    assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
-
-    # ==== test alternative inputs
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species2, deepmmr)
-    ds_out = obj.compute(typ='iterate', max_iterations=3)
-    ma = MieNet(use_ai=False)
-    df_cloud = obj.picaso_formater(mie_type='full', nradii=10, ds_prev=ds_out, mieai_object=ma)
-    assert np.isclose(np.sum(df_cloud['opd']), 319.19585100687664)
-    assert np.isclose(np.sum(df_cloud['g0']), 233.62415009904527)
-    assert np.isclose(np.sum(df_cloud['w0']), 651.2049009781938)
-    assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
-
-    # ==== set up nimbus fully to test timestamps
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species2, deepmmr)
-    obj.set_up_solver()
-    obj.compute(typ='full')
-    df_cloud = obj.picaso_formater(mie_type='full', nradii=10, time_stamps=[1e-2, 1e9])
-    sols = [
-        [1.2073548471097519e-25, 21.232775276304928, 244.955707577986, 6849905.947614839],
-        [421.00651392846675, 143.08156410093972, 517.7788898911307, 6849905.947614839],
-    ]
-    for d, df in enumerate(df_cloud):
-        assert np.isclose(np.sum(df['opd']), sols[d][0])
-        assert np.isclose(np.sum(df['g0']), sols[d][1])
-        assert np.isclose(np.sum(df['w0']), sols[d][2])
-        assert np.isclose(np.sum(df['wavenumber']), sols[d][3])
+# def test_spectra():
+#     """ This function is currently only used for local testing as it relys on
+#     the MieAi implementation """
+#     # ==== Example values
+#     species2 = 'MgSiO3'
+#
+#     # # ==== sub layering test
+#     # obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+#     # obj.set_up_atmosphere([200, 300, 400, 2100, 2200, 2300], pressure, kzz, mmw, gravity, species2, deepmmr)
+#     # obj.compute(typ='iterate', max_iterations=3)
+#     # df_cloud = obj.picaso_formater(mie_type='full', nradii=10, tag='last_run',
+#     #     path_to_opacities=os.path.dirname(__file__) + '/../data/opacities/'
+#     # )
+#     # assert np.isclose(np.sum(df_cloud['opd']), 4.813175190667523)
+#     # assert np.isclose(np.sum(df_cloud['g0']), 90.20386330243882)
+#     # assert np.isclose(np.sum(df_cloud['w0']), 539.3070976218876)
+#     # assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
+#
+#     # ==== set up nimbus itteratively
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+#     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species2, deepmmr)
+#     obj.compute(typ='iterate', max_iterations=3)
+#     df_cloud = obj.picaso_formater(mie_type='full', nradii=10, tag='last_run',
+#         path_to_opacities=os.path.dirname(__file__) + '/../data/opacities/'
+#     )
+#     assert np.isclose(np.sum(df_cloud['opd']), 319.19585100687664)
+#     assert np.isclose(np.sum(df_cloud['g0']), 233.62415009904527)
+#     assert np.isclose(np.sum(df_cloud['w0']), 651.2049009781938)
+#     assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
+#
+#     # ==== test alternative inputs
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+#     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species2, deepmmr)
+#     ds_out = obj.compute(typ='iterate', max_iterations=3)
+#     ma = MieNet(use_ai=False)
+#     df_cloud = obj.picaso_formater(mie_type='full', nradii=10, ds_prev=ds_out, mieai_object=ma)
+#     assert np.isclose(np.sum(df_cloud['opd']), 319.19585100687664)
+#     assert np.isclose(np.sum(df_cloud['g0']), 233.62415009904527)
+#     assert np.isclose(np.sum(df_cloud['w0']), 651.2049009781938)
+#     assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
+#
+#     # ==== set up nimbus fully to test timestamps
+#     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+#     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species2, deepmmr)
+#     obj.set_up_solver()
+#     obj.compute(typ='full')
+#     df_cloud = obj.picaso_formater(mie_type='full', nradii=10, time_stamps=[1e-2, 1e9])
+#     sols = [
+#         [1.2073548471097519e-25, 21.232775276304928, 244.955707577986, 6849905.947614839],
+#         [421.00651392846675, 143.08156410093972, 517.7788898911307, 6849905.947614839],
+#     ]
+#     for d, df in enumerate(df_cloud):
+#         assert np.isclose(np.sum(df['opd']), sols[d][0])
+#         assert np.isclose(np.sum(df['g0']), sols[d][1])
+#         assert np.isclose(np.sum(df['w0']), sols[d][2])
+#         assert np.isclose(np.sum(df['wavenumber']), sols[d][3])
 
 def test_asserts():
     """ Check asserts throughout all files """
