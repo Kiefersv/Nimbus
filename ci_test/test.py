@@ -218,16 +218,16 @@ def test_spectra():
     # assert np.isclose(np.sum(df_cloud['w0']), 651.2049009781938)
     # assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
     #
-    # # ==== test alternative inputs
-    # obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    # obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species2, deepmmr)
-    # ds_out = obj.compute(typ='iterate', max_iterations=3)
-    # ma = MieNet(use_ai=False)
-    # df_cloud = obj.picaso_formater(mie_type='full', nradii=10, ds_prev=ds_out, mieai_object=ma)
-    # assert np.isclose(np.sum(df_cloud['opd']), 319.19585100687664)
-    # assert np.isclose(np.sum(df_cloud['g0']), 233.62415009904527)
-    # assert np.isclose(np.sum(df_cloud['w0']), 651.2049009781938)
-    # assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
+    # ==== test alternative inputs
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species2, deepmmr)
+    ds_out = obj.compute(typ='iterate', max_iterations=3)
+    ma = MieNet(use_ai=False)
+    df_cloud = obj.picaso_formater(mie_type='full', nradii=10, ds_prev=ds_out, mieai_object=ma)
+    assert np.isclose(np.sum(df_cloud['opd']), 319.19585100687664)
+    assert np.isclose(np.sum(df_cloud['g0']), 233.62415009904527)
+    assert np.isclose(np.sum(df_cloud['w0']), 651.2049009781938)
+    assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
 
     # ==== set up nimbus fully to test timestamps
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
