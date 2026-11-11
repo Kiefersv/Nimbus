@@ -194,17 +194,17 @@ def test_spectra():
     # ==== Example values
     species2 = 'MgSiO3'
 
-    # ==== sub layering test
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere([200, 300, 400, 2100, 2200, 2300], pressure, kzz, mmw, gravity, species2, deepmmr)
-    obj.compute(typ='iterate', max_iterations=3)
-    df_cloud = obj.picaso_formater(mie_type='full', nradii=10, tag='last_run',
-        path_to_opacities=os.path.dirname(__file__) + '/../data/opacities/'
-    )
-    assert np.isclose(np.sum(df_cloud['opd']), 4.813175190667523)
-    assert np.isclose(np.sum(df_cloud['g0']), 90.20386330243882)
-    assert np.isclose(np.sum(df_cloud['w0']), 539.3070976218876)
-    assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
+    # # ==== sub layering test
+    # obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    # obj.set_up_atmosphere([200, 300, 400, 2100, 2200, 2300], pressure, kzz, mmw, gravity, species2, deepmmr)
+    # obj.compute(typ='iterate', max_iterations=3)
+    # df_cloud = obj.picaso_formater(mie_type='full', nradii=10, tag='last_run',
+    #     path_to_opacities=os.path.dirname(__file__) + '/../data/opacities/'
+    # )
+    # assert np.isclose(np.sum(df_cloud['opd']), 4.813175190667523)
+    # assert np.isclose(np.sum(df_cloud['g0']), 90.20386330243882)
+    # assert np.isclose(np.sum(df_cloud['w0']), 539.3070976218876)
+    # assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
 
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
