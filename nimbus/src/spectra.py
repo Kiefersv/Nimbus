@@ -296,7 +296,7 @@ def optical_properties(self, tag=None, ds_prev=None, path_to_opacities=None, sig
 
         # ==== Sublayering to prevent sharp boundaries
         for iz in range(nz - 1, -1, -1):
-            if np.sum(ext_gas[iz, :]) > 0:
+            if np.sum(ext_gas[iz, :]) > 1e-25:
                 ibot = iz
                 break
             if iz == 0:

@@ -194,13 +194,27 @@ def test_spectra():
     # ==== Example values
     species2 = 'MgSiO3'
 
+    # ==== sub layering test
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    obj.set_up_atmosphere([200, 300, 400, 2100, 2200, 2300], pressure, kzz, mmw, gravity, species2, deepmmr)
+    obj.compute(typ='iterate', max_iterations=3)
+    df_cloud = obj.picaso_formater(mie_type='full', nradii=10, tag='last_run',
+        path_to_opacities=os.path.dirname(__file__) + '/../data/opacities/'
+    )
+    assert np.isclose(np.sum(df_cloud['opd']), 4.813175190667523)
+    assert np.isclose(np.sum(df_cloud['g0']), 90.20386330243882)
+    assert np.isclose(np.sum(df_cloud['w0']), 539.3070976218876)
+    assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
+
     # ==== set up nimbus itteratively
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species2, deepmmr)
     obj.compute(typ='iterate', max_iterations=3)
-    df_cloud = obj.picaso_formater(mie_type='full', nradii=10)
+    df_cloud = obj.picaso_formater(mie_type='full', nradii=10, tag='last_run',
+        path_to_opacities=os.path.dirname(__file__) + '/../data/opacities/'
+    )
     assert np.isclose(np.sum(df_cloud['opd']), 319.19585100687664)
-    assert np.isclose(np.sum(df_cloud['g0']), 860.9888904345)
+    assert np.isclose(np.sum(df_cloud['g0']), 233.62415009904527)
     assert np.isclose(np.sum(df_cloud['w0']), 651.2049009781938)
     assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
 
@@ -211,7 +225,7 @@ def test_spectra():
     ma = MieNet(use_ai=False)
     df_cloud = obj.picaso_formater(mie_type='full', nradii=10, ds_prev=ds_out, mieai_object=ma)
     assert np.isclose(np.sum(df_cloud['opd']), 319.19585100687664)
-    assert np.isclose(np.sum(df_cloud['g0']), 860.9888904345)
+    assert np.isclose(np.sum(df_cloud['g0']), 233.62415009904527)
     assert np.isclose(np.sum(df_cloud['w0']), 651.2049009781938)
     assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
 
@@ -222,8 +236,8 @@ def test_spectra():
     obj.compute(typ='full')
     df_cloud = obj.picaso_formater(mie_type='full', nradii=10, time_stamps=[1e-2, 1e9])
     sols = [
-        [1.2073548471097519e-25, 2096.9685388525395, 244.955707577986, 6849905.947614839],
-        [421.00651392846675, 1226.7854160146908, 517.7788898911307, 6849905.947614839],
+        [1.2073548471097519e-25, 21.232775276304928, 244.955707577986, 6849905.947614839],
+        [421.00651392846675, 143.08156410093972, 517.7788898911307, 6849905.947614839],
     ]
     for d, df in enumerate(df_cloud):
         assert np.isclose(np.sum(df['opd']), sols[d][0])
@@ -287,10 +301,4 @@ def test_additional_functions():
     """ Test helper functions """
     specs = find_cloud_species(temperature, pressure)
     test = ['Al2O3', 'CaTiO3', 'Cr', 'Fe', 'FeO', 'MgSiO3', 'Mg2SiO4', 'MnS', 'SiO', 'SiO2', 'TiO2']
-    print(specs)
-    for spec in specs:
-        if spec in test:
-            test.remove(spec)
-        else:
-            assert False
-    assert len(test) == 0
+    assert set(specs) == set(test)
