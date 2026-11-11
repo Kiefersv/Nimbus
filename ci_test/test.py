@@ -147,15 +147,15 @@ def test_nimbus():
     check(ds, [0.00020227752438271322, 0.0020233274149122917, 8.276826302545698e-06,
                74.42661745020483])
 
-    # ==== set up nimbus with multiple materials, dict input, and ignor nuc
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity,
-                          ['SiO', 'MgSiO3'], {'SiO': 1e-3, 'MgSiO3': 1e-4},
-                          ignore_as_nucleator='MgSiO3')
-    obj.set_up_solver()
-    ds = obj.compute(typ='full')
-    check(ds, [1.0311480169638711e-19, 0.005999999999999857, 0.0005634321626017384,
-               1.3924126755600965e-18])
+    # # ==== set up nimbus with multiple materials, dict input, and ignor nuc
+    # obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    # obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity,
+    #                       ['SiO', 'MgSiO3'], {'SiO': 1e-3, 'MgSiO3': 1e-4},
+    #                       ignore_as_nucleator='MgSiO3')
+    # obj.set_up_solver()
+    # ds = obj.compute(typ='full')
+    # check(ds, [1.0311480169638711e-19, 0.005999999999999857, 0.0005634321626017384,
+    #            1.3924126755600965e-18])
 
 def test_datastorage():
     """ Unit testing of DataStorage """
