@@ -68,9 +68,9 @@ def test_nimbus():
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True)
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species, deepmmr)
     obj.set_up_solver()
-    ds = obj.compute(typ='full')
-    check(ds, [0.0001550947737573427, 0.0020263800957963235, 1.1334719687814653e-05,
-               13.893025318657784])
+    ds = obj.compute(typ='full', evaluation_time_steps=[1, 1e3, 1e4])
+    check(ds, [7.292882287616103e-30, 0.0020380371384713268, 6.337497448681782e-07,
+               1.3924128143983373e-18])
 
     # ==== Test MCP
     obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', verbose=True)
@@ -148,14 +148,15 @@ def test_nimbus():
                74.42661745020483])
 
     # # ==== set up nimbus with multiple materials, dict input, and ignor nuc
-    # obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
-    # obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity,
-    #                       ['SiO', 'MgSiO3'], {'SiO': 1e-3, 'MgSiO3': 1e-4},
-    #                       ignore_as_nucleator='MgSiO3')
-    # obj.set_up_solver()
-    # ds = obj.compute(typ='full', timeout=2)
-    # check(ds, [1.0311480169638711e-19, 0.005999999999999857, 0.0005634321626017384,
-    #            1.3924126755600965e-18])
+    obj.set_up_atmosphere(
+        temperature, pressure, kzz, mmw, gravity, None,
+        minimum_computational_pressure = np.linspace(1, 30, 30),
+        ignore_as_nucleator='MgSiO3'
+    )
+
+    test = ['Al2O3', 'CaTiO3', 'Cr', 'Fe', 'FeO', 'MgSiO3', 'Mg2SiO4', 'MnS', 'SiO', 'SiO2', 'TiO2']
+    assert set(obj.species) == set(test)
+    assert obj.ian == 'MgSiO3'
 
 def test_datastorage():
     """ Unit testing of DataStorage """
@@ -300,5 +301,6 @@ def test_asserts():
 def test_additional_functions():
     """ Test helper functions """
     specs = find_cloud_species(temperature, pressure)
-    test = ['Al2O3', 'CaTiO3', 'Cr', 'Fe', 'FeO', 'MgSiO3', 'Mg2SiO4', 'MnS', 'SiO', 'SiO2', 'TiO2']
+    test = ['Al2O3', 'CaTiO3', 'Cr', 'Fe', 'FeO', 'MgSiO3', 'Mg2SiO4',
+            'MnS', 'SiO', 'SiO2', 'TiO2']
     assert set(specs) == set(test)

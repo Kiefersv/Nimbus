@@ -52,10 +52,10 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
         warn(self, 'Species are set automatically. This is not recommended. '
                    'Please use the list of species provided as a starting point to '
                    'curate your own list.')
-        species = self.find_cloud_species(
+        self.species = find_cloud_species(
             temperature, pressure, mmw=mmw, metalicity=metalicity, verbose=self.mute
         )
-        deep_mmr = np.asarray([db.solar_mmr(spec, metalicity) for spec in self.species])
+        self.deep_gas_mmr = np.asarray([db.solar_mmr(spec, metalicity) for spec in self.species])
     else:
         if deep_mmr is None:
             raise ValueError("[ERROR] Deep MMR is missing.")
@@ -184,7 +184,7 @@ def set_up_atmosphere(self, temperature, pressure, kzz, mmw, gravity, species=No
     self.calc_atmos_struct()
 
     # ==== find pressure levels which are supersaturated
-    self.mask_sat = np.zeros((len(species)+1, self.sz), dtype=bool)  # mask to evaporate nc
+    self.mask_sat = np.zeros((len(self.species)+1, self.sz), dtype=bool)  # mask to evaporate nc
     # immediately evaporate all cloud particles below the cloud
     for s, spec in enumerate(self.species):
         # calculate vapour pressure curve
@@ -386,13 +386,13 @@ def _find_cloud_species(temperature, pressure, species=None, mmw=2.34,
     return species_out
 
 def find_cloud_species(temperature, pressure, species=None, mmw=2.34,
-                        mmr_cloudspecies=1e-2, metallicity=1, verbose=True,
+                        mmr_cloudspecies=1e-2, metalicity=1, verbose=True,
                         create_analytic_plots=True, plot_save_file=None):
     """
     Outside wrapper function that converts pressure to cgs.
     See _find_clod_species() for more details.
     """
     return _find_cloud_species(
-        temperature, pressure*1e6, species, mmw, mmr_cloudspecies, metallicity, verbose,
+        temperature, pressure*1e6, species, mmw, mmr_cloudspecies, metalicity, verbose,
         create_analytic_plots, plot_save_file
     )
