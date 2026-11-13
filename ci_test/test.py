@@ -12,7 +12,7 @@ pressure = np.asarray([1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3])  # [bar]
 kzz = np.ones_like(pressure) * 1e9  # [cm2/s]
 gravity = 10**2.49  # [cm/s2]
 mmw = 2.34  # [amu]
-species = 'SiO'
+species = 'SiO'  # condensation species
 deepmmr = 1e-3  # [g/g]
 
 def test_nimbus():
