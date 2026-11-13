@@ -11,6 +11,7 @@
 "FeS","no","x","x","0.00e+0","4.7","1.950e-8","87.9100","exp","1","0","-5.69922e4","3.86753e1","-4.68301e-3","1.03559e-6","-8.42872e-11","Mini-cloud","GGChem 5 polynomial NIST fit; radius approximated by volume and density"
 "H2O","special","181.973","-0.15","7.54e-4","0.93","1.973e-8","18.015","x","x","x","x","x","x","x","x","Mini-cloud","Hale and Plummer (1974); Lee et al. (2018); Solar MMR from Virga"
 "H2S","special","58.1","0","1.318e-5","1.12","2.293e-8","58.1","x","x","x","x","x","x","x","x","Mini-cloud","Nehb and Vydra (2006); Lee et al. (2018); Solar MMR from Virga"
+"H2SO4","special","72.4","0","0.00e+0","1.83","3.387e-8","98.08","x","x","x","x","x","x","x","x","CARMA","Gao et al. (2014)"
 "KCl","yes","160.4","-0.07","2.55e-7","1.98","2.462e-8","74.551","10","1","0","-2.69250e4","3.39574e+1","-2.04903e-3","-2.83957e-7","1.82974e-10","Mini-cloud","Janz 1988; GGChem 5 polynomial NIST fit; Lee et al. (2018); Solar MMR from Virga"
 "MgO","no ","x","x","0.00e+0","3.58","1.646e-8","40.30440","exp","1","0","-7.91838e4","3.57312e1","1.45021e-4","-8.47194e-8","4.49221e-12","Mini-cloud","GGChem 5 polynomial NIST fit; radius approximated by volume and density"
 "MgSiO3","yes","197.3","0.098","2.92e-5","3.19","2.319e-8","100.3887","exp","1e6","0","-58663.0","25.37","0","0","0","Mini-cloud","Janz 1988; Ackerman & Marley (2001); radius approximated by volume and density; Solar MMR from Virga"

@@ -121,9 +121,9 @@ class DataBase:
                 p1 =  mmr * mmw / mw * pre
                 return np.log10(pvap) - np.log10(p1)
             uplim = 1e6
-            if species in ['H2O']:
+            if species in ['H2O', 'H2SO4']:
                 uplim = 1e3
-            tvap[p] = root_scalar(minf, bracket=[1e1, uplim], method='brentq').root
+            tvap[p] = root_scalar(minf, bracket=[1, uplim], method='brentq').root
 
         # ==== return condensation temperature
         return tvap
@@ -235,6 +235,16 @@ class DataBase:
                 pvap[:] = 10.0 ** (4.52887 - 958.587 / (temp - 0.539)) * 1e6
                 pvap[temp<212.8] = 10.0**(4.43681 - 829.439 / (temp[temp<212.8] - 25.412)) * 1e6
                 pvap[temp<30] = 10.0**(4.43681 - 829.439 / (30.0 - 25.412)) * 1e6
+
+            elif species == 'H2SO4': # Gao et al. (2014)
+                t0 = 340
+                tc = 905
+                wh2so4 = 80
+                H = 4.184e7 * (23624.8 - (1.4208e8)/(4798.69 + (wh2so4 - 105.315)**2))
+                lnp0 = - 10156/t0 + 16.259
+                hfac = - H/self.rgas/temp
+                longfac = 10156*(-1/temp + 1/t0 + 0.38/(tc-t0)*(1 + np.log(t0/temp) - t0/temp))
+                pvap[:] = 1.013e6 * np.exp(lnp0 + longfac + hfac)
 
             elif species == 'S2':
                 pvap[:] = np.exp(16.1 - 14000.0 / temp) * 1e6
