@@ -5,6 +5,7 @@ import unittest
 import numpy as np
 from mienet import MieNet
 from nimbus import Nimbus, DataBase, find_cloud_species
+from nimbus.src.subfunctions import aoftf, warn
 
 # ==== Example values
 temperature = np.asarray([775, 951, 1073, 1111, 1540, 2654])  # [K]
@@ -136,6 +137,10 @@ def test_nimbus():
     assert np.isclose(np.sum(obj2.pres), 1111.11)
     assert np.isclose(np.sum(obj2.temp), 8104)
     assert obj2.isset_initialisation
+    obj2.set_up_from_previous_run(load_from_tag='last_run')
+    assert np.isclose(np.sum(obj2.pres), 1111.11)
+    assert np.isclose(np.sum(obj2.temp), 8104)
+    assert obj2.isset_initialisation
     os.remove('test.nc')
 
     # ==== set up nimbus with multiple materials
@@ -220,7 +225,7 @@ def test_spectra():
     assert np.isclose(np.sum(df_cloud['wavenumber']), 6849905.947614839)
 
     # ==== test alternative inputs
-    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/')
+    obj = Nimbus(working_dir=os.path.dirname(__file__) + '/working/', mute=True)
     obj.set_up_atmosphere(temperature, pressure, kzz, mmw, gravity, species2, deepmmr)
     ds_out = obj.compute(typ='iterate', max_iterations=3)
     ma = MieNet(use_ai=False)
@@ -279,7 +284,6 @@ def test_asserts():
     with testcase.assertRaises(ValueError):
         obj.set_up_atmosphere([1], [1, 2], [2], 1e4, 1, **ins)
 
-
     # ==== errors if atmospehre is not setup
     with testcase.assertRaises(ValueError):
         obj.set_up_solver()
@@ -289,6 +293,10 @@ def test_asserts():
         obj.load_previous_run()
     with testcase.assertRaises(ValueError):
         obj.set_up_from_previous_run()
+
+    # ==== errors if atmospehre is not setup
+    with testcase.assertRaises(ValueError):
+        aoftf('a string')
 
     # ==== value errors in database
     ds = DataBase()
