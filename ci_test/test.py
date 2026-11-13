@@ -153,7 +153,7 @@ def test_nimbus():
                           ['SiO', 'MgSiO3'], {'SiO': 1e-3, 'MgSiO3': 1e-4},
                           ignore_as_nucleator='MgSiO3')
     obj.set_up_solver()
-    ds = obj.compute(typ='full')
+    ds = obj.compute(typ='full', timeout=2)
     check(ds, [1.0311480169638711e-19, 0.005999999999999857, 0.0005634321626017384,
                1.3924126755600965e-18])
 
